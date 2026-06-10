@@ -8,6 +8,8 @@ import {
   Search, Bell,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
+import RequireRole from '@/components/auth/RequireRole';
+import { useAuth } from '@/lib/auth/AuthProvider';
 import { COACH_DASHBOARD, PROGRAMS } from '@/lib/data';
 
 // ─── Stat Card ────────────────────────────────────────────────────
@@ -209,8 +211,18 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
 }
 
 // ─── Main Coach Dashboard ─────────────────────────────────────────
-export default function CoachDashboard() {
-  const { coachName, stats } = COACH_DASHBOARD;
+export default function CoachDashboardPage() {
+  return (
+    <RequireRole allow={['coach', 'admin']}>
+      <CoachDashboard />
+    </RequireRole>
+  );
+}
+
+function CoachDashboard() {
+  const { stats } = COACH_DASHBOARD;
+  const { profile } = useAuth();
+  const coachName = profile?.full_name || COACH_DASHBOARD.coachName;
   const [searchQuery, setSearchQuery] = useState('');
 
   return (

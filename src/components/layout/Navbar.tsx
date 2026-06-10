@@ -43,17 +43,17 @@ export default function Navbar() {
           {/* Auth buttons */}
           <div className="hidden md:flex items-center gap-2">
             <Link
-              href="/dashboard/coach"
+              href="/login"
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white/75 hover:text-white hover:bg-white/10 text-sm font-medium transition-all"
             >
-              <GraduationCap size={15} /> Coach Login
+              <GraduationCap size={15} /> Log In
             </Link>
             <Link
-              href="/dashboard/student"
+              href="/register"
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-bold transition-all shadow-sm"
               style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}
             >
-              <Users size={15} /> Student Login
+              <Users size={15} /> Sign Up
             </Link>
           </div>
 
@@ -78,19 +78,19 @@ export default function Navbar() {
           <MobileLink href="/competitions" onClick={() => setMenuOpen(false)}>Competitions</MobileLink>
           <div className="pt-3 grid grid-cols-2 gap-2">
             <Link
-              href="/dashboard/coach"
+              href="/login"
               onClick={() => setMenuOpen(false)}
               className="text-center py-2.5 border border-white/25 text-white rounded-xl text-sm font-semibold"
             >
-              Coach Login
+              Log In
             </Link>
             <Link
-              href="/dashboard/student"
+              href="/register"
               onClick={() => setMenuOpen(false)}
               className="text-center py-2.5 text-white rounded-xl text-sm font-bold"
               style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}
             >
-              Student Login
+              Sign Up
             </Link>
           </div>
         </div>

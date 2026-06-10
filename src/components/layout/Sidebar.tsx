@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, BookOpen, FolderOpen, Package, Trophy,
   Users, Settings, LogOut, ChevronRight, Star, BarChart2,
-  Upload, Cpu,
+  Upload, Cpu, Home,
 } from 'lucide-react';
+import { useAuth } from '@/lib/auth/AuthProvider';
 
 interface NavItem {
   label: string;
@@ -44,8 +45,17 @@ interface SidebarProps {
 
 export default function Sidebar({ role, userName = 'Coach', userEmoji = '👤' }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOutUser, configured } = useAuth();
   const navItems = role === 'student' ? STUDENT_NAV : COACH_NAV;
   const isStudent = role === 'student';
+
+  async function handleSignOut() {
+    if (configured) {
+      try { await signOutUser(); } catch { /* ignore */ }
+    }
+    router.replace('/login');
+  }
 
   return (
     <aside
@@ -116,8 +126,12 @@ export default function Sidebar({ role, userName = 'Coach', userEmoji = '👤' }
       <div className="px-3 py-4 space-y-1 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <Link href="/"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white hover:bg-white/08 transition-all">
-          <LogOut size={18} /> Back to Home
+          <Home size={18} /> Back to Home
         </Link>
+        <button onClick={handleSignOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white hover:bg-white/08 transition-all">
+          <LogOut size={18} /> Sign Out
+        </button>
       </div>
     </aside>
   );

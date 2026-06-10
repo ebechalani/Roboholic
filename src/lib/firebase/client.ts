@@ -1,6 +1,10 @@
 // ─── Firebase client SDK (browser) ──────────────────────────────
 // Initializes a single Firebase app instance and exports the
 // Auth, Firestore, and Storage services used throughout the app.
+//
+// Services initialize lazily — only when the web config is present —
+// so the app builds and runs in "demo mode" before keys are added.
+// Every call site guards on `isFirebaseConfigured` before using them.
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
@@ -15,10 +19,28 @@ const firebaseConfig = {
   appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Reuse the existing app during hot-reload / multiple imports.
-const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+/**
+ * True when the Firebase web config is present. Lets the app run in
+ * "demo mode" locally before the project keys are added — auth-gated
+ * pages stay viewable instead of crashing.
+ */
+export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 
-export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
-export const storage: FirebaseStorage = getStorage(app);
-export default app;
+let _app: FirebaseApp | undefined;
+let _auth: Auth | undefined;
+let _db: Firestore | undefined;
+let _storage: FirebaseStorage | undefined;
+
+if (isFirebaseConfigured) {
+  _app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  _auth = getAuth(_app);
+  _db = getFirestore(_app);
+  _storage = getStorage(_app);
+}
+
+// Cast to the non-undefined type for ergonomic imports. These are only
+// ever touched after an `isFirebaseConfigured` check, so they're safe.
+export const auth = _auth as Auth;
+export const db = _db as Firestore;
+export const storage = _storage as FirebaseStorage;
+export default _app;

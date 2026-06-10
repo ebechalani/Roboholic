@@ -66,10 +66,14 @@ service cloud.firestore {
     // ── User profiles ────────────────────────────────────────
     match /users/{uid} {
       allow read: if isOwner(uid) || isCoach();
-      // A user may create/update their own profile, but role changes
-      // are restricted to admins (enforce in app + admin SDK).
-      allow create: if isOwner(uid);
-      allow update: if isOwner(uid) || isAdmin();
+      // On self-sign-up a user may only create a student/coach profile —
+      // never an admin. Admins are elevated via the Admin SDK / console.
+      allow create: if isOwner(uid)
+                    && request.resource.data.role in ['student', 'coach'];
+      // A user can update their own profile but cannot change their own role;
+      // admins can change anything.
+      allow update: if isAdmin()
+                    || (isOwner(uid) && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin();
     }
 

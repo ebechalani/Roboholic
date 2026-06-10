@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { Star, Trophy, Zap, ArrowRight, CheckCircle, Play, Upload, Lock } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
+import RequireRole from '@/components/auth/RequireRole';
+import { useAuth } from '@/lib/auth/AuthProvider';
 import { STUDENT_DASHBOARD, BADGES } from '@/lib/data';
 
 function MissionPoints({ points }: { points: number }) {
@@ -34,8 +36,17 @@ function ProgressRing({ percent }: { percent: number }) {
   );
 }
 
-export default function StudentDashboard() {
-  const data = STUDENT_DASHBOARD;
+export default function StudentDashboardPage() {
+  return (
+    <RequireRole allow={['student', 'admin']}>
+      <StudentDashboard />
+    </RequireRole>
+  );
+}
+
+function StudentDashboard() {
+  const { profile } = useAuth();
+  const data = { ...STUDENT_DASHBOARD, studentName: profile?.full_name || STUDENT_DASHBOARD.studentName };
 
   return (
     <div className="flex min-h-screen" style={{ background: '#FFF7ED' }}>

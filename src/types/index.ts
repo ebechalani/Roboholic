@@ -11,6 +11,18 @@ export interface User {
   groupId?: string;
 }
 
+/** Firestore profile document stored at users/{uid}. */
+export interface Profile {
+  uid: string;
+  full_name: string;
+  email: string;
+  role: UserRole;
+  avatar_url?: string;
+  age_group?: AgeGroupId | null;
+  is_active?: boolean;
+  created_at?: string;
+}
+
 // ─── Curriculum taxonomy ─────────────────────────────────────────
 export type AgeGroupId = '4-5' | '6-7' | '8-9' | '10-12' | '13-15';
 export type Level = 'Beginner' | 'Intermediate' | 'Advanced';
