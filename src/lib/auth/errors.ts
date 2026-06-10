@@ -15,6 +15,8 @@ export function friendlyAuthError(err: unknown): string {
     case 'auth/weak-password':        return 'Password is too weak — use at least 6 characters.';
     case 'auth/too-many-requests':    return 'Too many attempts. Please wait a moment and try again.';
     case 'auth/network-request-failed': return 'Network error. Check your connection and try again.';
+    case 'auth/operation-not-allowed': return 'Email/Password sign-in isn’t enabled in Firebase. Enable it under Authentication → Sign-in method.';
+    case 'permission-denied':         return 'Database permission denied — publish your Firestore rules in the Firebase console.';
     case 'auth/invalid-api-key':
     case 'auth/configuration-not-found': return 'Firebase isn’t configured yet. Add your keys to .env.local.';
     default:

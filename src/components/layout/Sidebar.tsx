@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, BookOpen, FolderOpen, Package, Trophy,
   Users, Settings, LogOut, ChevronRight, Star, BarChart2,
-  Upload, Cpu, Home,
+  Upload, Cpu, Home, Shield,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
 
@@ -46,8 +46,12 @@ interface SidebarProps {
 export default function Sidebar({ role, userName = 'Coach', userEmoji = '👤' }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOutUser, configured } = useAuth();
-  const navItems = role === 'student' ? STUDENT_NAV : COACH_NAV;
+  const { signOutUser, configured, role: realRole } = useAuth();
+  const baseNav = role === 'student' ? STUDENT_NAV : COACH_NAV;
+  // Admins get an extra "Admin Panel" entry.
+  const navItems: NavItem[] = realRole === 'admin'
+    ? [...baseNav, { label: 'Admin Panel', href: '/admin', icon: <Shield size={18} /> }]
+    : baseNav;
   const isStudent = role === 'student';
 
   async function handleSignOut() {
