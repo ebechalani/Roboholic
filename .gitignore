@@ -37,3 +37,10 @@ next-env.d.ts
 # uploads (user content)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# firebase secrets — NEVER commit
+scripts/serviceAccountKey.json
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+.firebase/
+firebase-debug.log

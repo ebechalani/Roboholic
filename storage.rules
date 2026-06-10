@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// ============================================================
+//  RoboHolic Storage Security Rules
+//  - resources/  : curriculum files (PDFs, worksheets, videos, code).
+//                  Public read; coach/admin write.
+//  - submissions/: student project uploads. Owner + coach read;
+//                  owner write.
+//  Role is read from the user's Firestore profile (/users/{uid}).
+// ============================================================
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+    function role() {
+      return isSignedIn()
+        ? firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role
+        : 'guest';
+    }
+    function isCoach() { return role() == 'coach' || role() == 'admin'; }
+
+    // Curriculum resources — public read, coach/admin upload
+    match /resources/{allPaths=**} {
+      allow read: if true;
+      allow write: if isCoach();
+    }
+
+    // Student submissions — stored under their uid
+    match /submissions/{uid}/{allPaths=**} {
+      allow read:  if isSignedIn() && (request.auth.uid == uid || isCoach());
+      allow write: if isSignedIn() && request.auth.uid == uid
+                   && request.resource.size < 50 * 1024 * 1024;  // 50 MB cap
+    }
+  }
+}

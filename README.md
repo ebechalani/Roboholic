@@ -4,7 +4,7 @@ The official curriculum platform for RoboHolic Robotics Academy. Lesson plans,
 interactive activities, projects, quizzes, resources, and progress tracking for
 **coaches** and **students** — across 26 technology programs and 5 age groups.
 
-Built with **Next.js 14 + TypeScript + Tailwind CSS + Supabase**, deployed on **Vercel**.
+Built with **Next.js 14 + TypeScript + Tailwind CSS + Firebase**, deployed on **Vercel**.
 
 ---
 
@@ -41,34 +41,57 @@ Open <http://localhost:3000>.
 
 ---
 
-## 🗄️ Supabase Setup
+## 🔥 Firebase Setup
 
-1. Create a project at <https://supabase.com>.
-2. In the dashboard, open **SQL Editor → New query**, paste the contents of
-   [`supabase/schema.sql`](supabase/schema.sql), and run it. This creates all
-   tables, RLS policies, the new-user trigger, and seeds the 26 programs,
-   age groups, and badges.
-3. Copy your **Project URL** and **anon public key** from
-   **Project Settings → API**.
-4. Put them in `.env.local` (see `.env.local.example`).
-5. (Later) Create a **Storage bucket** named `resources` for uploaded PDFs,
-   worksheets, images, and code files.
+1. Create a project at <https://console.firebase.google.com>.
+2. Enable the services you need:
+   - **Authentication** → Sign-in method → enable **Email/Password** (add Google later if desired).
+   - **Firestore Database** → create database (start in production mode).
+   - **Storage** → set up a default bucket.
+3. **Register a Web app** (Project settings → General → Your apps → `</>`) and
+   copy the SDK config into `.env.local` (see `.env.local.example`) as the
+   `NEXT_PUBLIC_FIREBASE_*` values.
+4. **Service account** (for the seed script + server SDK): Project settings →
+   Service accounts → *Generate new private key*. Either:
+   - save it as `scripts/serviceAccountKey.json` (git-ignored), **or**
+   - set `FIREBASE_PROJECT_ID` / `FIREBASE_CLIENT_EMAIL` / `FIREBASE_PRIVATE_KEY`.
+5. **Seed the database** with the 26 programs, age groups, and badges:
+   ```bash
+   npm run seed
+   ```
+6. **Deploy security rules** (after installing the Firebase CLI, `npm i -g firebase-tools`):
+   ```bash
+   firebase deploy --only firestore:rules,storage
+   ```
 
-The Supabase clients live in:
-- `src/lib/supabase/client.ts` — browser (Client Components)
-- `src/lib/supabase/server.ts` — server (Server Components / Actions / Route Handlers)
+### Firebase code map
+- `src/lib/firebase/client.ts` — browser SDK (`auth`, `db`, `storage`)
+- `src/lib/firebase/admin.ts` — Admin SDK (server only)
+- `firestore.rules` / `storage.rules` — security rules
+- `scripts/seed.mjs` — Firestore seed script (`npm run seed`)
+
+### Firestore data model (collections)
+```
+ageGroups/{id}            programs/{slug}        courses/{id}
+modules/{id}              lessons/{id}           lessonSections/{id}
+resources/{id}            quizzes/{id}/questions  badges/{slug}
+users/{uid}               groups/{id}            studentProgress/{id}
+submissions/{id}          userBadges/{id}
+```
+Roles (`admin` / `coach` / `student`) are stored on each `users/{uid}` doc and
+enforced by the security rules.
 
 ---
 
 ## ▲ Deploy to Vercel
 
 1. Push to GitHub (done — `github.com/ebechalani/RoboHolic`).
-2. In Vercel, **Add New → Project** and import the `RoboHolic` repo.
+2. In Vercel, **Add New → Project** and import the `Roboholic` repo.
    Next.js is auto-detected — no `vercel.json` needed.
-3. Add the two environment variables under
-   **Project → Settings → Environment Variables**:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. Add the environment variables under
+   **Project → Settings → Environment Variables** — all the
+   `NEXT_PUBLIC_FIREBASE_*` values, plus `FIREBASE_PROJECT_ID`,
+   `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` for server features.
 4. Deploy. Future pushes to `main` auto-deploy.
 
 ---
@@ -86,19 +109,21 @@ src/
   lib/
     data.ts                        # Programs, age groups, badges, mock dashboards
     curricula/scratch-jr.ts        # Sample full curriculum
-    supabase/client.ts|server.ts   # Supabase clients
+    firebase/client.ts|admin.ts    # Firebase SDKs
   types/index.ts                   # Shared TypeScript types
-supabase/schema.sql                # Database schema + seed data
+firestore.rules / storage.rules    # Security rules
+firebase.json                      # Firebase config
+scripts/seed.mjs                   # Firestore seed script
 ```
 
 ---
 
 ## 🛣️ Roadmap
 
-- [ ] Authentication (coach / student / admin roles via Supabase Auth)
-- [ ] Migrate curriculum content from `lib/data.ts` into Supabase tables
+- [ ] Authentication (coach / student / admin roles via Firebase Auth)
+- [ ] Migrate curriculum content from `lib/data.ts` into Firestore
 - [ ] Admin content editor (create/edit lessons, upload resources)
-- [ ] Resource upload → Supabase Storage with auto-classification
+- [ ] Resource upload → Firebase Storage with auto-classification
 - [ ] Interactive quiz engine with scoring + badge awards
 - [ ] Student project submissions & coach review
 - [ ] Fill in the remaining 25 programs as materials are uploaded

@@ -1,0 +1,104 @@
+rules_version = '2';
+
+// ============================================================
+//  RoboHolic Firestore Security Rules
+//  - Curriculum content (programs, courses, lessons...) is world-readable.
+//  - Writes to curriculum require an admin or coach role.
+//  - Per-user data (progress, submissions) is owner-scoped.
+//  Role is stored on the user's profile doc: /users/{uid}.role
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function userRole() {
+      return isSignedIn()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : 'guest';
+    }
+    function isAdmin() { return userRole() == 'admin'; }
+    function isCoach() { return userRole() == 'coach' || isAdmin(); }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // ── Reference / curriculum content (public read) ─────────
+    match /ageGroups/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /badges/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /programs/{programId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      // Nested course/module/lesson content
+      match /{document=**} {
+        allow read: if true;
+        allow write: if isCoach();
+      }
+    }
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isCoach();
+    }
+    match /lessons/{lessonId} {
+      allow read: if true;
+      allow write: if isCoach();
+    }
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow write: if isCoach();
+    }
+    match /quizzes/{quizId} {
+      allow read: if true;
+      allow write: if isCoach();
+      match /{document=**} {
+        allow read: if true;
+        allow write: if isCoach();
+      }
+    }
+
+    // ── User profiles ────────────────────────────────────────
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isCoach();
+      // A user may create/update their own profile, but role changes
+      // are restricted to admins (enforce in app + admin SDK).
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Class groups ─────────────────────────────────────────
+    match /groups/{groupId} {
+      allow read: if isCoach() || isSignedIn();
+      allow write: if isCoach();
+    }
+
+    // ── Student progress (owner + their coach + admin) ───────
+    match /studentProgress/{docId} {
+      allow read:  if isSignedIn() && (isOwner(resource.data.studentId) || isCoach());
+      allow create: if isSignedIn() && isOwner(request.resource.data.studentId);
+      allow update: if isCoach() || (isSignedIn() && isOwner(resource.data.studentId));
+      allow delete: if isAdmin();
+    }
+
+    // ── Project submissions ──────────────────────────────────
+    match /submissions/{docId} {
+      allow read:   if isSignedIn() && (isOwner(resource.data.studentId) || isCoach());
+      allow create: if isSignedIn() && isOwner(request.resource.data.studentId);
+      allow update: if isCoach();   // coaches review / give feedback
+      allow delete: if isAdmin();
+    }
+
+    // ── Earned badges ────────────────────────────────────────
+    match /userBadges/{docId} {
+      allow read:   if isSignedIn() && (isOwner(resource.data.studentId) || isCoach());
+      allow write:  if isCoach();   // awarded by coaches / system
+    }
+  }
+}
