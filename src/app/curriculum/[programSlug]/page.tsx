@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Users, BarChart2, ChevronRight, BookOpen, CheckCircle, Lock } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
@@ -25,8 +24,8 @@ function DifficultyStars({ difficulty }: { difficulty: number }) {
   );
 }
 
-export default function ProgramPage({ params }: { params: Promise<{ programSlug: string }> }) {
-  const { programSlug } = use(params);
+export default function ProgramPage({ params }: { params: { programSlug: string } }) {
+  const { programSlug } = params;
   const program = getProgramBySlug(programSlug);
   const course = getCourseForProgram(programSlug);
 

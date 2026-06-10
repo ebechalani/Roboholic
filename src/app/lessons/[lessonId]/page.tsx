@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft, Clock, Users, BarChart2, ChevronRight, BookOpen,
@@ -304,8 +304,8 @@ function AssessmentPanel({ checklist }: { checklist: string[] }) {
 }
 
 // ─── Main Lesson Page ─────────────────────────────────────────────
-export default function LessonPage({ params }: { params: Promise<{ lessonId: string }> }) {
-  const { lessonId } = use(params);
+export default function LessonPage({ params }: { params: { lessonId: string } }) {
+  const { lessonId } = params;
   const lesson = SCRATCH_JR_LESSONS_MAP[lessonId];
 
   const [isCoachView, setIsCoachView] = useState(true);
