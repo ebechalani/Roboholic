@@ -152,5 +152,11 @@ export const DRIVE_LINKS: Record<string, string> = {
   "wedo-l17-r1": "https://drive.google.com/file/d/1fSVqNywLhx5pqLZDX6iUsTzMqKTnaGnk/view?usp=sharing",
   "wedo-l18-r1": "https://drive.google.com/file/d/1ZsFyMdNK4Q7_IMVMWBGS8hiQpThudaMk/view?usp=sharing",
   "wedo-l19-r1": "https://drive.google.com/file/d/1Cq6IbhHCe7i3rpc4OjCyJTtEV0rapMM_/view?usp=sharing",
-  "wedo-l20-r1": "https://drive.google.com/file/d/11gA6TXrR3cOLIqxASFmKVCeZXKWOOATR/view?usp=sharing"
+  "wedo-l20-r1": "https://drive.google.com/file/d/11gA6TXrR3cOLIqxASFmKVCeZXKWOOATR/view?usp=sharing",
+  "ev3-l4-r1": "https://drive.google.com/file/d/1S7U3QxwECPTfd9VZb5IUpnJBVuo5-LVa/view?usp=sharing",
+  "ev3-l5-r1": "https://drive.google.com/file/d/1qo4vOiZU8cBlxuFtHpi4jlkByYGziLvs/view?usp=sharing",
+  "ev3-l6-r1": "https://drive.google.com/file/d/1i7yCap7p4cnQDOMYn0s9JDOCejAaOOLt/view?usp=sharing",
+  "ev3-l7-r1": "https://drive.google.com/file/d/1NAJDpYJlHlhIanytX9HX_quegBZvUoXW/view?usp=sharing",
+  "ev3-l12-r1": "https://drive.google.com/file/d/10dcGyWlBc2jthBERgkIH_7zCi-n3dz5G/view?usp=sharing",
+  "ev3-l13-r1": "https://drive.google.com/file/d/1bE5in7Zb7itJnGULulDXwjEb8dtIv8J9/view?usp=sharing"
 };
