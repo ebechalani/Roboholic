@@ -18,13 +18,16 @@ interface EsmConfig {
   moduleTitle: string;
   machine: string;         // 'a lever', 'gears', 'a pulley'…
   emoji: string;
-  pages: number;           // total rasterized pages (p-01..p-NN)
+  pages: number;           // total rasterized PDF pages (p-01..p-NN); 0 for video-based
   motion: string;          // what the model does
   mechanism: string;       // factual explanation of the simple machine
   observe: string;         // what to watch
   realWorld: string[];     // real-life examples
   modelChallenge: string;  // a model-specific tweak
   skills: string[];
+  /** Video-based models (from PPTX): show finished image + key stages, link the build video. */
+  videoBased?: boolean;
+  galleryFiles?: { file: string; caption: string }[];
 }
 
 // Build a step-image gallery from the rasterized pages.
@@ -39,6 +42,35 @@ function buildGallery(slug: string, pages: number): LessonImage[] {
 }
 
 function makeEsmLesson(c: EsmConfig): LessonDetail {
+  const heroImage = c.videoBased
+    ? `/lessons/${c.slug}/finished.png`
+    : `/lessons/${c.slug}/p-01.png`;
+
+  // Activity images + intro text differ for PDF (full steps) vs video (key stages) models.
+  const activityImages: LessonImage[] = c.videoBased
+    ? (c.galleryFiles ?? []).map(g => ({ src: `/lessons/${c.slug}/${g.file}`, kind: 'photo' as const, caption: g.caption }))
+    : [{ src: `/lessons/${c.slug}/p-02.png`, kind: 'photo' as const, caption: 'Pieces you need' }, ...buildGallery(c.slug, c.pages)];
+
+  const activityContent = c.videoBased
+    ? [
+        'For this model the build is an animation. Play the build video (in the Files section) on the screen and build along, pausing after each move.',
+        'The pictures below show the finished model and a few key build stages to check against.',
+      ]
+    : [
+        'Pieces you need (see the picture):',
+        'Then follow the build steps in order. Match your model to each picture before moving on.',
+      ];
+  const activityStudent = c.videoBased
+    ? ['🎬 Watch the build video and build along', '⏸️ Pause after each move', '✅ Check against the pictures below!']
+    : ['🧱 Get the pieces in the picture', '👣 Follow each step in order', '✅ Match the picture before the next step!'];
+
+  const prepBuildLine = c.videoBased
+    ? 'Open the build video (Files section) on the screen — it is the official animated, step-by-step build.'
+    : 'Project or print the build steps below (they are the official instructions).';
+  const coachBuildLine = c.videoBased
+    ? `BUILD (15–20 min): Play the build video and build along together, pausing after each move. Check against the finished model and stage pictures below.`
+    : `BUILD (15–20 min): Build together one step at a time using the gallery below. Wait until most children finish a step before moving on.`;
+
   const sections: LessonSection[] = [
     {
       type: 'coach_prep',
@@ -48,7 +80,7 @@ function makeEsmLesson(c: EsmConfig): LessonDetail {
       content: [
         `Have one Early Simple Machines (Set 9656) kit ready per child or pair, plus the green base plate.`,
         `Build ${c.title} yourself once so you can help quickly and show the finished model.`,
-        `Project or print the build steps below (they are the official instructions).`,
+        prepBuildLine,
         `Sort the pieces shown on the "Pieces" image so young builders can find them easily.`,
         `SUGGESTED CONTENT: the build steps are from the official set; the objectives, questions, and activities here are RoboHolic suggestions — adapt them to your group.`,
       ],
@@ -60,7 +92,7 @@ function makeEsmLesson(c: EsmConfig): LessonDetail {
       isCoachOnly: true,
       content: [
         { step: 1, instruction: `HOOK (5 min): Show the finished ${c.title}. Ask "What do you think it does?" Let a few children guess, then reveal: ${c.motion}`, tip: 'Keep it playful — wonder first, explain second.' },
-        { step: 2, instruction: `BUILD (15–20 min): Build together one step at a time using the gallery below. Wait until most children finish a step before moving on.`, tip: 'Name the pieces by colour and shape — great early vocabulary.' },
+        { step: 2, instruction: coachBuildLine, tip: 'Name the pieces by colour and shape — great early vocabulary.' },
         { step: 3, instruction: `EXPLORE (5–10 min): ${c.observe} Let children play and notice what moves.`, coachNote: `This model demonstrates ${c.machine}.` },
         { step: 4, instruction: `EXPLAIN (5 min): ${c.mechanism}`, tip: 'Use simple words and gestures; relate it to their own bodies where you can.' },
         { step: 5, instruction: `WRAP-UP (5 min): Ask "Where have you seen ${c.machine} before?" Take a few answers and celebrate everyone\'s build.` },
@@ -90,19 +122,9 @@ function makeEsmLesson(c: EsmConfig): LessonDetail {
       type: 'activity',
       title: `Build It: ${c.title}`,
       emoji: '🛠️',
-      content: [
-        'Pieces you need (see the picture):',
-        'Then follow the build steps in order. Match your model to each picture before moving on.',
-      ],
-      studentContent: [
-        '🧱 Get the pieces in the picture',
-        '👣 Follow each step in order',
-        '✅ Match the picture before the next step!',
-      ],
-      images: [
-        { src: `/lessons/${c.slug}/p-02.png`, kind: 'photo', caption: 'Pieces you need' },
-        ...buildGallery(c.slug, c.pages),
-      ],
+      content: activityContent,
+      studentContent: activityStudent,
+      images: activityImages,
     },
     {
       type: 'challenge',
@@ -192,7 +214,7 @@ function makeEsmLesson(c: EsmConfig): LessonDetail {
     level: 'Beginner',
     duration: '30–40 minutes',
     difficulty: 1,
-    heroImage: `/lessons/${c.slug}/p-01.png`,
+    heroImage,
     skills: c.skills,
     materials: [
       { item: 'Early Simple Machines kit (LEGO Set 9656)', quantity: '1 per child or pair' },
@@ -212,9 +234,13 @@ function makeEsmLesson(c: EsmConfig): LessonDetail {
       'Gave a real-world example.',
     ],
     sections,
-    resources: [
-      { id: `${c.id}-r1`, title: `${c.title} — Building Instructions (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-esm', description: 'Official 3D building instructions', needsReview: true },
-    ],
+    resources: c.videoBased
+      ? [
+          { id: `${c.id}-r1`, title: `${c.title} — Build Video (animation)`, type: 'video', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-esm', description: 'Full animated step-by-step build (Google Drive)', needsReview: true },
+        ]
+      : [
+          { id: `${c.id}-r1`, title: `${c.title} — Building Instructions (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-esm', description: 'Official 3D building instructions', needsReview: true },
+        ],
   };
 }
 
@@ -297,6 +323,79 @@ const CONFIGS: EsmConfig[] = [
     modelChallenge: 'Turn the handle steadily. Can you make the dinosaur move in a smooth rhythm?',
     skills: ['Cams', 'Motion Change', 'Rhythm', 'Following Steps'],
   },
+  // ── Video-based models (from the official PPTX animations) ──
+  {
+    id: 'esm-l8', slug: 'esm-fan', title: 'The Fan', order: 8,
+    moduleId: 'esm-m1', moduleTitle: 'Module 1: Gears that Spin',
+    machine: 'gears', emoji: '🌀', pages: 0, videoBased: true,
+    galleryFiles: [{ file: 'stage-2.png', caption: 'Build stage — the base' }, { file: 'stage-1.png', caption: 'Build stage — the stand' }, { file: 'finished.png', caption: 'Finished model — the fan' }],
+    motion: 'its blades spin around when you turn the handle.',
+    mechanism: 'Gears pass turning from one wheel to another. The fan\'s gears take the spin from your hand and turn the blades.',
+    observe: 'turn the handle and watch the gears spin the blades.',
+    realWorld: ['an electric fan', 'a wind turbine', 'a pinwheel'],
+    modelChallenge: 'Turn the handle faster, then slower. Do the blades change speed too?',
+    skills: ['Gears', 'Rotation', 'Cause & Effect', 'Following Steps'],
+  },
+  {
+    id: 'esm-l9', slug: 'esm-top', title: 'The Spinning Top', order: 9,
+    moduleId: 'esm-m1', moduleTitle: 'Module 1: Gears that Spin',
+    machine: 'gears', emoji: '🔄', pages: 0, videoBased: true,
+    galleryFiles: [{ file: 'stage-1.png', caption: 'Build stage — gears and axle' }, { file: 'finished.png', caption: 'Finished model — the launcher and top' }],
+    motion: 'it launches a spinning top using a gear and a pull.',
+    mechanism: 'A big gear turns a small gear quickly. That fast spin is given to the top so it whirls on its own.',
+    observe: 'launch the top and watch how long it keeps spinning.',
+    realWorld: ['a spinning top toy', 'a fidget spinner', 'a potter\'s wheel'],
+    modelChallenge: 'Launch it gently, then with more pull. Does it spin longer?',
+    skills: ['Gears', 'Rotation', 'Force & Motion', 'Following Steps'],
+  },
+  {
+    id: 'esm-l10', slug: 'esm-seesaw', title: 'The Seesaw', order: 10,
+    moduleId: 'esm-m2', moduleTitle: 'Module 2: Levers that Lift & Launch',
+    machine: 'a lever', emoji: '🛝', pages: 0, videoBased: true,
+    galleryFiles: [{ file: 'stage-2.png', caption: 'Build stage — the bricks' }, { file: 'stage-1.png', caption: 'Build stage — the axle and wheels' }, { file: 'finished.png', caption: 'Finished model — the seesaw' }],
+    motion: 'one side goes up while the other side goes down — just like a playground see-saw.',
+    mechanism: 'A see-saw is a lever that balances on a middle point. Push one side down and the other side lifts up.',
+    observe: 'press one side down and watch the other side rise.',
+    realWorld: ['a playground see-saw', 'a balance scale', 'a catapult'],
+    modelChallenge: 'Put something small on each end. Can you make it balance level?',
+    skills: ['Levers', 'Balance', 'Force & Motion', 'Following Steps'],
+  },
+  {
+    id: 'esm-l11', slug: 'esm-train', title: 'The Train', order: 11,
+    moduleId: 'esm-m3', moduleTitle: 'Module 3: Wheels & Moving Parts',
+    machine: 'wheels and axles', emoji: '🚂', pages: 0, videoBased: true,
+    galleryFiles: [{ file: 'stage-1.png', caption: 'Build stage — gear and wheels on the body' }, { file: 'finished.png', caption: 'Finished model — the train' }],
+    motion: 'it rolls along on its wheels, with a big gear driving it.',
+    mechanism: 'Wheels turn on axles so the train rolls smoothly. A gear helps turn the wheels.',
+    observe: 'push the train and watch the wheels turn on their axles.',
+    realWorld: ['a real train', 'a toy car', 'roller skates'],
+    modelChallenge: 'Roll it on different surfaces (table, carpet). Where does it roll best?',
+    skills: ['Wheels & Axles', 'Gears', 'Rolling', 'Following Steps'],
+  },
+  {
+    id: 'esm-l12', slug: 'esm-trolley', title: 'The Steering Trolley', order: 12,
+    moduleId: 'esm-m3', moduleTitle: 'Module 3: Wheels & Moving Parts',
+    machine: 'wheels and axles', emoji: '🛒', pages: 0, videoBased: true,
+    galleryFiles: [{ file: 'stage-1.png', caption: 'Build stage — the bricks' }, { file: 'stage-2.png', caption: 'Build stage — the body' }, { file: 'finished.png', caption: 'Finished model — the steering trolley' }],
+    motion: 'it rolls on four wheels and can be steered to turn.',
+    mechanism: 'Wheels on axles let the trolley roll, and the front wheels turn so it can steer left and right.',
+    observe: 'roll the trolley and turn the steering to watch it change direction.',
+    realWorld: ['a shopping trolley', 'a car', 'a go-kart'],
+    modelChallenge: 'Steer it around a corner. Can you make it follow a path you draw?',
+    skills: ['Wheels & Axles', 'Steering', 'Direction', 'Following Steps'],
+  },
+  {
+    id: 'esm-l13', slug: 'esm-scarecrow', title: 'The Scarecrow', order: 13,
+    moduleId: 'esm-m3', moduleTitle: 'Module 3: Wheels & Moving Parts',
+    machine: 'a cam', emoji: '🌾', pages: 0, videoBased: true,
+    galleryFiles: [{ file: 'stage-2.png', caption: 'Build stage — the bricks' }, { file: 'stage-1.png', caption: 'Build stage — body on the base' }, { file: 'finished.png', caption: 'Finished model — the scarecrow mechanism' }],
+    motion: 'its arm waves up and down as you turn the handle, to scare birds away.',
+    mechanism: 'A cam turns round-and-round motion into an up-and-down (or waving) motion — that is what waves the scarecrow\'s arm.',
+    observe: 'turn the handle and watch the round turning make the arm wave.',
+    realWorld: ['a waving toy', 'a nodding ornament', 'a windscreen wiper'],
+    modelChallenge: 'Turn the handle at a steady speed. Can you make the arm wave in a rhythm?',
+    skills: ['Cams', 'Motion Change', 'Rhythm', 'Following Steps'],
+  },
 ];
 
 export const ESM_LESSONS: LessonDetail[] = CONFIGS.map(makeEsmLesson);
@@ -317,9 +416,9 @@ export const ESM_COURSE: Course = {
     'Connect each machine to real-life examples',
     'Build sequencing, fine motor, and early-STEM vocabulary',
   ],
-  duration: '7 sessions × 30–40 minutes',
-  totalHours: 4,
-  lessonCount: 7,
+  duration: '13 sessions × 30–40 minutes',
+  totalHours: 8,
+  lessonCount: 13,
   prerequisites: [],
   skills: ['Gears', 'Levers', 'Pulleys', 'Wheels & Axles', 'Cams', 'Following Instructions'],
   modules: [
@@ -329,23 +428,29 @@ export const ESM_COURSE: Course = {
       lessons: [
         { id: 'esm-l1', title: 'The Carousel',   duration: '30–40 min', difficulty: 1, skills: ['Gears', 'Rotation'], order: 1 },
         { id: 'esm-l2', title: 'The Helicopter', duration: '30–40 min', difficulty: 1, skills: ['Gears', 'Rotation'], order: 2 },
+        { id: 'esm-l8', title: 'The Fan',          duration: '30–40 min', difficulty: 1, skills: ['Gears', 'Rotation'], order: 3 },
+        { id: 'esm-l9', title: 'The Spinning Top', duration: '30–40 min', difficulty: 1, skills: ['Gears', 'Force'], order: 4 },
       ],
     },
     {
       id: 'esm-m2', title: 'Module 2: Levers that Lift & Launch', order: 2,
       description: 'Bars that turn on a point can launch, lift, and open.',
       lessons: [
-        { id: 'esm-l3', title: 'The Catapult',  duration: '30–40 min', difficulty: 1, skills: ['Levers', 'Force'], order: 3 },
-        { id: 'esm-l4', title: 'The Tollbooth', duration: '30–40 min', difficulty: 1, skills: ['Levers', 'Balance'], order: 4 },
-        { id: 'esm-l5', title: 'The Crane',     duration: '30–40 min', difficulty: 1, skills: ['Pulleys', 'Lifting'], order: 5 },
+        { id: 'esm-l3',  title: 'The Catapult',  duration: '30–40 min', difficulty: 1, skills: ['Levers', 'Force'], order: 5 },
+        { id: 'esm-l4',  title: 'The Tollbooth', duration: '30–40 min', difficulty: 1, skills: ['Levers', 'Balance'], order: 6 },
+        { id: 'esm-l5',  title: 'The Crane',     duration: '30–40 min', difficulty: 1, skills: ['Pulleys', 'Lifting'], order: 7 },
+        { id: 'esm-l10', title: 'The Seesaw',    duration: '30–40 min', difficulty: 1, skills: ['Levers', 'Balance'], order: 8 },
       ],
     },
     {
       id: 'esm-m3', title: 'Module 3: Wheels & Moving Parts', order: 3,
       description: 'Wheels, gravity, and cams turn one motion into another.',
       lessons: [
-        { id: 'esm-l6', title: 'The Roller Coaster', duration: '30–40 min', difficulty: 1, skills: ['Wheels', 'Gravity'], order: 6 },
-        { id: 'esm-l7', title: 'The Dinosaur',       duration: '30–40 min', difficulty: 1, skills: ['Cams', 'Motion'], order: 7 },
+        { id: 'esm-l6',  title: 'The Roller Coaster',   duration: '30–40 min', difficulty: 1, skills: ['Wheels', 'Gravity'], order: 9 },
+        { id: 'esm-l7',  title: 'The Dinosaur',         duration: '30–40 min', difficulty: 1, skills: ['Cams', 'Motion'], order: 10 },
+        { id: 'esm-l11', title: 'The Train',            duration: '30–40 min', difficulty: 1, skills: ['Wheels', 'Gears'], order: 11 },
+        { id: 'esm-l12', title: 'The Steering Trolley', duration: '30–40 min', difficulty: 1, skills: ['Wheels', 'Steering'], order: 12 },
+        { id: 'esm-l13', title: 'The Scarecrow',        duration: '30–40 min', difficulty: 1, skills: ['Cams', 'Motion'], order: 13 },
       ],
     },
   ],
