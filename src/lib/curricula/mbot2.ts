@@ -303,9 +303,9 @@ export const MBOT2_LESSON_1: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l1-r1', title: 'Lesson 1 Visual Aids (Slides)',  type: 'slides', audience: 'coach',   url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides referenced in the plan', needsReview: true },
-    { id: 'mb2l1-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach',   url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Finished noise detector program',        needsReview: true },
-    { id: 'mb2l1-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach',   url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan',             needsReview: true },
+    { id: 'mb2l1-r1', title: 'Lesson 1 Visual Aids (Slides)',  type: 'slides', audience: 'coach',   url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides referenced in the plan', needsReview: true },
+    { id: 'mb2l1-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach',   url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Finished noise detector program',        needsReview: true },
+    { id: 'mb2l1-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach',   url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan',             needsReview: true },
   ],
 };
 
@@ -536,9 +536,9 @@ export const MBOT2_LESSON_2: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l2-r1', title: 'Lesson 2 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (fountains, video)', needsReview: true },
-    { id: 'mb2l2-r2', title: 'Demo Program (.mblock)',         type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Finished Voice Reactive Lights program', needsReview: true },
-    { id: 'mb2l2-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l2-r1', title: 'Lesson 2 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (fountains, video)', needsReview: true },
+    { id: 'mb2l2-r2', title: 'Demo Program (.mblock)',         type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Finished Voice Reactive Lights program', needsReview: true },
+    { id: 'mb2l2-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -770,9 +770,9 @@ export const MBOT2_LESSON_3: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l3-r1', title: 'Lesson 3 Visual Aids (Slides)',          type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (voting, LAN)', needsReview: true },
-    { id: 'mb2l3-r2', title: 'Demo Programs — Initiator & Voter (.mblock)', type: 'code', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Both finished CyberPi programs', needsReview: true },
-    { id: 'mb2l3-r3', title: 'Original Lesson Plan (PDF)',             type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l3-r1', title: 'Lesson 3 Visual Aids (Slides)',          type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (voting, LAN)', needsReview: true },
+    { id: 'mb2l3-r2', title: 'Demo Programs — Initiator & Voter (.mblock)', type: 'code', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Both finished CyberPi programs', needsReview: true },
+    { id: 'mb2l3-r3', title: 'Original Lesson Plan (PDF)',             type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -1003,9 +1003,9 @@ export const MBOT2_LESSON_4: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l4-r1', title: 'Lesson 4 Visual Aids (Slides)',  type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (plants, care)', needsReview: true },
-    { id: 'mb2l4-r2', title: 'Example Program — 3 Plants (.mblock)', type: 'code', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Starter program with the three plant sprites', needsReview: true },
-    { id: 'mb2l4-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l4-r1', title: 'Lesson 4 Visual Aids (Slides)',  type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (plants, care)', needsReview: true },
+    { id: 'mb2l4-r2', title: 'Example Program — 3 Plants (.mblock)', type: 'code', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Starter program with the three plant sprites', needsReview: true },
+    { id: 'mb2l4-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -1234,9 +1234,9 @@ export const MBOT2_LESSON_5: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l5-r1', title: 'Lesson 5 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (health, modes)', needsReview: true },
-    { id: 'mb2l5-r2', title: 'Demo Program (.mblock)',         type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Finished Smart Notifier program', needsReview: true },
-    { id: 'mb2l5-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l5-r1', title: 'Lesson 5 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (health, modes)', needsReview: true },
+    { id: 'mb2l5-r2', title: 'Demo Program (.mblock)',         type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Finished Smart Notifier program', needsReview: true },
+    { id: 'mb2l5-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -1465,9 +1465,9 @@ export const MBOT2_LESSON_6: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l6-r1', title: 'Lesson 6 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (parcel lockers)', needsReview: true },
-    { id: 'mb2l6-r2', title: 'Preset Program (.mblock)',       type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Starter file with locker sprite', needsReview: true },
-    { id: 'mb2l6-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l6-r1', title: 'Lesson 6 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (parcel lockers)', needsReview: true },
+    { id: 'mb2l6-r2', title: 'Preset Program (.mblock)',       type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Starter file with locker sprite', needsReview: true },
+    { id: 'mb2l6-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -1697,9 +1697,9 @@ export const MBOT2_LESSON_7: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l7-r1', title: 'Lesson 7 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (intelligent vehicles)', needsReview: true },
-    { id: 'mb2l7-r2', title: 'Preset Program (.mblock)',       type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Stage with vehicle, lanes, destinations', needsReview: true },
-    { id: 'mb2l7-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l7-r1', title: 'Lesson 7 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (intelligent vehicles)', needsReview: true },
+    { id: 'mb2l7-r2', title: 'Preset Program (.mblock)',       type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Stage with vehicle, lanes, destinations', needsReview: true },
+    { id: 'mb2l7-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -1931,9 +1931,9 @@ export const MBOT2_LESSON_8: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l8-r1', title: 'Lesson 8 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (bus system)', needsReview: true },
-    { id: 'mb2l8-r2', title: 'Demo Program — Circle Line (.mblock)', type: 'code', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Bus loop + tracker starter', needsReview: true },
-    { id: 'mb2l8-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l8-r1', title: 'Lesson 8 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (bus system)', needsReview: true },
+    { id: 'mb2l8-r2', title: 'Demo Program — Circle Line (.mblock)', type: 'code', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Bus loop + tracker starter', needsReview: true },
+    { id: 'mb2l8-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -2163,9 +2163,9 @@ export const MBOT2_LESSON_9: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l9-r1', title: 'Lesson 9 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (game design)', needsReview: true },
-    { id: 'mb2l9-r2', title: 'Demo Program (.mblock)',         type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Finished Colors Hunter game', needsReview: true },
-    { id: 'mb2l9-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l9-r1', title: 'Lesson 9 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (game design)', needsReview: true },
+    { id: 'mb2l9-r2', title: 'Demo Program (.mblock)',         type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Finished Colors Hunter game', needsReview: true },
+    { id: 'mb2l9-r3', title: 'Original Lesson Plan (PDF)',     type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -2396,9 +2396,9 @@ export const MBOT2_LESSON_10: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l10-r1', title: 'Lesson 10 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (opposite game)', needsReview: true },
-    { id: 'mb2l10-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Finished Opposite Game', needsReview: true },
-    { id: 'mb2l10-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l10-r1', title: 'Lesson 10 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (opposite game)', needsReview: true },
+    { id: 'mb2l10-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Finished Opposite Game', needsReview: true },
+    { id: 'mb2l10-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -2631,9 +2631,9 @@ export const MBOT2_LESSON_11: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l11-r1', title: 'Lesson 11 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (catch fish I)', needsReview: true },
-    { id: 'mb2l11-r2', title: 'Example Program (.mblock)',       type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Starter with fish/net sprites', needsReview: true },
-    { id: 'mb2l11-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l11-r1', title: 'Lesson 11 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (catch fish I)', needsReview: true },
+    { id: 'mb2l11-r2', title: 'Example Program (.mblock)',       type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Starter with fish/net sprites', needsReview: true },
+    { id: 'mb2l11-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -2867,9 +2867,9 @@ export const MBOT2_LESSON_12: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l12-r1', title: 'Lesson 12 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (catch fish II)', needsReview: true },
-    { id: 'mb2l12-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Motion-controlled Catch Fish', needsReview: true },
-    { id: 'mb2l12-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l12-r1', title: 'Lesson 12 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (catch fish II)', needsReview: true },
+    { id: 'mb2l12-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Motion-controlled Catch Fish', needsReview: true },
+    { id: 'mb2l12-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -3101,9 +3101,9 @@ export const MBOT2_LESSON_13: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l13-r1', title: 'Lesson 13 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (dodge the bird I)', needsReview: true },
-    { id: 'mb2l13-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Starter with characters/birds/signs', needsReview: true },
-    { id: 'mb2l13-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l13-r1', title: 'Lesson 13 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (dodge the bird I)', needsReview: true },
+    { id: 'mb2l13-r2', title: 'Demo Program (.mblock)',          type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Starter with characters/birds/signs', needsReview: true },
+    { id: 'mb2l13-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };
 
@@ -3332,8 +3332,8 @@ export const MBOT2_LESSON_14: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'mb2l14-r1', title: 'Lesson 14 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Projector slides (dodge the bird II)', needsReview: true },
-    { id: 'mb2l14-r2', title: 'Preset Program (.mblock)',        type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Advanced Dodge the Bird starter', needsReview: true },
-    { id: 'mb2l14-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Full Makeblock lesson plan', needsReview: true },
+    { id: 'mb2l14-r1', title: 'Lesson 14 Visual Aids (Slides)', type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Projector slides (dodge the bird II)', needsReview: true },
+    { id: 'mb2l14-r2', title: 'Preset Program (.mblock)',        type: 'code',   audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Advanced Dodge the Bird starter', needsReview: true },
+    { id: 'mb2l14-r3', title: 'Original Lesson Plan (PDF)',      type: 'pdf',    audience: 'coach', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full Makeblock lesson plan', needsReview: true },
   ],
 };

@@ -236,10 +236,10 @@ function makeEsmLesson(c: EsmConfig): LessonDetail {
     sections,
     resources: c.videoBased
       ? [
-          { id: `${c.id}-r1`, title: `${c.title} — Build Video (animation)`, type: 'video', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-esm', description: 'Full animated step-by-step build (Google Drive)', needsReview: true },
+          { id: `${c.id}-r1`, title: `${c.title} — Build Video (animation)`, type: 'video', audience: 'both', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full animated step-by-step build (Google Drive)', needsReview: true },
         ]
       : [
-          { id: `${c.id}-r1`, title: `${c.title} — Building Instructions (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-esm', description: 'Official 3D building instructions', needsReview: true },
+          { id: `${c.id}-r1`, title: `${c.title} — Building Instructions (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Official 3D building instructions', needsReview: true },
         ],
   };
 }
