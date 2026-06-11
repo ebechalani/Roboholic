@@ -8,6 +8,7 @@ import { SCRATCH_JR_COURSE, SCRATCH_JR_LESSONS_MAP } from './scratch-jr';
 import { SCRATCHJR_VIDEO_LESSONS } from './scratch-jr-videos';
 import { ESM_COURSE, ESM_LESSONS } from './early-simple-machines';
 import { CODEY_COURSE, CODEY_LESSONS } from './codey-rocky';
+import { WEDO_COURSE, WEDO_LESSONS } from './wedo';
 import {
   MBOT2_COURSE,
   MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4,
@@ -22,6 +23,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(SCRATCHJR_VIDEO_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(ESM_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(CODEY_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(WEDO_LESSONS.map(l => [l.id, l])),
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
   [MBOT2_LESSON_3.id]: MBOT2_LESSON_3,
@@ -44,10 +46,11 @@ export const COURSES_BY_PROGRAM: Record<string, Course> = {
   [MBOT2_COURSE.programSlug]: MBOT2_COURSE,
   [ESM_COURSE.programSlug]: ESM_COURSE,
   [CODEY_COURSE.programSlug]: CODEY_COURSE,
+  [WEDO_COURSE.programSlug]: WEDO_COURSE,
 };
 
 /** All courses as a list (for the lesson library, etc.). */
-export const ALL_COURSES: Course[] = [ESM_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE];
+export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE];
 
 export function getLessonById(id: string): LessonDetail | undefined {
   return ALL_LESSONS[id];
