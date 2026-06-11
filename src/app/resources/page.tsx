@@ -82,10 +82,14 @@ export default function ResourceLibraryPage() {
                   <div className="text-sm font-semibold text-gray-900 truncate">{r.title}</div>
                   <div className="text-xs text-gray-400">{r.lesson} · <span className="capitalize">{r.audience}</span></div>
                 </div>
-                <a href={r.url} target="_blank" rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 shrink-0">
-                  {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
-                </a>
+                {/^https?:\/\//.test(r.url) && !r.url.includes('roboholic-') ? (
+                  <a href={r.url} target="_blank" rel="noopener noreferrer" title="Open / download"
+                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 shrink-0">
+                    {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
+                  </a>
+                ) : (
+                  <span className="text-[11px] text-gray-400 shrink-0">📁 in Drive</span>
+                )}
               </div>
             ))}
           </div>

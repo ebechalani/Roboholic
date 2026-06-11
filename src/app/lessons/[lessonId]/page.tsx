@@ -250,6 +250,12 @@ function MaterialsChecklist({ materials }: { materials: LessonDetail['materials'
   );
 }
 
+// A resource link is "live" only if it's a real http(s) URL that isn't one
+// of our not-yet-linked placeholders (marked with "roboholic-" or /uploads/).
+function isLiveResource(url: string): boolean {
+  return /^https?:\/\//.test(url) && !url.includes('roboholic-');
+}
+
 // ─── Resources panel ──────────────────────────────────────────────
 function ResourcesPanel({ resources, isCoachView }: { resources: LessonDetail['resources']; isCoachView: boolean }) {
   const visible = isCoachView ? resources : resources.filter(r => r.audience !== 'coach');
@@ -265,27 +271,36 @@ function ResourcesPanel({ resources, isCoachView }: { resources: LessonDetail['r
         <p className="text-sm text-gray-400">No resources available yet.</p>
       ) : (
         <div className="space-y-2">
-          {visible.map(r => (
-            <div key={r.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm ${
-              r.needsReview ? 'border-amber-200 bg-amber-50' : 'border-gray-100 hover:border-gray-200'
-            }`}>
-              <ResourceIcon type={r.type} />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 truncate">{r.title}</div>
-                {r.description && <div className="text-xs text-gray-400">{r.description}</div>}
-                {r.needsReview && (
-                  <span className="badge-pill text-xs bg-amber-100 text-amber-700">⚠️ Needs review</span>
-                )}
+          {visible.map(r => {
+            const live = isLiveResource(r.url);
+            return (
+              <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-all hover:shadow-sm">
+                <ResourceIcon type={r.type} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 truncate">{r.title}</div>
+                  {r.description && <div className="text-xs text-gray-400">{r.description}</div>}
+                  {!live && (
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                      📁 In the academy Google Drive
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {r.size && <span className="text-xs text-gray-400">{r.size}</span>}
+                  {live ? (
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" title="Open / download"
+                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                      {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
+                    </a>
+                  ) : (
+                    <span className="p-1.5 rounded-lg bg-gray-50 text-gray-300" title="Not linked yet — add the Drive link in the admin panel">
+                      <Download size={14} />
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {r.size && <span className="text-xs text-gray-400">{r.size}</span>}
-                <a href={r.url} target="_blank" rel="noopener noreferrer"
-                  className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
-                  {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
-                </a>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
