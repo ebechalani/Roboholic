@@ -241,6 +241,38 @@ const CONFIGS: Ev3Config[] = [
     challengeSteps: ['Add a Switch block set to the touch sensor (pressed?).', 'In the "yes" branch, add a Display block with a happy face.', 'In the "no" branch, add a Display block with a sad face.', 'Wrap it in a Loop so it keeps checking; download and test.'],
     skills: ['Switch', 'Conditionals', 'Touch Sensor', 'Display'],
   },
+  {
+    id: 'ev3-l10', slug: 'ev3-l10', title: 'Introduction to the Touch Sensor', order: 10, moduleId: 'ev3-m3', moduleTitle: M3, emoji: '👆', pages: 12, difficulty: 3,
+    concept: 'the Touch Sensor', conceptExplain: 'The Touch Sensor detects pressed, released, or "bumped". With a Wait For block you can run the motor "On" and have the robot act when the sensor is pressed — e.g. stop when it runs into something.',
+    objectives: ['Use the Touch Sensor.', 'Use the Wait For block.', 'Tell the difference between the Wait For block and the Sensor block.', 'Know when to use the Move block\'s "On" mode.'],
+    challenge: 'Drive straight until you tap the touch sensor — then extend it to hit a wall, back up, and turn 90°.',
+    challengeSteps: ['Add Move Steering set to "On" (it needs a following block).', 'Add a Wait For block → Touch Sensor → pressed.', 'Add Move Off to stop.', 'Extend: after the touch, back up and pivot 90° right.'],
+    skills: ['Touch Sensor', 'Wait For', 'Motor On/Off', 'Bumped'],
+  },
+  {
+    id: 'ev3-l11', slug: 'ev3-l11', title: 'Introduction to the Colour Sensor', order: 11, moduleId: 'ev3-m3', moduleTitle: M3, emoji: '🎨', pages: 9, difficulty: 3,
+    concept: 'the Colour Sensor', conceptExplain: 'The Colour Sensor detects colour (7 colours) and light intensity (reflected or ambient). In Colour Mode the robot can stop at a coloured line. "Brake" stops the motor instantly (use it to stop ON the line); "Coast" lets it roll on.',
+    objectives: ['Use the Colour Sensor.', 'Learn the difference between Coast and Brake.'],
+    challenge: 'Drive up to a green line and stop exactly on it using the colour sensor.',
+    challengeSteps: ['Move Steering set to "On".', 'Wait For → Colour Sensor → Colour Mode → green.', 'Move Off with BRAKE so it stops right on the line.', 'Test and adjust.'],
+    skills: ['Colour Sensor', 'Colour Mode', 'Coast vs Brake', 'Wait For'],
+  },
+  {
+    id: 'ev3-l14', slug: 'ev3-l14', title: 'Introduction to the Ultrasonic Sensor', order: 14, moduleId: 'ev3-m3', moduleTitle: M3, emoji: '📡', pages: 11, difficulty: 3,
+    concept: 'the Ultrasonic Sensor', conceptExplain: 'The Ultrasonic Sensor measures distance to a surface (cm or inches). Use "Wait Until Ultrasonic" to act at a set distance, and the Ultrasonic block to read the value.',
+    objectives: ['Learn about the Ultrasonic Sensor.', 'Use the Wait Until Ultrasonic block.', 'Tell the difference between Wait Until and the read block.'],
+    challenge: 'Drive until 20 cm from a wall — then "use the force": move back if your hand is closer than 20 cm, forward if further.',
+    challengeSteps: ['Move Steering "On" → Wait Until Ultrasonic < 20 cm → Move Off.', 'For the force challenge: Loop → Switch on Ultrasonic (< 20 cm?).', 'TRUE branch: Move "On" with negative power (back). FALSE: positive power (forward).', 'Test by moving your hand near/far.'],
+    skills: ['Ultrasonic Sensor', 'Distance', 'Wait Until', 'Loop + Switch'],
+  },
+  {
+    id: 'ev3-l15', slug: 'ev3-l15', title: 'Basic Line Follower', order: 15, moduleId: 'ev3-m3', moduleTitle: M3, emoji: '🛤️', pages: 12, difficulty: 4,
+    concept: 'edge line following', conceptExplain: 'A robot can only tell "on the line vs off the line", so it follows the EDGE: if it sees black, turn one way; if white, turn the other. A Loop with a Switch keeps it correcting. It must start on the correct side of the line.',
+    objectives: ['Understand how humans vs robots follow lines.', 'Follow a line using Colour Mode.', 'Follow a line until a sensor is activated.', 'Follow a line for a set distance.', 'Combine sensors, loops, and switches.'],
+    challenge: 'Follow the right edge of a line — then make it stop when the touch sensor is pressed, or after a set distance.',
+    challengeSteps: ['Add a Loop; inside it add a Switch on the Colour Sensor.', 'If black → turn right; if white → turn left (small steering values curve more smoothly).', 'Test on straight and curved lines; reduce the steering value if it overshoots.', 'Change the loop end condition to stop on a touch press or after a distance.'],
+    skills: ['Line Following', 'Loops', 'Switches', 'Colour Sensor'],
+  },
 ];
 
 export const EV3_LESSONS: LessonDetail[] = CONFIGS.map(makeEv3Lesson);
