@@ -8,7 +8,7 @@ import {
   Printer, Share2, ChevronDown, ChevronUp, Lock, FileText,
   Video, Code, ExternalLink, Image as ImageIcon, List,
 } from 'lucide-react';
-import { SCRATCH_JR_LESSONS_MAP } from '@/lib/curricula/scratch-jr';
+import { ALL_LESSONS } from '@/lib/curricula';
 import type { LessonDetail, LessonSection, LessonSectionType, StepItem, TroubleshootItem } from '@/types';
 
 // ─── Section config ───────────────────────────────────────────────
@@ -306,7 +306,7 @@ function AssessmentPanel({ checklist }: { checklist: string[] }) {
 // ─── Main Lesson Page ─────────────────────────────────────────────
 export default function LessonPage({ params }: { params: { lessonId: string } }) {
   const { lessonId } = params;
-  const lesson = SCRATCH_JR_LESSONS_MAP[lessonId];
+  const lesson = ALL_LESSONS[lessonId];
 
   const [isCoachView, setIsCoachView] = useState(true);
   const [studentMode, setStudentMode] = useState(false);

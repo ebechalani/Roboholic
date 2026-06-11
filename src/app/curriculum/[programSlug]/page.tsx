@@ -5,13 +5,12 @@ import { ArrowLeft, Clock, Users, BarChart2, ChevronRight, BookOpen, CheckCircle
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { getProgramBySlug } from '@/lib/data';
-import { SCRATCH_JR_COURSE } from '@/lib/curricula/scratch-jr';
+import { getCourseByProgramSlug } from '@/lib/curricula';
 import type { Course } from '@/types';
 
-// Use the Scratch Jr course as sample; for other programs show a coming-soon state
+// Pull the course for this program from the curriculum registry.
 function getCourseForProgram(slug: string): Course | null {
-  if (slug === 'scratch-jr') return SCRATCH_JR_COURSE;
-  return null;
+  return getCourseByProgramSlug(slug) ?? null;
 }
 
 function DifficultyStars({ difficulty }: { difficulty: number }) {

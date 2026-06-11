@@ -6,11 +6,8 @@ import { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
-import { SCRATCH_JR_COURSE, SCRATCH_JR_LESSONS_MAP } from '@/lib/curricula/scratch-jr';
+import { ALL_COURSES, AVAILABLE_LESSON_IDS } from '@/lib/curricula';
 import { PROGRAMS } from '@/lib/data';
-
-// Lessons that currently have full detail pages built.
-const AVAILABLE_LESSON_IDS = Object.keys(SCRATCH_JR_LESSONS_MAP);
 
 function DifficultyStars({ d }: { d: number }) {
   return <span className="text-amber-400 text-xs">{'★'.repeat(d)}<span className="text-gray-200">{'★'.repeat(5 - d)}</span></span>;
@@ -18,9 +15,7 @@ function DifficultyStars({ d }: { d: number }) {
 
 export default function LessonLibraryPage() {
   const [q, setQ] = useState('');
-  const course = SCRATCH_JR_COURSE;
-  const allLessons = course.modules.flatMap(m => m.lessons.map(l => ({ ...l, moduleTitle: m.title })));
-  const filtered = allLessons.filter(l => l.title.toLowerCase().includes(q.toLowerCase()));
+  const query = q.toLowerCase();
 
   return (
     <>
@@ -29,7 +24,7 @@ export default function LessonLibraryPage() {
         <SectionHeader
           badge="📖 Lesson Library"
           title="All Lessons"
-          subtitle="Browse, search, and open ready-to-teach lessons. More are added as your curriculum grows."
+          subtitle="Browse, search, and open ready-to-teach interactive lessons. More are added as your curriculum grows."
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -43,48 +38,54 @@ export default function LessonLibraryPage() {
             />
           </div>
 
-          {/* Featured course */}
-          <div className="mb-4 flex items-center gap-2">
-            <span className="text-2xl">🐱</span>
-            <div>
-              <h2 className="font-black text-gray-900 text-lg">{course.title}</h2>
-              <p className="text-xs text-gray-500">Scratch Jr · Ages {course.ageGroup} · {course.level} · {course.lessonCount} lessons</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map(lesson => {
-              const ready = AVAILABLE_LESSON_IDS.includes(lesson.id);
-              const inner = (
-                <div className={`bg-white rounded-2xl border p-5 h-full transition-all ${ready ? 'border-gray-100 card-hover cursor-pointer' : 'border-dashed border-gray-200 opacity-70'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="badge-pill bg-purple-50 text-purple-700 text-xs">Lesson {lesson.order}</span>
-                    {ready
-                      ? <span className="badge-pill bg-green-50 text-green-600 text-xs">Ready</span>
-                      : <span className="badge-pill bg-gray-100 text-gray-400 text-xs">Soon</span>}
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-sm mb-2">{lesson.title}</h3>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="flex items-center gap-1 text-xs text-gray-400"><Clock size={11} /> {lesson.duration}</span>
-                    <DifficultyStars d={lesson.difficulty} />
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {lesson.skills.slice(0, 2).map(s => (
-                      <span key={s} className="badge-pill bg-gray-100 text-gray-500 text-xs">{s}</span>
-                    ))}
-                  </div>
-                  {ready && (
-                    <div className="flex items-center gap-1 text-blue-600 text-xs font-semibold mt-3">
-                      Open lesson <ChevronRight size={13} />
-                    </div>
-                  )}
+          {/* Each course */}
+          {ALL_COURSES.map(course => {
+            const lessons = course.modules
+              .flatMap(m => m.lessons)
+              .filter(l => l.title.toLowerCase().includes(query));
+            if (lessons.length === 0) return null;
+            return (
+              <div key={course.id} className="mb-10">
+                <div className="mb-4">
+                  <h2 className="font-black text-gray-900 text-lg">{course.title}</h2>
+                  <p className="text-xs text-gray-500">Ages {course.ageGroup} · {course.level} · {course.lessonCount} lessons</p>
                 </div>
-              );
-              return ready
-                ? <Link key={lesson.id} href={`/lessons/${lesson.id}`}>{inner}</Link>
-                : <div key={lesson.id}>{inner}</div>;
-            })}
-          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {lessons.map(lesson => {
+                    const ready = AVAILABLE_LESSON_IDS.includes(lesson.id);
+                    const inner = (
+                      <div className={`bg-white rounded-2xl border p-5 h-full transition-all ${ready ? 'border-gray-100 card-hover cursor-pointer' : 'border-dashed border-gray-200 opacity-70'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="badge-pill bg-blue-50 text-blue-700 text-xs">Lesson {lesson.order}</span>
+                          {ready
+                            ? <span className="badge-pill bg-green-50 text-green-600 text-xs">Ready</span>
+                            : <span className="badge-pill bg-gray-100 text-gray-400 text-xs">Soon</span>}
+                        </div>
+                        <h3 className="font-bold text-gray-900 text-sm mb-2">{lesson.title}</h3>
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="flex items-center gap-1 text-xs text-gray-400"><Clock size={11} /> {lesson.duration}</span>
+                          <DifficultyStars d={lesson.difficulty} />
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {lesson.skills.slice(0, 2).map(s => (
+                            <span key={s} className="badge-pill bg-gray-100 text-gray-500 text-xs">{s}</span>
+                          ))}
+                        </div>
+                        {ready && (
+                          <div className="flex items-center gap-1 text-blue-600 text-xs font-semibold mt-3">
+                            Open lesson <ChevronRight size={13} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                    return ready
+                      ? <Link key={lesson.id} href={`/lessons/${lesson.id}`}>{inner}</Link>
+                      : <div key={lesson.id}>{inner}</div>;
+                  })}
+                </div>
+              </div>
+            );
+          })}
 
           {/* Other programs */}
           <h2 className="font-black text-gray-900 text-lg mt-12 mb-4">Explore Lessons by Program</h2>
