@@ -194,6 +194,22 @@ const M3 = 'Module 3: Sensors & Challenges';
 
 const CONFIGS: Ev3Config[] = [
   {
+    id: 'ev3-l2', slug: 'ev3-l2', title: 'Build a Base Robot', order: 1, moduleId: 'ev3-m1', moduleTitle: M1, emoji: '🤖', pages: 7, difficulty: 2,
+    concept: 'the driving base robot', conceptExplain: 'Every program needs a robot. The driving base uses two large motors for the wheels (ports B and C) plus spots to add sensors and attachments — it is the foundation for every lesson that follows.',
+    objectives: ['Build a sturdy driving base robot.', 'Learn good cable management.', 'Understand where motors, sensors, and attachments connect.'],
+    challenge: 'Build the driving base robot, following the instructions, with tidy cables.',
+    challengeSteps: ['Follow the build slides step by step.', 'Plug the wheel motors into ports B and C.', 'Route cables so they don\'t snag the wheels or attachments.', 'Check the robot rolls straight and is sturdy.'],
+    skills: ['Building', 'Driving Base', 'Cable Management', 'Motors'],
+  },
+  {
+    id: 'ev3-l3', slug: 'ev3-l3', title: 'Intro to the Brick & Software', order: 2, moduleId: 'ev3-m1', moduleTitle: M1, emoji: '🧱', pages: 12, difficulty: 2,
+    concept: 'the EV3 brick and software', conceptExplain: 'The EV3 "brick" is the robot\'s computer — buttons (Back, Center, arrows), a screen, and ports for motors and sensors. The EV3 software is where you drag blocks to make a program, then download it to the brick to run.',
+    objectives: ['Learn how the EV3 brick operates.', 'Learn the main components of the EV3 software.'],
+    challenge: 'Turn on the brick, explore its menus, then build and download a simple one-block program.',
+    challengeSteps: ['Power on with the Center button; use Back and the arrows to navigate menus.', 'Open the EV3 software and start a new project.', 'Drag one block (e.g. play a sound or show an image).', 'Download to the brick and run it.'],
+    skills: ['EV3 Brick', 'EV3 Software', 'Ports', 'Download & Run'],
+  },
+  {
     id: 'ev3-l4', slug: 'ev3-l4', title: 'Moving Straight', order: 4, moduleId: 'ev3-m1', moduleTitle: M1, emoji: '➡️', pages: 12, difficulty: 2,
     concept: 'the Move Steering block', conceptExplain: 'The Move Steering block drives the robot. You set steering (0 = straight), power/speed, and how far (degrees, rotations, or seconds).',
     objectives: ['Make the robot go forward and backward.', 'Use the Move Steering block.', 'Read motor/sensor values using Port View.'],

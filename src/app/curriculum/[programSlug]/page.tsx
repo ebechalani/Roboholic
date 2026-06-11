@@ -5,7 +5,7 @@ import { ArrowLeft, Clock, Users, BarChart2, ChevronRight, BookOpen, CheckCircle
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { getProgramBySlug } from '@/lib/data';
-import { getCourseByProgramSlug } from '@/lib/curricula';
+import { getCourseByProgramSlug, AVAILABLE_LESSON_IDS } from '@/lib/curricula';
 import type { Course } from '@/types';
 
 // Pull the course for this program from the curriculum registry.
@@ -166,47 +166,56 @@ export default function ProgramPage({ params }: { params: { programSlug: string 
 
                     {/* Lessons */}
                     <div className="divide-y divide-gray-50">
-                      {mod.lessons.map((lesson, lessonIdx) => (
-                        <Link
-                          key={lesson.id}
-                          href={`/lessons/${lesson.id}`}
-                          className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group"
-                        >
-                          {/* Lesson number */}
-                          <div className="w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 text-xs font-bold transition-all group-hover:border-transparent group-hover:text-white"
-                            style={{
-                              borderColor: program.color,
-                              color: program.color,
-                            }}
-                          >
-                            {lesson.order}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">
-                              {lesson.title}
+                      {mod.lessons.map((lesson) => {
+                        const ready = AVAILABLE_LESSON_IDS.includes(lesson.id);
+                        const row = (
+                          <>
+                            {/* Lesson number */}
+                            <div className="w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 text-xs font-bold transition-all group-hover:border-transparent group-hover:text-white"
+                              style={{ borderColor: program.color, color: program.color }}>
+                              {lesson.order}
                             </div>
-                            <div className="flex items-center gap-3 mt-1">
-                              <span className="flex items-center gap-1 text-xs text-gray-400">
-                                <Clock size={11} /> {lesson.duration}
-                              </span>
-                              <DifficultyStars difficulty={lesson.difficulty} />
+
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">
+                                {lesson.title}
+                              </div>
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className="flex items-center gap-1 text-xs text-gray-400">
+                                  <Clock size={11} /> {lesson.duration}
+                                </span>
+                                <DifficultyStars difficulty={lesson.difficulty} />
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Skills */}
-                          <div className="hidden sm:flex flex-wrap gap-1">
-                            {lesson.skills.slice(0, 2).map(skill => (
-                              <span key={skill} className="badge-pill text-xs"
-                                style={{ backgroundColor: program.color + '15', color: program.textColor }}>
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
+                            {/* Skills */}
+                            <div className="hidden sm:flex flex-wrap gap-1">
+                              {lesson.skills.slice(0, 2).map(skill => (
+                                <span key={skill} className="badge-pill text-xs"
+                                  style={{ backgroundColor: program.color + '15', color: program.textColor }}>
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
 
-                          <ChevronRight size={16} className="text-gray-300 group-hover:text-blue-500 shrink-0 transition-all group-hover:translate-x-0.5" />
-                        </Link>
-                      ))}
+                            {ready ? (
+                              <ChevronRight size={16} className="text-gray-300 group-hover:text-blue-500 shrink-0 transition-all group-hover:translate-x-0.5" />
+                            ) : (
+                              <span className="badge-pill bg-gray-100 text-gray-400 text-xs shrink-0">Soon</span>
+                            )}
+                          </>
+                        );
+                        return ready ? (
+                          <Link key={lesson.id} href={`/lessons/${lesson.id}`}
+                            className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group">
+                            {row}
+                          </Link>
+                        ) : (
+                          <div key={lesson.id} className="flex items-center gap-4 px-6 py-4 opacity-60 cursor-not-allowed" title="Coming soon">
+                            {row}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
