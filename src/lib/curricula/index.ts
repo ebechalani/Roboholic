@@ -5,7 +5,11 @@
 // ════════════════════════════════════════════════════════════════
 import type { Course, LessonDetail } from '@/types';
 import { SCRATCH_JR_COURSE, SCRATCH_JR_LESSONS_MAP } from './scratch-jr';
-import { MBOT2_COURSE, MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4 } from './mbot2';
+import {
+  MBOT2_COURSE,
+  MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4,
+  MBOT2_LESSON_5, MBOT2_LESSON_6, MBOT2_LESSON_7, MBOT2_LESSON_8,
+} from './mbot2';
 
 /** Every fully-detailed lesson, keyed by lesson id. */
 export const ALL_LESSONS: Record<string, LessonDetail> = {
@@ -14,6 +18,10 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
   [MBOT2_LESSON_3.id]: MBOT2_LESSON_3,
   [MBOT2_LESSON_4.id]: MBOT2_LESSON_4,
+  [MBOT2_LESSON_5.id]: MBOT2_LESSON_5,
+  [MBOT2_LESSON_6.id]: MBOT2_LESSON_6,
+  [MBOT2_LESSON_7.id]: MBOT2_LESSON_7,
+  [MBOT2_LESSON_8.id]: MBOT2_LESSON_8,
 };
 
 /** Every course, keyed by its program slug. */
