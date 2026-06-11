@@ -289,6 +289,38 @@ const CONFIGS: Ev3Config[] = [
     challengeSteps: ['Add a Loop; inside it add a Switch on the Colour Sensor.', 'If black → turn right; if white → turn left (small steering values curve more smoothly).', 'Test on straight and curved lines; reduce the steering value if it overshoots.', 'Change the loop end condition to stop on a touch press or after a distance.'],
     skills: ['Line Following', 'Loops', 'Switches', 'Colour Sensor'],
   },
+  {
+    id: 'ev3-l8', slug: 'ev3-l8', title: 'Displaying Text & Graphics', order: 8, moduleId: 'ev3-m2', moduleTitle: M2, emoji: '🖥️', pages: 12, difficulty: 2,
+    concept: 'the Display block', conceptExplain: 'The Display block shows text and images on the EV3 screen. Grid mode is easy for text (rows & columns); Pixel mode places text/images precisely. It\'s great for showing sensor values — a key debugging tool.',
+    objectives: ['Use the Display block to show text and images.', 'Understand why the Display block is useful (e.g. for debugging).'],
+    challenge: 'Display "Hello World" in the middle of the screen for 3 seconds — then put "Hello" and "World" on two lines, and show animated eyes while driving.',
+    challengeSteps: ['Add a Display block; switch to Grid mode and type your text; set the row/column and size.', 'For two lines, use a second Display block and DON\'T clear the screen on it.', 'For eyes: alternate two eye images with Display + Wait, with Motor On to drive.', 'Tip: display a live sensor value to debug a program.'],
+    skills: ['Display', 'Text & Images', 'Grid/Pixel Mode', 'Debugging'],
+  },
+  {
+    id: 'ev3-l9', slug: 'ev3-l9', title: 'Custom Images & Sounds', order: 9, moduleId: 'ev3-m2', moduleTitle: M2, emoji: '🎵', pages: 10, difficulty: 2,
+    concept: 'custom images and sounds', conceptExplain: 'The EV3 Image Editor and Sound Editor let you import your own pictures (.png/.jpg/.bmp → converted to the EV3\'s .rgf) and sounds (.mp3), so your Display and Sound blocks can use custom media.',
+    objectives: ['Use the Image Editor and Sound Editor to add custom images and sounds to the EV3.'],
+    challenge: 'Import a custom image and a custom sound, then use them in your program with the Display and Sound blocks.',
+    challengeSteps: ['Open the Image Editor (EV3 menu); open your image; resize, place, and adjust contrast; save it.', 'Open the Sound Editor (Tools menu); open an .mp3; trim it with the blue bar; save it.', 'Add a Display block and pick your custom image; add a Sound block and pick your custom sound.', 'Download and run — your robot shows your picture and plays your sound!'],
+    skills: ['Image Editor', 'Sound Editor', 'Custom Media', 'Display & Sound'],
+  },
+  {
+    id: 'ev3-l16', slug: 'ev3-l16', title: 'Picking Up & Moving an Object', order: 16, moduleId: 'ev3-m3', moduleTitle: M3, emoji: '🦾', pages: 12, difficulty: 3,
+    concept: 'powered attachments', conceptExplain: 'A powered attachment (an arm/gripper) is driven by a Medium or Large Motor block (not Move Steering — that\'s for the synced wheels). Attach a medium motor to port A (or large to D) to grab and move objects.',
+    objectives: ['Program a robot to move a powered attachment arm.', 'Learn how to make useful attachments (incl. FLL tips).'],
+    challenge: 'From the start line, drive to a black line, pick up an object with your attachment, and bring it back to the start.',
+    challengeSteps: ['Attach a medium motor (port A) with a grabbing/SNAP attachment.', 'Drive to the line with Move Steering; stop.', 'Run the Medium Motor block to close the gripper / lift the object.', 'Drive back (or turn and return) to the start, then release.'],
+    skills: ['Attachments', 'Medium/Large Motor', 'Grippers', 'FLL'],
+  },
+  {
+    id: 'ev3-l17', slug: 'ev3-l17', title: 'Final Challenge', order: 17, moduleId: 'ev3-m3', moduleTitle: M3, emoji: '🏁', pages: 6, difficulty: 4,
+    concept: 'combining all your skills', conceptExplain: 'The final challenges combine everything from Level I — moving, turning, sensors, loops, switches, and attachments — on a mat or maze you can make with coloured tape (or an old FLL mat).',
+    objectives: ['Combine moving, turning, sensors, loops, switches, and attachments to solve a multi-step challenge.'],
+    challenge: 'Complete a maze/mat challenge: navigate out of base, through a passage using turns and sensors, and stop exactly on the 3rd line (using a loop + sensor).',
+    challengeSteps: ['Plan the whole run as pseudocode first.', 'Maze 1: drive and turn through the passage to the END.', 'Maze 2: use 2–3 sensors (touch a wall, avoid one, follow to the end).', 'Stop on the line: loop + colour sensor, counting lines, stop on the 3rd.'],
+    skills: ['Integration', 'Sensors', 'Loops & Switches', 'Problem Solving'],
+  },
 ];
 
 export const EV3_LESSONS: LessonDetail[] = CONFIGS.map(makeEv3Lesson);

@@ -164,5 +164,9 @@ export const DRIVE_LINKS: Record<string, string> = {
   "ev3-l10-r1": "https://drive.google.com/file/d/1ROwILdOIZnun9Gz01rcEX5SBciQ5MLKZ/view?usp=sharing",
   "ev3-l11-r1": "https://drive.google.com/file/d/1I-URbgKTsRLtetP7FWbXcO1O_TpsIoUE/view?usp=sharing",
   "ev3-l14-r1": "https://drive.google.com/file/d/1Mp5A1VOuqzixmJRyuXz-LMycjF70Q-8K/view?usp=sharing",
-  "ev3-l15-r1": "https://drive.google.com/file/d/1bqCWJL4DVHsd-rwG-kAw4hRQ7hrWjCdV/view?usp=sharing"
+  "ev3-l15-r1": "https://drive.google.com/file/d/1bqCWJL4DVHsd-rwG-kAw4hRQ7hrWjCdV/view?usp=sharing",
+  "ev3-l8-r1": "https://drive.google.com/file/d/15q_-wmKfx3SLCJ3ge33SM06PmiuTSvd3/view?usp=sharing",
+  "ev3-l9-r1": "https://drive.google.com/file/d/14vx4PgG1E-gOM9ZDdLW030kkLT3z06SE/view?usp=sharing",
+  "ev3-l16-r1": "https://drive.google.com/file/d/1rs6insYuibH9TyLo_ioKOnuW51jxMybB/view?usp=sharing",
+  "ev3-l17-r1": "https://drive.google.com/file/d/1MEySwb-fitKNqIG6CsIZ3gD1OzYKI_62/view?usp=sharing"
 };
