@@ -9,6 +9,7 @@ import {
   Video, Code, ExternalLink, Image as ImageIcon, List,
 } from 'lucide-react';
 import { ALL_LESSONS } from '@/lib/curricula';
+import { DRIVE_LINKS } from '@/lib/curricula/drive-links';
 import type { LessonDetail, LessonSection, LessonSectionType, StepItem, TroubleshootItem, LessonImage } from '@/types';
 
 // ─── Section config ───────────────────────────────────────────────
@@ -272,7 +273,9 @@ function ResourcesPanel({ resources, isCoachView }: { resources: LessonDetail['r
       ) : (
         <div className="space-y-2">
           {visible.map(r => {
-            const live = isLiveResource(r.url);
+            // Prefer the exact Drive file link when we have one (mapped from the academy Drive).
+            const url = DRIVE_LINKS[r.id] ?? r.url;
+            const live = isLiveResource(url);
             return (
               <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-all hover:shadow-sm">
                 <ResourceIcon type={r.type} />
@@ -288,7 +291,7 @@ function ResourcesPanel({ resources, isCoachView }: { resources: LessonDetail['r
                 <div className="flex items-center gap-2 shrink-0">
                   {r.size && <span className="text-xs text-gray-400">{r.size}</span>}
                   {live ? (
-                    <a href={r.url} target="_blank" rel="noopener noreferrer" title="Open / download"
+                    <a href={url} target="_blank" rel="noopener noreferrer" title="Open / download"
                       className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
                       {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
                     </a>
