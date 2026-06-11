@@ -5,6 +5,7 @@
 // ════════════════════════════════════════════════════════════════
 import type { Course, LessonDetail } from '@/types';
 import { SCRATCH_JR_COURSE, SCRATCH_JR_LESSONS_MAP } from './scratch-jr';
+import { SCRATCHJR_VIDEO_LESSONS } from './scratch-jr-videos';
 import { ESM_COURSE, ESM_LESSONS } from './early-simple-machines';
 import { CODEY_COURSE, CODEY_LESSONS } from './codey-rocky';
 import {
@@ -18,6 +19,7 @@ import {
 /** Every fully-detailed lesson, keyed by lesson id. */
 export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...SCRATCH_JR_LESSONS_MAP,
+  ...Object.fromEntries(SCRATCHJR_VIDEO_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(ESM_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(CODEY_LESSONS.map(l => [l.id, l])),
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
