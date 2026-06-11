@@ -5,6 +5,7 @@
 // ════════════════════════════════════════════════════════════════
 import type { Course, LessonDetail } from '@/types';
 import { SCRATCH_JR_COURSE, SCRATCH_JR_LESSONS_MAP } from './scratch-jr';
+import { ESM_COURSE, ESM_LESSONS } from './early-simple-machines';
 import {
   MBOT2_COURSE,
   MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4,
@@ -16,6 +17,7 @@ import {
 /** Every fully-detailed lesson, keyed by lesson id. */
 export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...SCRATCH_JR_LESSONS_MAP,
+  ...Object.fromEntries(ESM_LESSONS.map(l => [l.id, l])),
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
   [MBOT2_LESSON_3.id]: MBOT2_LESSON_3,
@@ -36,10 +38,11 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
 export const COURSES_BY_PROGRAM: Record<string, Course> = {
   [SCRATCH_JR_COURSE.programSlug]: SCRATCH_JR_COURSE,
   [MBOT2_COURSE.programSlug]: MBOT2_COURSE,
+  [ESM_COURSE.programSlug]: ESM_COURSE,
 };
 
 /** All courses as a list (for the lesson library, etc.). */
-export const ALL_COURSES: Course[] = [SCRATCH_JR_COURSE, MBOT2_COURSE];
+export const ALL_COURSES: Course[] = [ESM_COURSE, SCRATCH_JR_COURSE, MBOT2_COURSE];
 
 export function getLessonById(id: string): LessonDetail | undefined {
   return ALL_LESSONS[id];
