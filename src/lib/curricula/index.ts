@@ -10,6 +10,7 @@ import { ESM_COURSE, ESM_LESSONS } from './early-simple-machines';
 import { CODEY_COURSE, CODEY_LESSONS } from './codey-rocky';
 import { WEDO_COURSE, WEDO_LESSONS } from './wedo';
 import { EV3_COURSE, EV3_LESSONS } from './ev3';
+import { ARDUINO_COURSE, ARDUINO_LESSONS } from './arduino';
 import {
   MBOT2_COURSE,
   MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4,
@@ -26,6 +27,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(CODEY_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(WEDO_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(EV3_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(ARDUINO_LESSONS.map(l => [l.id, l])),
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
   [MBOT2_LESSON_3.id]: MBOT2_LESSON_3,
@@ -50,10 +52,11 @@ export const COURSES_BY_PROGRAM: Record<string, Course> = {
   [CODEY_COURSE.programSlug]: CODEY_COURSE,
   [WEDO_COURSE.programSlug]: WEDO_COURSE,
   [EV3_COURSE.programSlug]: EV3_COURSE,
+  [ARDUINO_COURSE.programSlug]: ARDUINO_COURSE,
 };
 
 /** All courses as a list (for the lesson library, etc.). */
-export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE];
+export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE, ARDUINO_COURSE];
 
 export function getLessonById(id: string): LessonDetail | undefined {
   return ALL_LESSONS[id];
