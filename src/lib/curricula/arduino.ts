@@ -18,6 +18,7 @@ interface ArdConfig {
   skills: string[];
   emoji: string;
   difficulty: 3 | 4;
+  kit?: 'ps' | 's';  // 'ps' = Power Supply Kit, 's' = 37 Sensor Kit (default)
 }
 
 function gallery(slug: string, pages: number): LessonImage[] {
@@ -30,7 +31,9 @@ function gallery(slug: string, pages: number): LessonImage[] {
 }
 
 function makeArdLesson(c: ArdConfig): LessonDetail {
-  const slug = `ard-s${c.n}`;
+  const kit = c.kit ?? 's';
+  const slug = kit === 'ps' ? `ard-ps${c.n}` : `ard-s${c.n}`;
+  const kitName = kit === 'ps' ? 'Power Supply Kit' : '37 Sensor Kit';
   const sections: LessonSection[] = [
     {
       type: 'coach_prep',
@@ -38,7 +41,7 @@ function makeArdLesson(c: ArdConfig): LessonDetail {
       emoji: '📋',
       isCoachOnly: true,
       content: [
-        'Have an Arduino Uno + the 37 Sensor Kit, a breadboard, and jumper wires per student or pair, with the Arduino IDE installed.',
+        `Have an Arduino Uno + the ${kitName}, a breadboard, and jumper wires per student or pair, with the Arduino IDE installed.`,
         `Build the ${c.title} circuit yourself first and upload the code so you can demo it.`,
         'Open the kit tutorial (Files section) — the wiring diagram and code for this module are on the pages shown below; the matching .ino file is in the kit folder.',
         `Concept: ${c.concept} ${c.does}`,
@@ -161,9 +164,13 @@ function makeArdLesson(c: ArdConfig): LessonDetail {
     },
   ];
 
-  const moduleTitle = c.module === 1 ? 'Module 1: Outputs, Switches & Buzzers'
-    : c.module === 2 ? 'Module 2: Sensors & Detectors'
-    : 'Module 3: Analog, Motion & Advanced Modules';
+  const moduleTitle = kit === 'ps'
+    ? (c.module === 1 ? 'Power Supply Kit — Basics'
+      : c.module === 2 ? 'Power Supply Kit — Displays & Sensors'
+      : 'Power Supply Kit — Motors & Motion')
+    : (c.module === 1 ? '37 Sensor Kit — Outputs, Switches & Buzzers'
+      : c.module === 2 ? '37 Sensor Kit — Sensors & Detectors'
+      : '37 Sensor Kit — Analog, Motion & Advanced');
 
   return {
     id: slug,
@@ -173,9 +180,9 @@ function makeArdLesson(c: ArdConfig): LessonDetail {
     programSlug: 'arduino',
     programTitle: 'Arduino',
     programColor: '#0D9488',
-    courseId: 'arduino-37sensor',
-    courseTitle: 'Arduino: 37 Sensor Kit',
-    moduleId: `ard-m${c.module}`,
+    courseId: 'arduino-electronics',
+    courseTitle: 'Arduino: Electronics & Coding',
+    moduleId: kit === 'ps' ? `ard-pm${c.module}` : `ard-sm${c.module}`,
     moduleTitle,
     ageGroup: '13-15',
     level: 'Intermediate',
@@ -202,12 +209,38 @@ function makeArdLesson(c: ArdConfig): LessonDetail {
     ],
     sections,
     resources: [
-      { id: `${slug}-r1`, title: '37 Sensor Kit — Tutorial (PDF)', type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-arduino', description: 'Official kit guide (wiring + code for every module)', needsReview: true },
+      { id: `${slug}-r1`, title: `${kitName} — Tutorial (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-arduino', description: 'Official kit guide (wiring + code for every module)', needsReview: true },
     ],
   };
 }
 
 const CONFIGS: ArdConfig[] = [
+  // ── Power Supply Learning Kit (foundational: 23 lessons) ──
+  { n: 1,  kit: 'ps', title: 'Blink', module: 1, emoji: '💡', pages: 7, difficulty: 3, concept: 'The classic first Arduino program.', does: 'It blinks the on-board LED on and off — proving your code uploads and runs on the board.', skills: ['Digital Output', 'delay()', 'IDE Basics'] },
+  { n: 2,  kit: 'ps', title: 'Button', module: 1, emoji: '🔘', pages: 4, difficulty: 3, concept: 'A push button input.', does: 'The Arduino reads whether the button is pressed and reacts (e.g. lights an LED).', skills: ['Digital Input', 'Buttons', 'if'] },
+  { n: 3,  kit: 'ps', title: 'Flowing LED Lights', module: 1, emoji: '🌊', pages: 3, difficulty: 3, concept: 'A row of LEDs.', does: 'Lighting them one after another with a loop makes a flowing "chase" effect.', skills: ['Loops', 'Arrays', 'LEDs'] },
+  { n: 4,  kit: 'ps', title: 'Active Buzzer', module: 1, emoji: '🔔', pages: 3, difficulty: 3, concept: 'An active buzzer.', does: 'It beeps with a fixed tone when switched on — the simplest sound output.', skills: ['Buzzer', 'Digital Output', 'Sound'] },
+  { n: 5,  kit: 'ps', title: 'Passive Buzzer', module: 1, emoji: '🎵', pages: 3, difficulty: 3, concept: 'A passive buzzer.', does: 'Toggling it at different speeds plays different tones — you can play a melody.', skills: ['tone()', 'Frequency', 'Music'] },
+  { n: 6,  kit: 'ps', title: 'Photoresistor', module: 1, emoji: '🔆', pages: 3, difficulty: 3, concept: 'A light-dependent resistor (LDR).', does: 'The Arduino reads the surrounding light level as an analog value.', skills: ['analogRead', 'Light', 'Sensors'] },
+  { n: 7,  kit: 'ps', title: 'RGB LED', module: 1, emoji: '🌈', pages: 3, difficulty: 3, concept: 'A full-colour RGB LED.', does: 'Mixing red, green, and blue with PWM (analogWrite) makes any colour.', skills: ['PWM', 'analogWrite', 'Colour'] },
+  { n: 8,  kit: 'ps', title: 'Servo Motor', module: 2, emoji: '⚙️', pages: 2, difficulty: 3, concept: 'A servo motor.', does: 'It moves to a precise angle (0–180°) on command — used for steering and arms.', skills: ['Servo', 'Angles', 'Libraries'] },
+  { n: 9,  kit: 'ps', title: 'LCD1602 Display', module: 2, emoji: '🔡', pages: 3, difficulty: 3, concept: 'A 16×2 character LCD.', does: 'It displays two lines of text — perfect for showing sensor readings and messages.', skills: ['LCD', 'Display', 'Libraries'] },
+  { n: 10, kit: 'ps', title: 'Thermistor', module: 2, emoji: '🌡️', pages: 2, difficulty: 3, concept: 'A thermistor.', does: 'Its resistance changes with temperature; the code converts the analog reading into °C.', skills: ['analogRead', 'Temperature', 'Maths'] },
+  { n: 11, kit: 'ps', title: 'Voltmeter', module: 2, emoji: '🔋', pages: 2, difficulty: 3, concept: 'A voltage divider.', does: 'The Arduino reads an analog voltage and calculates the value — a simple voltmeter.', skills: ['analogRead', 'Voltage', 'Maths'] },
+  { n: 12, kit: 'ps', title: 'Ultrasonic Distance', module: 2, emoji: '📡', pages: 3, difficulty: 3, concept: 'An HC-SR04 ultrasonic sensor.', does: 'It measures distance by sending a pulse and timing the echo.', skills: ['Ultrasonic', 'Distance', 'Timing'] },
+  { n: 13, kit: 'ps', title: 'Stopwatch', module: 2, emoji: '⏱️', pages: 3, difficulty: 3, concept: 'A timing project.', does: 'Using millis() and a display, it counts elapsed time like a stopwatch.', skills: ['millis()', 'Timing', 'Display'] },
+  { n: 14, kit: 'ps', title: '74HC595 & Segment Display', module: 2, emoji: '🔢', pages: 5, difficulty: 4, concept: 'A shift register driving a 7-segment display.', does: 'The 74HC595 lets the Arduino show digits using only a few pins.', skills: ['Shift Register', '7-Segment', 'Bits'] },
+  { n: 15, kit: 'ps', title: 'Joystick', module: 2, emoji: '🕹️', pages: 2, difficulty: 3, concept: 'A 2-axis joystick.', does: 'It gives X and Y analog values plus a button press for two-direction control.', skills: ['Analog', 'Two Axes', 'Control'] },
+  { n: 16, kit: 'ps', title: '1-Channel Relay', module: 3, emoji: '🔌', pages: 2, difficulty: 4, concept: 'A relay.', does: 'It lets the Arduino switch a separate, higher-power circuit on and off.', skills: ['Relay', 'Switching', 'Power'] },
+  { n: 17, kit: 'ps', title: 'DC Motors', module: 3, emoji: '🌀', pages: 5, difficulty: 4, concept: 'A DC motor.', does: 'Driven through a transistor/driver, it spins — and PWM controls its speed.', skills: ['DC Motor', 'PWM', 'Drivers'] },
+  { n: 18, kit: 'ps', title: 'DC Motors Reversing', module: 3, emoji: '🔄', pages: 5, difficulty: 4, concept: 'A DC motor with an H-bridge.', does: 'The H-bridge lets the Arduino spin the motor both forwards and backwards.', skills: ['H-Bridge', 'Direction', 'Motors'] },
+  { n: 19, kit: 'ps', title: 'Stepper Motor', module: 3, emoji: '🎯', pages: 5, difficulty: 4, concept: 'A stepper motor.', does: 'It rotates in precise steps for accurate positioning.', skills: ['Stepper', 'Precision', 'Steps'] },
+  { n: 20, kit: 'ps', title: 'Automatic Light Tracking', module: 3, emoji: '🔭', pages: 3, difficulty: 4, concept: 'A light-following system.', does: 'LDRs plus a servo make the sensor turn toward the brightest light — like a solar tracker.', skills: ['LDR', 'Servo', 'Feedback'] },
+  { n: 21, kit: 'ps', title: 'Packing (Project)', module: 3, emoji: '📦', pages: 3, difficulty: 3, concept: 'A wrap-up build.', does: 'It combines parts you have learned into a finished, packaged project.', skills: ['Integration', 'Project', 'Assembly'] },
+  { n: 22, kit: 'ps', title: 'MPU6050 Motion Sensor', module: 3, emoji: '📲', pages: 6, difficulty: 4, concept: 'An accelerometer + gyroscope (MPU6050).', does: 'It measures tilt and motion in three axes over I2C — how phones sense orientation.', skills: ['MPU6050', 'I2C', 'Motion'] },
+  { n: 23, kit: 'ps', title: 'Stepper Motor & ULN2003', module: 3, emoji: '⚙️', pages: 5, difficulty: 4, concept: 'A 28BYJ-48 stepper with a ULN2003 driver.', does: 'The driver board lets the Arduino run the geared stepper smoothly and precisely.', skills: ['Stepper', 'ULN2003', 'Drivers'] },
+
+  // ── 37 Sensor Kit (29 lessons) ──
   { n: 1,  title: 'Temperature & Humidity Module (DHT11)', module: 1, emoji: '🌡️', pages: 3, difficulty: 3, concept: 'A DHT11 sensor.', does: 'It measures the temperature and humidity of the air and sends the readings to the Arduino.', skills: ['DHT11', 'Serial Monitor', 'Sensors'] },
   { n: 2,  title: 'Shock (Vibration) Switch', module: 1, emoji: '💥', pages: 2, difficulty: 3, concept: 'A vibration switch.', does: 'It closes briefly when shaken or knocked, so the Arduino can detect movement.', skills: ['Vibration', 'Digital Input'] },
   { n: 3,  title: 'Hall Magnetic Sensor', module: 1, emoji: '🧲', pages: 2, difficulty: 3, concept: 'A digital Hall sensor.', does: 'It detects the presence of a magnetic field and signals HIGH/LOW.', skills: ['Hall Effect', 'Magnets', 'Digital Input'] },
@@ -241,46 +274,53 @@ const CONFIGS: ArdConfig[] = [
 
 export const ARDUINO_LESSONS: LessonDetail[] = CONFIGS.map(makeArdLesson);
 
-const L = (n: number, title: string, difficulty: 3 | 4, skills: string[]) =>
-  ({ id: `ard-s${n}`, title, duration: '45 min', difficulty, skills: skills.slice(0, 2), order: n });
+// Map a config to a course lesson-listing entry with the correct id per kit.
+const entry = (c: ArdConfig) => ({
+  id: (c.kit ?? 's') === 'ps' ? `ard-ps${c.n}` : `ard-s${c.n}`,
+  title: c.title, duration: '45 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: c.n,
+});
+const pick = (kit: 'ps' | 's', module: 1 | 2 | 3) => CONFIGS.filter(c => (c.kit ?? 's') === kit && c.module === module).map(entry);
 
 export const ARDUINO_COURSE: Course = {
-  id: 'arduino-37sensor',
-  slug: '37-sensor-kit',
-  title: 'Arduino: 37 Sensor Kit',
+  id: 'arduino-electronics',
+  slug: 'electronics-and-coding',
+  title: 'Arduino: Electronics & Coding',
   programId: 'arduino',
   programSlug: 'arduino',
   ageGroup: '13-15',
   level: 'Intermediate',
   description:
-    'Hands-on electronics and coding with the Arduino Uno and the 37 Sensor Kit. Across 29 build-and-code lessons, students wire real modules — sensors, switches, LEDs, buzzers, motors, relays — to a breadboard and program them in the Arduino (C++) language.',
+    'Hands-on electronics and coding with the Arduino Uno. Start with the Power Supply Learning Kit (Blink, buttons, motors, LCD, sensors) to learn the foundations, then explore the 37 Sensor Kit — wiring real modules to a breadboard and programming them in the Arduino (C++) language across 52 build-and-code lessons.',
   objectives: [
     'Wire electronic modules to an Arduino on a breadboard',
     'Read and write Arduino (C++) sketches',
-    'Use digital and analog inputs and outputs',
-    'Read sensors via the Serial Monitor and react to them',
+    'Use digital and analog inputs and outputs, PWM, and the Serial Monitor',
+    'Drive LEDs, buzzers, servos, DC and stepper motors, and displays',
     'Combine modules into real mini-projects',
   ],
-  duration: '29 sessions × 45 minutes',
-  totalHours: 22,
-  lessonCount: 29,
+  duration: '52 sessions × 45 minutes',
+  totalHours: 40,
+  lessonCount: 52,
   prerequisites: ['Comfortable with computers; basic typing'],
-  skills: ['Electronics', 'Breadboarding', 'Arduino C++', 'Sensors', 'Digital & Analog I/O'],
+  skills: ['Electronics', 'Breadboarding', 'Arduino C++', 'Sensors & Motors', 'Digital & Analog I/O'],
   modules: [
-    {
-      id: 'ard-m1', title: 'Module 1: Outputs, Switches & Buzzers', order: 1,
-      description: 'First circuits: temperature, switches, IR, buzzer, laser, RGB, and more.',
-      lessons: CONFIGS.filter(c => c.module === 1).map(c => L(c.n, c.title, c.difficulty, c.skills)),
-    },
-    {
-      id: 'ard-m2', title: 'Module 2: Sensors & Detectors', order: 2,
+    { id: 'ard-pm1', title: 'Power Supply Kit — Basics', order: 1,
+      description: 'Blink, buttons, LEDs, buzzers, light, and colour — the Arduino foundations.',
+      lessons: pick('ps', 1) },
+    { id: 'ard-pm2', title: 'Power Supply Kit — Displays & Sensors', order: 2,
+      description: 'Servo, LCD, thermistor, voltmeter, ultrasonic, stopwatch, 7-segment, joystick.',
+      lessons: pick('ps', 2) },
+    { id: 'ard-pm3', title: 'Power Supply Kit — Motors & Motion', order: 3,
+      description: 'Relay, DC motors, H-bridge, steppers, light tracking, and the MPU6050.',
+      lessons: pick('ps', 3) },
+    { id: 'ard-sm1', title: '37 Sensor Kit — Outputs, Switches & Buzzers', order: 4,
+      description: 'Temperature, switches, IR, buzzer, laser, RGB, and more.',
+      lessons: pick('s', 1) },
+    { id: 'ard-sm2', title: '37 Sensor Kit — Sensors & Detectors', order: 5,
       description: 'Tilt, reed, knock, flame, touch, thermistor, and light sensors.',
-      lessons: CONFIGS.filter(c => c.module === 2).map(c => L(c.n, c.title, c.difficulty, c.skills)),
-    },
-    {
-      id: 'ard-m3', title: 'Module 3: Analog, Motion & Advanced Modules', order: 3,
+      lessons: pick('s', 2) },
+    { id: 'ard-sm3', title: '37 Sensor Kit — Analog, Motion & Advanced', order: 6,
       description: 'Voice, joystick, analog Hall, tracking, encoder, relay, and pulse.',
-      lessons: CONFIGS.filter(c => c.module === 3).map(c => L(c.n, c.title, c.difficulty, c.skills)),
-    },
+      lessons: pick('s', 3) },
   ],
 };
