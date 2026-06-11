@@ -122,6 +122,14 @@ export interface LessonDetail {
   sections: LessonSection[];
   resources: Resource[];
   assessmentChecklist: string[];
+  heroImage?: string;          // illustrative image shown in the lesson header
+}
+
+export interface LessonImage {
+  src: string;
+  caption?: string;
+  /** 'block' = coding block / screenshot (white bg, contained); 'photo' = full-bleed image. */
+  kind?: 'block' | 'photo';
 }
 
 export interface Material {
@@ -150,6 +158,7 @@ export interface LessonSection {
   isCoachOnly?: boolean;
   studentTitle?: string;       // alternate title shown in student mode
   studentContent?: string | string[];
+  images?: LessonImage[];      // figures shown inside the section
 }
 
 export interface StepItem {

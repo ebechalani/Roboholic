@@ -87,6 +87,7 @@ export const MBOT2_LESSON_1: LessonDetail = {
   level: 'Intermediate',
   duration: '45 minutes',
   difficulty: 2,
+  heroImage: '/lessons/mbot2-l1/cyberpi-device.png',
   skills: ['Sound Sensor', 'Data & Variables', 'Conditionals', 'LEDs & Screen', 'IoT Thinking'],
   materials: [
     { item: 'Laptop/desktop with mBlock installed', quantity: '1 per student or pair' },
@@ -196,6 +197,10 @@ export const MBOT2_LESSON_1: LessonDetail = {
         '3️⃣ On alert: 🔴 LEDs blink red + screen says "Please be quiet"',
         '4️⃣ When quiet again: LEDs off, message gone',
         '✅ Put it all together — your detector now reacts live!',
+      ],
+      images: [
+        { src: '/lessons/mbot2-l1/program-full.png', kind: 'block', caption: 'The complete Noise Detector program in mBlock — build it stage by stage.' },
+        { src: '/lessons/mbot2-l1/block-led-display.png', kind: 'block', caption: 'The "LED displays colour" block — pick the alert colour (red).' },
       ],
     },
     {

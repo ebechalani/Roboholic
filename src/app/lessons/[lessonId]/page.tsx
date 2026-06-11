@@ -9,7 +9,7 @@ import {
   Video, Code, ExternalLink, Image as ImageIcon, List,
 } from 'lucide-react';
 import { ALL_LESSONS } from '@/lib/curricula';
-import type { LessonDetail, LessonSection, LessonSectionType, StepItem, TroubleshootItem } from '@/types';
+import type { LessonDetail, LessonSection, LessonSectionType, StepItem, TroubleshootItem, LessonImage } from '@/types';
 
 // ─── Section config ───────────────────────────────────────────────
 const SECTION_CONFIG: Record<LessonSectionType, { label: string; emoji: string; bgColor: string; borderColor: string; coachOnly?: boolean }> = {
@@ -86,10 +86,34 @@ function LessonSectionBlock({
 
       {/* Content */}
       {!collapsed && (
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 space-y-5">
           <ContentRenderer content={content} type={section.type} />
+          {section.images && section.images.length > 0 && <LessonFigures images={section.images} />}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Image figures (coding blocks, device photos, diagrams) ───────
+function LessonFigures({ images }: { images: LessonImage[] }) {
+  const single = images.length === 1;
+  return (
+    <div className={`grid gap-4 ${single ? 'grid-cols-1 max-w-md mx-auto' : 'grid-cols-1 sm:grid-cols-2'}`}>
+      {images.map((img, i) => (
+        <figure key={i} className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+          <div className="flex items-center justify-center p-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={img.src} alt={img.caption || 'Lesson figure'} loading="lazy"
+              className="max-h-80 w-auto object-contain" />
+          </div>
+          {img.caption && (
+            <figcaption className="text-xs text-gray-500 px-3 py-2 border-t border-gray-100 bg-gray-50 text-center">
+              {img.caption}
+            </figcaption>
+          )}
+        </figure>
+      ))}
     </div>
   );
 }
@@ -142,6 +166,12 @@ function ContentRenderer({ content, type }: { content: LessonSection['content'];
                 <div className="mt-2 flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
                   <span className="text-sm">📝</span>
                   <p className="text-xs text-blue-800"><strong>Note:</strong> {item.coachNote}</p>
+                </div>
+              )}
+              {item.image && (
+                <div className="mt-3 rounded-xl border border-gray-200 bg-white p-3 inline-block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.image} alt={`Step ${item.step} figure`} loading="lazy" className="max-h-72 w-auto object-contain" />
                 </div>
               )}
             </div>
@@ -404,6 +434,14 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
                   {lesson.title}
                   {studentMode && <span className="ml-2">🚀</span>}
                 </h1>
+
+                {/* Hero image */}
+                {lesson.heroImage && (
+                  <div className="mb-4 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center p-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={lesson.heroImage} alt={lesson.title} className="max-h-44 w-auto object-contain" />
+                  </div>
+                )}
 
                 {/* Meta info */}
                 <div className="grid grid-cols-2 gap-3">
