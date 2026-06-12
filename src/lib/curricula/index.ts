@@ -13,6 +13,7 @@ import { EV3_COURSE, EV3_LESSONS } from './ev3';
 import { ARDUINO_COURSE, ARDUINO_LESSONS } from './arduino';
 import { CYBERPI_LESSONS } from './cyberpi-basics';
 import { TINKERCAD_COURSE, TINKERCAD_LESSONS } from './tinkercad';
+import { MICROBIT_COURSE, MICROBIT_LESSONS } from './microbit';
 import {
   MBOT2_COURSE,
   MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4,
@@ -32,6 +33,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(ARDUINO_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(CYBERPI_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(TINKERCAD_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(MICROBIT_LESSONS.map(l => [l.id, l])),
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
   [MBOT2_LESSON_3.id]: MBOT2_LESSON_3,
@@ -58,10 +60,11 @@ export const COURSES_BY_PROGRAM: Record<string, Course> = {
   [EV3_COURSE.programSlug]: EV3_COURSE,
   [ARDUINO_COURSE.programSlug]: ARDUINO_COURSE,
   [TINKERCAD_COURSE.programSlug]: TINKERCAD_COURSE,
+  [MICROBIT_COURSE.programSlug]: MICROBIT_COURSE,
 };
 
 /** All courses as a list (for the lesson library, etc.). */
-export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE, ARDUINO_COURSE, TINKERCAD_COURSE];
+export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE, ARDUINO_COURSE, TINKERCAD_COURSE, MICROBIT_COURSE];
 
 export function getLessonById(id: string): LessonDetail | undefined {
   return ALL_LESSONS[id];
