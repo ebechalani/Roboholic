@@ -259,5 +259,7 @@ export const DRIVE_LINKS: Record<string, string> = {
   "mb-l5-r1": "https://drive.google.com/file/d/1alx7ddlG45aqI7shEZKwiya3BAvjqPRF/view?usp=sharing",
   "mb-l5-r2": "https://drive.google.com/file/d/1Gwm8xe8PghDs6N4IYlrf9JxhIEKDkFMd/view?usp=sharing",
   "mb-l6-r1": "https://drive.google.com/file/d/1JxujAvMsq-eoKQcBQP5n3JvoqGy7hB22/view?usp=sharing",
-  "mb-l6-r2": "https://drive.google.com/file/d/1R8yGaiy2sdHTcPy95zizvTGUqSU9KPvN/view?usp=sharing"
+  "mb-l6-r2": "https://drive.google.com/file/d/1R8yGaiy2sdHTcPy95zizvTGUqSU9KPvN/view?usp=sharing",
+  "mtiny-l1-r1": "https://drive.google.com/file/d/16QOiOIqsx-doQXA7LlTO10kTnT00gE5N/view?usp=sharing",
+  "mtiny-l1-r2": "https://drive.google.com/file/d/1BreW8U9Cmi0s1Fmy2gLuX5eVetgpZ-dR/view?usp=sharing"
 };
