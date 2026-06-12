@@ -14,6 +14,7 @@ import { ARDUINO_COURSE, ARDUINO_LESSONS } from './arduino';
 import { CYBERPI_LESSONS } from './cyberpi-basics';
 import { TINKERCAD_COURSE, TINKERCAD_LESSONS } from './tinkercad';
 import { MICROBIT_COURSE, MICROBIT_LESSONS } from './microbit';
+import { MICROBIT_UNIT_LESSONS } from './microbit-units';
 import { MTINY_COURSE, MTINY_LESSON } from './mtiny';
 import {
   MBOT2_COURSE,
@@ -35,6 +36,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(CYBERPI_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(TINKERCAD_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(MICROBIT_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(MICROBIT_UNIT_LESSONS.map(l => [l.id, l])),
   [MTINY_LESSON.id]: MTINY_LESSON,
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,

@@ -1,4 +1,5 @@
 import type { Course, LessonDetail, LessonSection } from '@/types';
+import { MICROBIT_UNIT_MODULES, MICROBIT_UNIT_LESSON_COUNT, MICROBIT_COURSE_TITLE } from './microbit-units';
 
 // ════════════════════════════════════════════════════════════════
 //  micro:bit — "First Lessons with MakeCode" (BBC micro:bit Foundation)
@@ -205,29 +206,31 @@ export const MICROBIT_LESSONS: LessonDetail[] = CONFIGS.map(makeMbLesson);
 export const MICROBIT_COURSE: Course = {
   id: 'microbit-first',
   slug: 'first-lessons-makecode',
-  title: 'First Lessons with MakeCode',
+  title: MICROBIT_COURSE_TITLE,
   programId: 'microbit',
   programSlug: 'microbit',
   ageGroup: '8-9',
   level: 'Beginner',
   description:
-    'Code the BBC micro:bit for the first time with MakeCode blocks. Across six projects — a name badge, beating heart, emotion badge, step counter, nightlight, and rock-paper-scissors — students learn algorithms, loops, inputs, variables, sensors, and conditionals on a real pocket-sized computer.',
+    'Code the BBC micro:bit with MakeCode blocks — from your very first program to full cross-curricular projects. Start with six beginner projects (name badge, beating heart, step counter…), then go further with 19 official micro:bit Foundation "do your :bit" units covering computing fundamentals, data handling, sensors, electricity, music, cryptography, cyber security, and the UN Global Goals.',
   objectives: [
     'Code the micro:bit in the MakeCode block editor',
-    'Use the LED display, buttons, accelerometer, and light sensor',
-    'Use sequences, loops, variables, and conditionals',
+    'Use the LED display, buttons, accelerometer, light, temperature and radio',
+    'Use sequences, loops, variables, conditionals, and data',
+    'Apply coding to real-world, cross-curricular projects (the UN Global Goals)',
     'Test in the simulator and flash code to a real micro:bit',
   ],
-  duration: '6 sessions × 45–60 minutes',
-  totalHours: 6,
-  lessonCount: 6,
+  duration: `${6 + MICROBIT_UNIT_LESSON_COUNT} sessions × 45–60 minutes`,
+  totalHours: 6 + MICROBIT_UNIT_LESSON_COUNT,
+  lessonCount: 6 + MICROBIT_UNIT_LESSON_COUNT,
   prerequisites: [],
-  skills: ['MakeCode', 'Inputs & Outputs', 'Loops & Variables', 'Sensors', 'Conditionals'],
+  skills: ['MakeCode', 'Inputs & Outputs', 'Loops & Variables', 'Sensors', 'Conditionals', 'Data', 'Global Goals'],
   modules: [
     {
-      id: 'mb-m1', title: 'First Lessons with MakeCode & the micro:bit', order: 1,
+      id: 'mb-m1', title: '🚀 First Lessons with MakeCode & the micro:bit', order: 1,
       description: 'Six beginner projects from name badge to rock-paper-scissors.',
       lessons: CONFIGS.map(c => ({ id: `mb-l${c.n}`, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: c.n })),
     },
+    ...MICROBIT_UNIT_MODULES,
   ],
 };
