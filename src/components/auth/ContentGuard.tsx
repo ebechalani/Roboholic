@@ -15,11 +15,15 @@ import { useAuth } from '@/lib/auth/AuthProvider';
  * (login + coach approval + students only seeing assigned lessons).
  */
 export default function ContentGuard() {
-  const { profile, firebaseUser, configured } = useAuth();
+  const { profile, firebaseUser, configured, role } = useAuth();
   const label = profile?.email || firebaseUser?.email || profile?.full_name || 'RoboHolic user';
 
+  // Admins are always exempt; the academy director can also exempt specific
+  // trusted coaches (profile.watermarkExempt) from the admin panel.
+  const exempt = role === 'admin' || profile?.watermarkExempt === true;
+
   useEffect(() => {
-    if (!configured) return; // don't lock down in demo mode
+    if (!configured || exempt) return; // no lock-down in demo mode or for exempt users
     const block = (e: Event) => e.preventDefault();
     document.addEventListener('contextmenu', block);
     document.addEventListener('copy', block);
@@ -33,9 +37,9 @@ export default function ContentGuard() {
       document.removeEventListener('cut', block);
       document.body.style.userSelect = prev;
     };
-  }, [configured, label]);
+  }, [configured, exempt, label]);
 
-  if (!configured) return null;
+  if (!configured || exempt) return null;
 
   const stamp = `RoboHolic · ${label} · confidential`;
   return (

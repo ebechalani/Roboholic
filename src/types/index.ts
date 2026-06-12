@@ -32,6 +32,9 @@ export interface Profile {
   // Confidentiality / acceptable-use agreement:
   termsAcceptedAt?: string;
   termsVersion?: number;
+  // If true, this user is exempt from the lesson watermark / copy-lock.
+  // (Admins are always exempt.)
+  watermarkExempt?: boolean;
 }
 
 /** A coach's class (Firestore: classes/{id}). */

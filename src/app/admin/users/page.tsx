@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import {
   Loader2, CheckCircle, XCircle, Hourglass, GraduationCap, RefreshCw,
-  Users, Shield, Crown, ShieldOff,
+  Users, Shield, Crown, ShieldOff, Stamp,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -166,6 +166,18 @@ function AdminUsers() {
                         <button onClick={() => void patch(c.uid, { role: 'coach', status: 'approved' })} disabled={busy}
                           className="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold text-purple-700 bg-purple-50 border border-purple-100 disabled:opacity-50 hover:bg-purple-100">
                           <ShieldOff size={12} /> {busy ? '…' : 'Remove admin'}
+                        </button>
+                      )}
+
+                      {/* Watermark control — admins are always exempt, so only shown for coaches */}
+                      {!isAdminUser && (
+                        <button onClick={() => void patch(c.uid, { watermarkExempt: !c.watermarkExempt })} disabled={busy}
+                          title={c.watermarkExempt ? 'Watermark is OFF — click to turn on' : 'Watermark is ON — click to turn off'}
+                          className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold border disabled:opacity-50 ${
+                            c.watermarkExempt
+                              ? 'text-gray-500 bg-gray-50 border-gray-200 hover:bg-gray-100'
+                              : 'text-teal-700 bg-teal-50 border-teal-100 hover:bg-teal-100'}`}>
+                          <Stamp size={12} /> {busy ? '…' : c.watermarkExempt ? 'Watermark: Off' : 'Watermark: On'}
                         </button>
                       )}
                     </div>
