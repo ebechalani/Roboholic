@@ -1,11 +1,57 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Star, Trophy, Zap, ArrowRight, CheckCircle, Play, Upload, Lock } from 'lucide-react';
+import { Star, Trophy, Zap, ArrowRight, CheckCircle, Play, Upload, Lock, BookOpen, Loader2 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { STUDENT_DASHBOARD, BADGES } from '@/lib/data';
+import { getClass } from '@/lib/classes';
+import { ALL_LESSONS } from '@/lib/curricula';
+import type { LessonDetail } from '@/types';
+
+/** Lessons the coach assigned to this student's class. */
+function AssignedLessons({ classId }: { classId: string }) {
+  const [lessons, setLessons] = useState<LessonDetail[] | null>(null);
+
+  useEffect(() => {
+    let on = true;
+    getClass(classId)
+      .then(cls => { if (on) setLessons((cls?.lessonIds ?? []).map(id => ALL_LESSONS[id]).filter(Boolean)); })
+      .catch(() => { if (on) setLessons([]); });
+    return () => { on = false; };
+  }, [classId]);
+
+  if (lessons === null) {
+    return (
+      <div className="bg-white rounded-3xl p-6 shadow-sm border-2 border-orange-100 flex justify-center">
+        <Loader2 className="animate-spin text-orange-500" size={22} />
+      </div>
+    );
+  }
+  if (lessons.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-3xl p-6 shadow-sm border-2 border-orange-100">
+      <h2 className="font-black text-gray-900 text-lg mb-4 flex items-center gap-2">
+        <BookOpen className="text-orange-500" size={20} /> My Class Missions 🎒
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {lessons.map(l => (
+          <Link key={l.id} href={`/lessons/${l.id}`}
+            className="border-2 border-gray-100 rounded-2xl p-4 card-hover hover:border-orange-200 transition-all">
+            <div className="text-xs font-bold mb-1" style={{ color: l.programColor }}>{l.programTitle}</div>
+            <div className="font-bold text-gray-900 text-sm mb-2">{l.title}</div>
+            <span className="inline-flex items-center gap-1 text-orange-600 text-xs font-bold">
+              Start mission <Play size={11} fill="currentColor" />
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function MissionPoints({ points }: { points: number }) {
   return (
@@ -69,6 +115,9 @@ function StudentDashboard() {
         </header>
 
         <div className="p-8 space-y-8 max-w-6xl">
+
+          {/* Lessons assigned by the coach */}
+          {profile?.classId && <AssignedLessons classId={profile.classId} />}
 
           {/* Progress + Next Lesson */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

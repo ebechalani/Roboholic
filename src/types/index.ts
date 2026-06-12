@@ -11,16 +11,44 @@ export interface User {
   groupId?: string;
 }
 
+/** Account approval status. Coaches start 'pending' until the admin approves. */
+export type AccountStatus = 'pending' | 'approved' | 'rejected';
+
 /** Firestore profile document stored at users/{uid}. */
 export interface Profile {
   uid: string;
   full_name: string;
   email: string;
   role: UserRole;
+  status?: AccountStatus;     // missing on legacy accounts = approved
   avatar_url?: string;
   age_group?: AgeGroupId | null;
   is_active?: boolean;
   created_at?: string;
+  // Student accounts created by a coach:
+  classId?: string;
+  classCode?: string;
+  username?: string;
+}
+
+/** A coach's class (Firestore: classes/{id}). */
+export interface ClassDoc {
+  id: string;
+  name: string;
+  coachId: string;
+  coachName?: string;
+  code: string;               // e.g. "RH-K7M2P" — students use this to log in
+  lessonIds: string[];        // assigned lesson ids
+  createdAt: string;
+}
+
+/** A student roster entry (Firestore: classes/{id}/students/{uid}). */
+export interface ClassStudent {
+  uid: string;
+  displayName: string;
+  username: string;           // e.g. "sami42"
+  pin: string;                // 4-digit login PIN (classroom-grade security)
+  createdAt: string;
 }
 
 // ─── Curriculum taxonomy ─────────────────────────────────────────

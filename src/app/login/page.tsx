@@ -3,15 +3,21 @@
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, Loader2, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import {
+  Mail, Lock, Loader2, ArrowRight, AlertCircle, Eye, EyeOff,
+  GraduationCap, Star, Hash, User, KeyRound,
+} from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { friendlyAuthError } from '@/lib/auth/errors';
+import { studentEmail, studentPassword } from '@/lib/classes';
 
-function LoginForm() {
-  const { signIn, resetPassword, configured } = useAuth();
+type Tab = 'coach' | 'student';
+
+function CoachForm() {
+  const { signIn, resetPassword } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next') || '/dashboard/coach';
+  const next = params.get('next') || '/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,31 +52,20 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {!configured && (
-        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-800 text-xs">
-          <AlertCircle size={15} className="mt-0.5 shrink-0" />
-          <span>Demo mode — Firebase isn&apos;t configured yet. Add your keys to <code>.env.local</code> to enable real login.</span>
-        </div>
-      )}
-
       {error && (
         <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
           <AlertCircle size={15} className="mt-0.5 shrink-0" /> {error}
         </div>
       )}
-      {info && (
-        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm">{info}</div>
-      )}
+      {info && <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm">{info}</div>}
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
         <div className="relative">
           <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="email" required value={email} onChange={e => setEmail(e.target.value)}
+          <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-          />
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
         </div>
       </div>
 
@@ -83,11 +78,9 @@ function LoginForm() {
         </div>
         <div className="relative">
           <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type={showPw ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)}
+          <input type={showPw ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-          />
+            className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
           <button type="button" onClick={() => setShowPw(!showPw)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -95,18 +88,97 @@ function LoginForm() {
         </div>
       </div>
 
-      <button
-        type="submit" disabled={busy}
+      <button type="submit" disabled={busy}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 disabled:opacity-60"
-        style={{ background: 'linear-gradient(135deg, #0F2044, #2563EB)' }}
-      >
+        style={{ background: 'linear-gradient(135deg, #0F2044, #2563EB)' }}>
         {busy ? <Loader2 size={16} className="animate-spin" /> : <>Log In <ArrowRight size={15} /></>}
       </button>
+
+      <p className="text-center text-sm text-gray-500">
+        New coach?{' '}
+        <Link href="/register" className="text-blue-600 font-semibold hover:underline">Request an account</Link>
+      </p>
+    </form>
+  );
+}
+
+function StudentForm() {
+  const { signIn } = useAuth();
+  const router = useRouter();
+
+  const [code, setCode] = useState('');
+  const [username, setUsername] = useState('');
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(''); setBusy(true);
+    try {
+      await signIn(studentEmail(username.trim(), code), studentPassword(pin.trim(), code));
+      router.replace('/dashboard/student');
+    } catch {
+      setError('Hmm, that didn\'t work. Check your class code, username, and PIN with your coach!');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
+          <AlertCircle size={15} className="mt-0.5 shrink-0" /> {error}
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Class code 🏷️</label>
+        <div className="relative">
+          <Hash size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input required value={code} onChange={e => setCode(e.target.value.toUpperCase())}
+            placeholder="RH-K7M2P" autoCapitalize="characters" autoComplete="off"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm uppercase tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-orange-400/20 focus:border-orange-400" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Username 🤖</label>
+        <div className="relative">
+          <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input required value={username} onChange={e => setUsername(e.target.value.toLowerCase())}
+            placeholder="sami42" autoComplete="off"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-orange-400/20 focus:border-orange-400" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Secret PIN 🔑</label>
+        <div className="relative">
+          <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input required value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            placeholder="1234" inputMode="numeric" autoComplete="off"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm tracking-[0.5em] font-black focus:outline-none focus:ring-2 focus:ring-orange-400/20 focus:border-orange-400" />
+        </div>
+      </div>
+
+      <button type="submit" disabled={busy}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 disabled:opacity-60"
+        style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}>
+        {busy ? <Loader2 size={16} className="animate-spin" /> : <>Let&apos;s Go! 🚀</>}
+      </button>
+
+      <p className="text-center text-xs text-gray-400">
+        Your coach gives you your class code, username, and PIN.
+      </p>
     </form>
   );
 }
 
 export default function LoginPage() {
+  const [tab, setTab] = useState<Tab>('coach');
+
   return (
     <div className="min-h-screen flex">
       {/* Left — brand panel */}
@@ -138,16 +210,25 @@ export default function LoginPage() {
           </Link>
 
           <h2 className="text-2xl font-black text-gray-900 mb-1">Log In</h2>
-          <p className="text-gray-500 text-sm mb-8">Welcome back! Enter your details to continue.</p>
+          <p className="text-gray-500 text-sm mb-6">Welcome back! Choose how you log in.</p>
+
+          {/* Tabs */}
+          <div className="grid grid-cols-2 gap-2 mb-6">
+            <button type="button" onClick={() => setTab('coach')}
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                tab === 'coach' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
+              <GraduationCap size={16} /> Coach / Admin
+            </button>
+            <button type="button" onClick={() => setTab('student')}
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                tab === 'student' ? 'border-orange-400 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
+              <Star size={16} /> Student
+            </button>
+          </div>
 
           <Suspense fallback={<div className="text-gray-400 text-sm">Loading…</div>}>
-            <LoginForm />
+            {tab === 'coach' ? <CoachForm /> : <StudentForm />}
           </Suspense>
-
-          <p className="text-center text-sm text-gray-500 mt-8">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-blue-600 font-semibold hover:underline">Sign up</Link>
-          </p>
         </div>
       </div>
     </div>

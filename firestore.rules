@@ -14,13 +14,19 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
     function userRole() {
-      return isSignedIn()
-        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
-        : 'guest';
+      return isSignedIn() ? me().role : 'guest';
+    }
+    // Missing status = legacy account = approved.
+    function isApprovedAccount() {
+      return isSignedIn() && (!('status' in me()) || me().status == 'approved');
     }
     function isAdmin() { return userRole() == 'admin'; }
-    function isCoach() { return userRole() == 'coach' || isAdmin(); }
+    // Coaches only count once the admin has APPROVED them.
+    function isCoach() { return (userRole() == 'coach' && isApprovedAccount()) || isAdmin(); }
     function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
 
     // ── Reference / curriculum content (public read) ─────────
@@ -65,16 +71,41 @@ service cloud.firestore {
 
     // ── User profiles ────────────────────────────────────────
     match /users/{uid} {
-      allow read: if isOwner(uid) || isCoach();
-      // On self-sign-up a user may only create a student/coach profile —
-      // never an admin. Admins are elevated via the Admin SDK / console.
-      allow create: if isOwner(uid)
-                    && request.resource.data.role in ['student', 'coach'];
-      // A user can update their own profile but cannot change their own role;
-      // admins can change anything.
+      allow read: if isOwner(uid) || isAdmin();
+      // Self-sign-up rules:
+      //  • coaches create themselves as PENDING (admin must approve)
+      //  • student accounts are created (via the coach's flow) as approved students
+      //  • never an admin — admins are elevated via the console/Admin SDK
+      allow create: if isOwner(uid) && (
+                      (request.resource.data.role == 'coach' && request.resource.data.status == 'pending')
+                      || request.resource.data.role == 'student'
+                    );
+      // A user can update their own profile but can NOT change their own
+      // role or approval status; admins can change anything.
       allow update: if isAdmin()
-                    || (isOwner(uid) && request.resource.data.role == resource.data.role);
+                    || (isOwner(uid)
+                        && request.resource.data.role == resource.data.role
+                        && request.resource.data.get('status', 'approved') == resource.data.get('status', 'approved'));
       allow delete: if isAdmin();
+    }
+
+    // ── Coach classes ────────────────────────────────────────
+    match /classes/{classId} {
+      // Any signed-in user can read a class (students need their
+      // class's assigned-lesson list; the doc holds nothing sensitive).
+      allow read: if isSignedIn();
+      allow create: if isCoach() && request.resource.data.coachId == request.auth.uid;
+      allow update, delete: if isAdmin()
+                    || (isCoach() && resource.data.coachId == request.auth.uid);
+
+      // Roster (incl. student PINs): coach of this class + admin only;
+      // a student may read their own entry.
+      match /students/{sid} {
+        allow read: if isAdmin() || isOwner(sid)
+                    || (isSignedIn() && get(/databases/$(database)/documents/classes/$(classId)).data.coachId == request.auth.uid);
+        allow write: if isAdmin()
+                    || (isCoach() && get(/databases/$(database)/documents/classes/$(classId)).data.coachId == request.auth.uid);
+      }
     }
 
     // ── Class groups ─────────────────────────────────────────

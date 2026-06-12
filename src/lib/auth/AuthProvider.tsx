@@ -12,14 +12,17 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase/client';
-import type { Profile, UserRole, AgeGroupId } from '@/types';
+import type { Profile, UserRole, AgeGroupId, AccountStatus } from '@/types';
 
 interface AuthContextValue {
   firebaseUser: FirebaseUser | null;
   profile: Profile | null;
   role: UserRole | null;
+  /** 'approved' for legacy accounts with no status field. */
+  status: AccountStatus | null;
   loading: boolean;
   configured: boolean;
+  refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (args: {
     email: string;
@@ -80,11 +83,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async ({ email, password, fullName, role, ageGroup }) => {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateAuthProfile(cred.user, { displayName: fullName });
+      const safeRole = role === 'admin' ? 'coach' : role;
       const newProfile: Omit<Profile, 'uid'> = {
         full_name: fullName,
         email,
-        // Public sign-up may only create student or coach accounts.
-        role: role === 'admin' ? 'student' : role,
+        // Public sign-up creates coaches, and they must be APPROVED by the
+        // admin before they can access anything.
+        role: safeRole,
+        status: safeRole === 'coach' ? 'pending' : 'approved',
         age_group: ageGroup ?? null,
         is_active: true,
         created_at: new Date().toISOString(),
@@ -94,6 +100,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     []
   );
+
+  const refreshProfile = useCallback(async () => {
+    const user = auth?.currentUser;
+    if (!user) return;
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) setProfile({ uid: user.uid, ...(snap.data() as Omit<Profile, 'uid'>) });
+  }, []);
 
   const signOutUser = useCallback(async () => {
     await signOut(auth);
@@ -107,8 +120,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     firebaseUser,
     profile,
     role: profile?.role ?? null,
+    // Legacy profiles without a status field count as approved.
+    status: profile ? (profile.status ?? 'approved') : null,
     loading,
     configured: isFirebaseConfigured,
+    refreshProfile,
     signIn,
     signUp,
     signOutUser,

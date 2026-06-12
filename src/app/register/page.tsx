@@ -1,37 +1,50 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, Loader2, ArrowRight, AlertCircle, GraduationCap, Star } from 'lucide-react';
+import {
+  Mail, Lock, User, Loader2, ArrowRight, AlertCircle,
+  GraduationCap, Hourglass, Star,
+} from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { friendlyAuthError } from '@/lib/auth/errors';
-import { AGE_GROUPS } from '@/lib/data';
-import type { UserRole, AgeGroupId } from '@/types';
 
 function RegisterForm() {
   const { signUp, configured } = useAuth();
-  const router = useRouter();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('student');
-  const [ageGroup, setAgeGroup] = useState<AgeGroupId>('8-9');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(''); setBusy(true);
     try {
-      await signUp({ email, password, fullName, role, ageGroup: role === 'student' ? ageGroup : undefined });
-      router.replace(role === 'student' ? '/dashboard/student' : '/dashboard/coach');
+      await signUp({ email, password, fullName, role: 'coach' });
+      setDone(true);
     } catch (err) {
       setError(friendlyAuthError(err));
     } finally {
       setBusy(false);
     }
+  }
+
+  if (done) {
+    return (
+      <div className="text-center bg-amber-50 border border-amber-200 rounded-2xl p-8">
+        <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4">
+          <Hourglass size={26} />
+        </div>
+        <h3 className="font-black text-gray-900 text-lg mb-2">Request sent! ⏳</h3>
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Your coach account was created and is now <b>awaiting approval</b> by the academy
+          director. Once approved, just log in with your email and password.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -48,23 +61,9 @@ function RegisterForm() {
         </div>
       )}
 
-      {/* Role selector */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">I am a…</label>
-        <div className="grid grid-cols-2 gap-3">
-          <button type="button" onClick={() => setRole('student')}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all ${
-              role === 'student' ? 'border-orange-400 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-            }`}>
-            <Star size={16} /> Student
-          </button>
-          <button type="button" onClick={() => setRole('coach')}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all ${
-              role === 'coach' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-            }`}>
-            <GraduationCap size={16} /> Coach
-          </button>
-        </div>
+      <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-blue-900 text-xs">
+        <GraduationCap size={15} className="mt-0.5 shrink-0" />
+        <span>This form is for <b>coaches</b>. New coach accounts must be approved by the academy director before access.</span>
       </div>
 
       <div>
@@ -76,16 +75,6 @@ function RegisterForm() {
             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
         </div>
       </div>
-
-      {role === 'student' && (
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Age group</label>
-          <select value={ageGroup} onChange={e => setAgeGroup(e.target.value as AgeGroupId)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-            {AGE_GROUPS.map(ag => <option key={ag.id} value={ag.id}>{ag.emoji} {ag.label}</option>)}
-          </select>
-        </div>
-      )}
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
@@ -109,13 +98,14 @@ function RegisterForm() {
 
       <button type="submit" disabled={busy}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 disabled:opacity-60"
-        style={{ background: role === 'student' ? 'linear-gradient(135deg, #F97316, #DC2626)' : 'linear-gradient(135deg, #0F2044, #2563EB)' }}>
-        {busy ? <Loader2 size={16} className="animate-spin" /> : <>Create Account <ArrowRight size={15} /></>}
+        style={{ background: 'linear-gradient(135deg, #0F2044, #2563EB)' }}>
+        {busy ? <Loader2 size={16} className="animate-spin" /> : <>Request Coach Account <ArrowRight size={15} /></>}
       </button>
 
-      <p className="text-xs text-gray-400 text-center">
-        Admin accounts are created by your academy director, not here.
-      </p>
+      <div className="flex items-start gap-2 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 text-orange-800 text-xs">
+        <Star size={15} className="mt-0.5 shrink-0" />
+        <span><b>Students don&apos;t sign up here.</b> Your coach creates your account and gives you a class code, username, and PIN.</span>
+      </div>
     </form>
   );
 }
@@ -133,10 +123,11 @@ export default function RegisterPage() {
           </div>
         </Link>
         <h1 className="text-4xl font-black text-white leading-tight mb-4">
-          Start your robotics<br />adventure! 🚀
+          Join the coaching<br />team! 🎓
         </h1>
         <p className="text-white/70 text-lg max-w-md">
-          Create your account to unlock missions, earn badges, and build incredible projects.
+          Request your coach account — once the director approves you, the full curriculum,
+          class tools, and student management are yours.
         </p>
         <div className="flex gap-3 text-3xl mt-10">🤖 🎮 🧠 🏅</div>
       </div>
@@ -149,15 +140,13 @@ export default function RegisterPage() {
             <span className="font-black text-gray-900">RoboHolic</span>
           </Link>
 
-          <h2 className="text-2xl font-black text-gray-900 mb-1">Create Account</h2>
-          <p className="text-gray-500 text-sm mb-8">Join RoboHolic and start building!</p>
+          <h2 className="text-2xl font-black text-gray-900 mb-1">Coach Sign-Up</h2>
+          <p className="text-gray-500 text-sm mb-8">Request access to the RoboHolic curriculum platform.</p>
 
-          <Suspense fallback={<div className="text-gray-400 text-sm">Loading…</div>}>
-            <RegisterForm />
-          </Suspense>
+          <RegisterForm />
 
           <p className="text-center text-sm text-gray-500 mt-8">
-            Already have an account?{' '}
+            Already approved?{' '}
             <Link href="/login" className="text-blue-600 font-semibold hover:underline">Log in</Link>
           </p>
         </div>
