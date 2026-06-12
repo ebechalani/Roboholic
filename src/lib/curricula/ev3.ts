@@ -197,6 +197,7 @@ const L2C = 'Level II · Logic, Variables & Parallelism';
 const L3A = 'Level III · Proportional Control';
 const L3B = 'Level III · Gyro & Alignment';
 const L3C = 'Level III · Data & Systems';
+const L4 = 'Level IV · Beyond the Brick (Bonus)';
 
 const CONFIGS: Ev3Config[] = [
   {
@@ -563,6 +564,40 @@ const CONFIGS: Ev3Config[] = [
     challengeSteps: ['In a loop, read the sensor and store each value (array) with a timer.', 'Drive the route while logging.', 'Display or export the values.', 'Discuss what the data shows.'],
     skills: ['Data Logging', 'Arrays', 'Analysis'],
   },
+
+  // ─── LEVEL IV · Beyond the Brick (bonus / enrichment) ────────────
+  {
+    id: 'ev3-iv1', slug: 'ev3-iv1', title: 'PixyCam for MINDSTORMS: Colour Codes', order: 47, moduleId: 'ev3-m10', moduleTitle: L4, emoji: '📷', pages: 11, difficulty: 4,
+    concept: 'machine vision with the PixyCam', conceptExplain: 'The PixyCam is a vision sensor you can connect to the EV3. You train it on colour "signatures", and a Colour Code is two or more signatures side-by-side treated as one object — giving far more reliable detection and an angle estimate. (Bonus enrichment lesson — needs a PixyCam.)',
+    objectives: ['Understand signatures and colour codes.', 'Train the PixyCam and detect a colour-coded object from the EV3.'],
+    challenge: 'Train a two-colour Colour Code and have the EV3 react when the PixyCam sees it.',
+    challengeSteps: ['Connect the PixyCam and open PixyMon.', 'Train two adjacent colour signatures as a Colour Code.', 'Read the detection from the EV3 (block/sensor).', 'React — e.g. drive toward it or stop.'],
+    skills: ['Machine Vision', 'PixyCam', 'Colour Codes'],
+  },
+  {
+    id: 'ev3-iv2', slug: 'ev3-iv2', title: 'MINDSTORMS + Raspberry Pi: IR Light Controller', order: 48, moduleId: 'ev3-m10', moduleTitle: L4, emoji: '🍓', pages: 12, difficulty: 4,
+    concept: 'EV3 ↔ Raspberry Pi communication', conceptExplain: 'A more advanced project: the EV3 talks to a Raspberry Pi (via Bluetooth messaging), and the Pi — programmed in Python and using its GPIO — drives a string of LEDs through an IR signal. It bridges robotics with single-board-computer programming. (Bonus — needs a Raspberry Pi and Python knowledge.)',
+    objectives: ['Make the EV3 communicate with a Raspberry Pi.', 'Use an IR sensor/LED to emulate remote signals from the Pi.'],
+    challenge: 'Send a message from the EV3 to the Pi (Bluetooth) and have the Pi switch the lights via IR.',
+    challengeSteps: ['Set up Bluetooth messaging between EV3 and Pi.', 'On the Pi (Python), receive the message.', 'Drive the IR LED from the Pi GPIO to send the "on/off" code.', 'Test the lights respond to EV3 commands.'],
+    skills: ['Raspberry Pi', 'Python', 'IR', 'Bluetooth Messaging'],
+  },
+  {
+    id: 'ev3-iv3', slug: 'ev3-iv3', title: 'Introduction to ev3dev (Linux on the EV3)', order: 49, moduleId: 'ev3-m10', moduleTitle: L4, emoji: '🐧', pages: 12, difficulty: 4,
+    concept: 'ev3dev — Linux on the brick', conceptExplain: 'ev3dev is a Debian-Linux operating system that runs on the EV3 brick from a microSD card (so it doesn\'t change your standard firmware). It lets you program the EV3 in Python and other real languages, and connect over the network with SSH. (Bonus — bridges to text-based programming.)',
+    objectives: ['Install ev3dev on a microSD card and boot the EV3 from it.', 'Set up networking and connect to the EV3 over SSH.'],
+    challenge: 'Boot ev3dev, connect over SSH, and run a first command on the brick.',
+    challengeSteps: ['Flash the ev3dev image to a 2–32 GB microSD card.', 'Insert it and boot the EV3 from the card.', 'Set up Wi-Fi/USB networking.', 'SSH into the brick and run a test command.'],
+    skills: ['ev3dev', 'Linux', 'SSH', 'Python'],
+  },
+  {
+    id: 'ev3-iv4', slug: 'ev3-iv4', title: 'Using NXT Light Sensors on the EV3', order: 50, moduleId: 'ev3-m10', moduleTitle: L4, emoji: '🔦', pages: 9, difficulty: 4,
+    concept: 'reusing legacy NXT light sensors', conceptExplain: 'If you still have the older NXT light sensors, you can use them on the EV3 — but they must be calibrated, and the calibration values are stored using Files. A nice way to reuse older kit. (Bonus — needs NXT light sensors and the Files concept.)',
+    objectives: ['Connect and read an NXT light sensor on the EV3.', 'Calibrate it and store the values using Files.'],
+    challenge: 'Calibrate an NXT light sensor on the EV3 and use the saved values to follow a line.',
+    challengeSteps: ['Plug in the NXT light sensor and read its raw value.', 'Calibrate against light/dark; save min/max to a File.', 'Read the File back to scale future readings.', 'Use the scaled value to follow a line.'],
+    skills: ['NXT Sensors', 'Calibration', 'Files'],
+  },
 ];
 
 export const EV3_LESSONS: LessonDetail[] = CONFIGS.map(makeEv3Lesson);
@@ -573,7 +608,7 @@ const L = (id: string, title: string, order: number, difficulty: 2 | 3 | 4, skil
 export const EV3_COURSE: Course = {
   id: 'ev3-beginner',
   slug: 'beginner-programming',
-  title: 'EV3 Robotics Programming (Levels I–III)',
+  title: 'EV3 Robotics Programming (Levels I–IV)',
   programId: 'ev3',
   programSlug: 'ev3',
   ageGroup: '10-12',
@@ -587,10 +622,11 @@ export const EV3_COURSE: Course = {
     'Use touch, colour, ultrasonic, IR, and gyro sensors — and calibrate them',
     'Use variables, logic, parallel beams, and reliability techniques',
     'Apply proportional control, ramping, squaring, stall detection, arrays, menus, and data logging',
+    'Bonus: extend the EV3 with machine vision, a Raspberry Pi, ev3dev/Python, and legacy sensors',
   ],
-  duration: '45 sessions × 45–60 minutes',
-  totalHours: 41,
-  lessonCount: 45,
+  duration: '50 sessions × 45–60 minutes',
+  totalHours: 45,
+  lessonCount: 50,
   prerequisites: [],
   skills: ['EV3 Software', 'My Blocks', 'Sensors', 'Data Wires', 'Proportional Control', 'Gyro', 'Variables & Logic', 'FLL'],
   modules: [
@@ -691,6 +727,16 @@ export const EV3_COURSE: Course = {
         L('ev3-iii2', 'Arrays', 44, 4, ['Arrays']),
         L('ev3-iii13', 'Menu System', 45, 4, ['Menu']),
         L('ev3-iii14', 'Data Logging', 46, 4, ['Data Logging']),
+      ],
+    },
+    {
+      id: 'ev3-m10', title: L4, order: 10,
+      description: 'Enrichment projects that connect the EV3 to vision, single-board computers, Linux, and legacy sensors. (Optional — extra hardware required.)',
+      lessons: [
+        L('ev3-iv1', 'PixyCam for MINDSTORMS: Colour Codes', 47, 4, ['Machine Vision']),
+        L('ev3-iv2', 'MINDSTORMS + Raspberry Pi: IR Light Controller', 48, 4, ['Raspberry Pi']),
+        L('ev3-iv3', 'Introduction to ev3dev (Linux on the EV3)', 49, 4, ['ev3dev', 'Python']),
+        L('ev3-iv4', 'Using NXT Light Sensors on the EV3', 50, 4, ['NXT Sensors']),
       ],
     },
   ],
