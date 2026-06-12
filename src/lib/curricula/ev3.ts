@@ -160,7 +160,7 @@ function makeEv3Lesson(c: Ev3Config): LessonDetail {
     programTitle: 'EV3',
     programColor: '#EF4444',
     courseId: 'ev3-beginner',
-    courseTitle: 'EV3 Beginner Programming (Level I)',
+    courseTitle: 'EV3 Robotics Programming',
     moduleId: c.moduleId,
     moduleTitle: c.moduleTitle,
     ageGroup: '10-12',
@@ -191,6 +191,9 @@ function makeEv3Lesson(c: Ev3Config): LessonDetail {
 const M1 = 'Module 1: Robot Basics';
 const M2 = 'Module 2: Programming Foundations';
 const M3 = 'Module 3: Sensors & Challenges';
+const L2A = 'Level II · My Blocks & Reusable Code';
+const L2B = 'Level II · Sensors & Reliability';
+const L2C = 'Level II · Logic, Variables & Parallelism';
 
 const CONFIGS: Ev3Config[] = [
   {
@@ -321,6 +324,128 @@ const CONFIGS: Ev3Config[] = [
     challengeSteps: ['Plan the whole run as pseudocode first.', 'Maze 1: drive and turn through the passage to the END.', 'Maze 2: use 2–3 sensors (touch a wall, avoid one, follow to the end).', 'Stop on the line: loop + colour sensor, counting lines, stop on the 3rd.'],
     skills: ['Integration', 'Sensors', 'Loops & Switches', 'Problem Solving'],
   },
+
+  // ─── LEVEL II (Intermediate) ─────────────────────────────────────
+  {
+    id: 'ev3-ii3', slug: 'ev3-ii3', title: 'Data Wires', order: 18, moduleId: 'ev3-m4', moduleTitle: L2A, emoji: '🔌', pages: 12, difficulty: 3,
+    concept: 'data wires', conceptExplain: 'A data wire carries a value (a sensor reading, a number) out of one block and into another block\'s input — so blocks can share data instead of using fixed numbers.',
+    objectives: ['Understand what a data wire is.', 'Pass a sensor value to another block with a wire.', 'Display a live sensor reading.'],
+    challenge: 'Wire the ultrasonic sensor\'s distance into a Display block so the screen shows the live distance.',
+    challengeSteps: ['Add the ultrasonic Sensor block in measure mode.', 'Drag a data wire from its output to a Display (text) block input.', 'Wrap it in a loop so it updates continuously.', 'Drive toward a wall and watch the number change.'],
+    skills: ['Data Wires', 'Sensors', 'Display'],
+  },
+  {
+    id: 'ev3-ii4', slug: 'ev3-ii4', title: 'My Blocks with Inputs & Outputs', order: 19, moduleId: 'ev3-m4', moduleTitle: L2A, emoji: '🧩', pages: 12, difficulty: 3,
+    concept: 'My Blocks (custom blocks) with parameters', conceptExplain: 'A My Block bundles several blocks into one reusable block. Adding inputs/outputs (parameters) lets you reuse it with different values — like writing your own function.',
+    objectives: ['Create a My Block.', 'Add inputs and outputs (parameters).', 'Reuse the block with different values.'],
+    challenge: 'Build a My Block that takes an input value and uses it (e.g. a beep-N-times block).',
+    challengeSteps: ['Select the blocks to bundle → Tools → My Block Builder.', 'Add a parameter (input) to the block.', 'Use the parameter inside the block.', 'Call the My Block with different inputs to test.'],
+    skills: ['My Blocks', 'Parameters', 'Reuse'],
+  },
+  {
+    id: 'ev3-ii5', slug: 'ev3-ii5', title: 'Moving with My Blocks', order: 20, moduleId: 'ev3-m4', moduleTitle: L2A, emoji: '📏', pages: 12, difficulty: 3,
+    concept: 'a Move-Distance My Block', conceptExplain: 'Wrap the maths of "drive X cm" into a My Block with a distance input, so you can drive exact distances all program long without redoing the wheel-rotation calculation.',
+    objectives: ['Convert cm to motor degrees/rotations.', 'Build a MoveCM My Block with a distance input.'],
+    challenge: 'Make a MoveCM(distance) block and use it to drive an exact 30 cm.',
+    challengeSteps: ['Work out rotations per cm for your wheel.', 'Build a My Block with a "cm" input that drives that far.', 'Call MoveCM(30) and measure with a ruler.', 'Tune until accurate.'],
+    skills: ['My Blocks', 'Distance', 'Maths'],
+  },
+  {
+    id: 'ev3-ii6', slug: 'ev3-ii6', title: 'Turning with My Blocks', order: 21, moduleId: 'ev3-m4', moduleTitle: L2A, emoji: '🔄', pages: 12, difficulty: 3,
+    concept: 'a Turn-Degrees My Block', conceptExplain: 'Wrap turning into a My Block with a "degrees" input so the robot turns a real number of degrees (using Port View / measured values) every time.',
+    objectives: ['Build a Turn My Block with a degrees input.', 'Make turns accurate and reusable.'],
+    challenge: 'Make a Turn(degrees) block and drive a square using it.',
+    challengeSteps: ['Measure the motor degrees for a real 90° turn.', 'Build a My Block with a "degrees" input.', 'Call Turn(90) four times (in a loop) to trace a square.', 'Adjust for accuracy.'],
+    skills: ['My Blocks', 'Turning', 'Accuracy'],
+  },
+  {
+    id: 'ev3-ii7', slug: 'ev3-ii7', title: 'Colour Line Follower with My Blocks', order: 22, moduleId: 'ev3-m4', moduleTitle: L2A, emoji: '🛤️', pages: 12, difficulty: 4,
+    concept: 'a reusable line-follower My Block', conceptExplain: 'Package the line-following loop into a My Block (e.g. with a distance/duration input) so you can drop "follow the line" into any program.',
+    objectives: ['Wrap line following in a My Block.', 'Follow a line for a set distance.'],
+    challenge: 'Build a LineFollow(distance) My Block that follows the line a set distance, then stops.',
+    challengeSteps: ['Build the basic edge line-follower (switch on colour).', 'Wrap it in a My Block with a distance input.', 'Use a data wire to stop after the distance.', 'Call it to follow then continue the program.'],
+    skills: ['My Blocks', 'Line Following', 'Data Wires'],
+  },
+  {
+    id: 'ev3-ii10', slug: 'ev3-ii10', title: 'Move Blocks (Tank vs Steering)', order: 23, moduleId: 'ev3-m4', moduleTitle: L2A, emoji: '🚜', pages: 12, difficulty: 3,
+    concept: 'the different Move blocks', conceptExplain: 'Move Steering and Move Tank both drive two synced motors but set them differently (one steering value vs. two power values). Knowing both gives finer control.',
+    objectives: ['Use Move Tank and Move Steering.', 'Understand motor sync and when to use each.'],
+    challenge: 'Drive a curve with Move Tank (different power to each wheel), then the same path with Move Steering.',
+    challengeSteps: ['Use Move Tank with two power values to curve.', 'Recreate the curve with Move Steering.', 'Compare which is easier for the path.', 'Pick the right block for the job.'],
+    skills: ['Move Tank', 'Move Steering', 'Motor Sync'],
+  },
+  {
+    id: 'ev3-ii1', slug: 'ev3-ii1', title: 'Basic Ultrasonic Wall Follower', order: 24, moduleId: 'ev3-m5', moduleTitle: L2B, emoji: '🧱', pages: 7, difficulty: 3,
+    concept: 'wall following with the ultrasonic sensor', conceptExplain: 'By steering based on the ultrasonic distance to a wall, the robot keeps a set gap — turning toward the wall when too far and away when too close.',
+    objectives: ['Use the ultrasonic sensor to follow a wall.', 'Keep a set distance from the wall.'],
+    challenge: 'Make the robot drive alongside a wall, keeping about 15 cm away.',
+    challengeSteps: ['Loop: read the ultrasonic distance.', 'If too far from the wall → steer toward it; if too close → steer away.', 'Tune the target distance and steering amount.', 'Test along a straight wall, then a corner.'],
+    skills: ['Ultrasonic', 'Wall Following', 'Loops'],
+  },
+  {
+    id: 'ev3-ii2', slug: 'ev3-ii2', title: 'Brick Buttons as Sensors', order: 25, moduleId: 'ev3-m5', moduleTitle: L2B, emoji: '🎛️', pages: 8, difficulty: 3,
+    concept: 'the EV3 brick buttons as inputs', conceptExplain: 'The brick\'s buttons (up/down/left/right/centre) can be read like a sensor, so the robot can react to button presses — handy for menus and manual control.',
+    objectives: ['Read the brick buttons in a program.', 'React differently to different buttons.'],
+    challenge: 'Drive the robot with the brick buttons (up = forward, left/right = turn, centre = stop).',
+    challengeSteps: ['Use the Brick Buttons sensor block in a loop.', 'Switch on which button is pressed.', 'Map each button to a motor action.', 'Test driving it like a remote.'],
+    skills: ['Brick Buttons', 'Input', 'Switches'],
+  },
+  {
+    id: 'ev3-ii8', slug: 'ev3-ii8', title: 'Infrared Sensor & Beacon', order: 26, moduleId: 'ev3-m5', moduleTitle: L2B, emoji: '📶', pages: 12, difficulty: 3,
+    concept: 'the Infrared sensor and beacon', conceptExplain: 'The IR sensor measures proximity and can track the IR beacon\'s direction/distance — letting the robot detect obstacles or follow/seek the beacon (the Home-Edition equivalent of the ultrasonic).',
+    objectives: ['Use the IR sensor in proximity mode.', 'Track the IR beacon.'],
+    challenge: 'Make the robot stop when something is close (proximity), then follow the IR beacon.',
+    challengeSteps: ['Read the IR sensor in proximity mode; stop when close.', 'Switch to Beacon mode; read heading/proximity.', 'Steer toward the beacon\'s heading.', 'Test seeking the beacon around the room.'],
+    skills: ['Infrared', 'Beacon', 'Proximity'],
+  },
+  {
+    id: 'ev3-ii9', slug: 'ev3-ii9', title: 'Debugging Techniques', order: 27, moduleId: 'ev3-m5', moduleTitle: L2B, emoji: '🐞', pages: 12, difficulty: 3,
+    concept: 'systematic debugging', conceptExplain: 'Debugging is finding and fixing why a program misbehaves: read it top-to-bottom, use Port View and the Display to see values, isolate sections, and test one change at a time.',
+    objectives: ['Use a systematic approach to find bugs.', 'Use Port View / Display to inspect values.'],
+    challenge: 'Take a program that misbehaves and debug it: locate the fault, fix it, and verify.',
+    challengeSteps: ['Reproduce the problem and read the code as a sentence.', 'Display/Port-View the key sensor or variable values.', 'Isolate and test one section at a time.', 'Fix one thing, re-test, repeat.'],
+    skills: ['Debugging', 'Port View', 'Problem Solving'],
+  },
+  {
+    id: 'ev3-ii11', slug: 'ev3-ii11', title: 'Reliability Techniques', order: 28, moduleId: 'ev3-m5', moduleTitle: L2B, emoji: '🎯', pages: 12, difficulty: 3,
+    concept: 'making runs reliable', conceptExplain: 'Competition runs must work every time. Techniques: start square against a wall, reset gyro/encoders at the start, square on lines, and avoid relying on shaky guesses.',
+    objectives: ['Use squaring and resets for consistent starts.', 'Make a run repeatable.'],
+    challenge: 'Take a working run and make it reliable so it succeeds 5 times in a row.',
+    challengeSteps: ['Start square against a wall/jig for a consistent position.', 'Reset sensors/encoders at the start.', 'Square on a line mid-run to re-align.', 'Run it 5 times and fix what drifts.'],
+    skills: ['Reliability', 'Squaring', 'Resets', 'FLL'],
+  },
+  {
+    id: 'ev3-ii12', slug: 'ev3-ii12', title: 'Colour Sensor Calibration', order: 29, moduleId: 'ev3-m5', moduleTitle: L2B, emoji: '🎚️', pages: 7, difficulty: 3,
+    concept: 'calibrating the colour sensor', conceptExplain: 'Reflected-light readings differ with lighting and surface. Calibrating the sensor\'s min (black) and max (white) makes readings consistent (0–100) so line following works reliably anywhere.',
+    objectives: ['Calibrate the colour sensor\'s min and max.', 'Get consistent reflected-light readings.'],
+    challenge: 'Calibrate the colour sensor on your mat, then run a line follower that works under different lighting.',
+    challengeSteps: ['Use the calibration blocks: set min on black, max on white.', 'Check readings now span ~0–100.', 'Run your line follower with the calibrated values.', 'Test under brighter/dimmer light.'],
+    skills: ['Colour Sensor', 'Calibration', 'Reliability'],
+  },
+  {
+    id: 'ev3-ii13', slug: 'ev3-ii13', title: 'Variables', order: 30, moduleId: 'ev3-m6', moduleTitle: L2C, emoji: '📦', pages: 12, difficulty: 3,
+    concept: 'variables', conceptExplain: 'A variable is a named store for a value you can read and change — used for counters, totals, and remembering state across the program.',
+    objectives: ['Create and use a variable.', 'Read, write, and update its value.'],
+    challenge: 'Use a variable to count how many lines the robot crosses, and show the count.',
+    challengeSteps: ['Create a variable "count" set to 0.', 'Each time the colour sensor sees a line, add 1 (read → +1 → write).', 'Display the count live.', 'Stop after a target count.'],
+    skills: ['Variables', 'Counters', 'Data Wires'],
+  },
+  {
+    id: 'ev3-ii14', slug: 'ev3-ii14', title: 'Logic Operations & Decision Making', order: 31, moduleId: 'ev3-m6', moduleTitle: L2C, emoji: '🔀', pages: 7, difficulty: 4,
+    concept: 'logic operators (AND / OR / NOT)', conceptExplain: 'Logic blocks combine true/false values: AND (both true), OR (either true), NOT (flip). They let the robot decide based on more than one condition at once.',
+    objectives: ['Use the Logic block (AND/OR/NOT).', 'Make decisions from two conditions.'],
+    challenge: 'Make the robot act only when TWO conditions are true (e.g. sees black AND something is close).',
+    challengeSteps: ['Read two sensors into Compare blocks.', 'Combine them with a Logic (AND/OR) block.', 'Feed the result into a Switch.', 'Test that it triggers only as intended.'],
+    skills: ['Logic', 'AND/OR/NOT', 'Decisions'],
+  },
+  {
+    id: 'ev3-ii15', slug: 'ev3-ii15', title: 'Introduction to Parallel Beams', order: 32, moduleId: 'ev3-m6', moduleTitle: L2C, emoji: '🪢', pages: 8, difficulty: 4,
+    concept: 'parallel sequences (beams)', conceptExplain: 'EV3 can run two sequences ("beams") at the same time from one start block — e.g. drive while also watching a sensor or animating the screen.',
+    objectives: ['Run two beams of code in parallel.', 'Coordinate simultaneous actions.'],
+    challenge: 'Make the robot drive forward while, at the same time, showing a changing face on the screen.',
+    challengeSteps: ['From the Start block, drag two separate sequence beams.', 'Beam 1: drive. Beam 2: loop the display animation.', 'Run both at once and observe.', 'Add a sensor watch on a third beam if you like.'],
+    skills: ['Parallel Beams', 'Multitasking', 'Coordination'],
+  },
 ];
 
 export const EV3_LESSONS: LessonDetail[] = CONFIGS.map(makeEv3Lesson);
@@ -331,25 +456,25 @@ const L = (id: string, title: string, order: number, difficulty: 2 | 3 | 4, skil
 export const EV3_COURSE: Course = {
   id: 'ev3-beginner',
   slug: 'beginner-programming',
-  title: 'EV3 Beginner Programming (Level I)',
+  title: 'EV3 Robotics Programming (Levels I–II)',
   programId: 'ev3',
   programSlug: 'ev3',
   ageGroup: '10-12',
   level: 'Intermediate',
   description:
-    'Learn to program the LEGO MINDSTORMS EV3 robot, FLL-style: driving straight, turning, using Port View to measure, pseudocode, loops, switches, and the sensors (touch, colour, ultrasonic) — building up to a line follower and a final challenge.',
+    'Program the LEGO MINDSTORMS EV3 robot FLL-style. Level I covers driving, turning, Port View, pseudocode, loops, switches, and the sensors. Level II goes further — data wires, My Blocks (custom blocks), wall following, calibration, reliability, variables, logic, and parallel beams.',
   objectives: [
-    'Drive and turn the EV3 robot accurately with the Move Steering block',
-    'Measure with Port View instead of guessing',
-    'Plan with pseudocode and use loops and switches',
-    'Use the touch, colour, and ultrasonic sensors',
-    'Build up to line following and a final challenge',
+    'Drive and turn the EV3 accurately with Move Steering / Move Tank',
+    'Measure with Port View and pass values with data wires',
+    'Build reusable My Blocks with inputs',
+    'Use touch, colour, ultrasonic, IR sensors — and calibrate them',
+    'Use variables, logic, parallel beams, and reliability techniques',
   ],
-  duration: '16 sessions × 45–60 minutes',
-  totalHours: 14,
-  lessonCount: 16,
+  duration: '31 sessions × 45–60 minutes',
+  totalHours: 27,
+  lessonCount: 31,
   prerequisites: [],
-  skills: ['EV3 Software', 'Move Steering', 'Sensors', 'Loops & Switches', 'Pseudocode', 'FLL'],
+  skills: ['EV3 Software', 'My Blocks', 'Sensors', 'Data Wires', 'Variables & Logic', 'FLL'],
   modules: [
     {
       id: 'ev3-m1', title: M1, order: 1,
@@ -383,6 +508,39 @@ export const EV3_COURSE: Course = {
         L('ev3-l15', 'Basic Line Follower', 15, 4, ['Line Following']),
         L('ev3-l16', 'Moving an Object', 16, 3, ['Attachments']),
         L('ev3-l17', 'Final Challenge', 17, 4, ['Assessment']),
+      ],
+    },
+    {
+      id: 'ev3-m4', title: L2A, order: 4,
+      description: 'Data wires and reusable My Blocks for moving, turning, and line following.',
+      lessons: [
+        L('ev3-ii3', 'Data Wires', 18, 3, ['Data Wires']),
+        L('ev3-ii4', 'My Blocks with Inputs & Outputs', 19, 3, ['My Blocks']),
+        L('ev3-ii5', 'Moving with My Blocks', 20, 3, ['My Blocks']),
+        L('ev3-ii6', 'Turning with My Blocks', 21, 3, ['My Blocks']),
+        L('ev3-ii7', 'Colour Line Follower with My Blocks', 22, 4, ['Line Following']),
+        L('ev3-ii10', 'Move Blocks (Tank vs Steering)', 23, 3, ['Move Tank']),
+      ],
+    },
+    {
+      id: 'ev3-m5', title: L2B, order: 5,
+      description: 'Wall following, brick buttons, IR, debugging, reliability, and calibration.',
+      lessons: [
+        L('ev3-ii1', 'Basic Ultrasonic Wall Follower', 24, 3, ['Ultrasonic']),
+        L('ev3-ii2', 'Brick Buttons as Sensors', 25, 3, ['Brick Buttons']),
+        L('ev3-ii8', 'Infrared Sensor & Beacon', 26, 3, ['Infrared']),
+        L('ev3-ii9', 'Debugging Techniques', 27, 3, ['Debugging']),
+        L('ev3-ii11', 'Reliability Techniques', 28, 3, ['Reliability']),
+        L('ev3-ii12', 'Colour Sensor Calibration', 29, 3, ['Calibration']),
+      ],
+    },
+    {
+      id: 'ev3-m6', title: L2C, order: 6,
+      description: 'Variables, logic operations, and running code in parallel.',
+      lessons: [
+        L('ev3-ii13', 'Variables', 30, 3, ['Variables']),
+        L('ev3-ii14', 'Logic Operations & Decision Making', 31, 4, ['Logic']),
+        L('ev3-ii15', 'Introduction to Parallel Beams', 32, 4, ['Parallel Beams']),
       ],
     },
   ],
