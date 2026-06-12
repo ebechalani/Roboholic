@@ -4,14 +4,14 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Loader2, Plus, Users, Hash, BookOpen, Printer, ChevronLeft,
-  KeyRound, Trash2, CheckCircle, AlertCircle, GraduationCap,
+  KeyRound, Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import {
   createClass, getCoachClasses, getClassStudents, addStudentToClass,
-  setAssignedLessons, removeStudentFromRoster,
+  setAssignedLessons, removeStudentFromRoster, renameStudent, deleteClass,
 } from '@/lib/classes';
 import { ALL_COURSES, ALL_LESSONS } from '@/lib/curricula';
 import type { ClassDoc, ClassStudent } from '@/types';
@@ -193,11 +193,33 @@ function ClassDetail({ cls, onBack, onUpdated }: {
     }
   }
 
-  async function handleRemove(uid: string) {
+  async function handleRemove(uid: string, name: string) {
+    if (!window.confirm(`Remove ${name} from this class? Their login will stop working.`)) return;
     try {
       await removeStudentFromRoster(cls.id, uid);
       setStudents(prev => prev.filter(s => s.uid !== uid));
     } catch { setError('Could not remove the student from the roster.'); }
+  }
+
+  async function handleRename(uid: string, current: string) {
+    const name = window.prompt('New name for this student:', current);
+    if (!name || !name.trim() || name.trim() === current) return;
+    try {
+      await renameStudent(cls.id, uid, name);
+      setStudents(prev => prev.map(s => (s.uid === uid ? { ...s, displayName: name.trim() } : s)));
+    } catch { setError('Could not rename the student.'); }
+  }
+
+  async function handleDeleteClass() {
+    if (!window.confirm(`Delete the class "${cls.name}" and all ${students.length} student logins? This cannot be undone.`)) return;
+    setBusy(true);
+    try {
+      await deleteClass(cls.id);
+      onBack();
+    } catch {
+      setError('Could not delete the class.');
+      setBusy(false);
+    }
   }
 
   return (
@@ -219,6 +241,10 @@ function ClassDetail({ cls, onBack, onUpdated }: {
         <button onClick={() => window.print()}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 text-gray-700">
           <Printer size={15} /> Print roster
+        </button>
+        <button onClick={() => void handleDeleteClass()} disabled={busy}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 disabled:opacity-50">
+          <Trash2 size={15} /> Delete class
         </button>
       </div>
 
@@ -283,10 +309,16 @@ function ClassDetail({ cls, onBack, onUpdated }: {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {students.map(s => (
                   <div key={s.uid} className="border-2 border-dashed border-gray-200 rounded-xl p-4 relative">
-                    <button onClick={() => void handleRemove(s.uid)} title="Remove from roster"
-                      className="absolute top-2 right-2 p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 print:hidden">
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1 print:hidden">
+                      <button onClick={() => void handleRename(s.uid, s.displayName)} title="Rename student"
+                        className="p-1.5 rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => void handleRemove(s.uid, s.displayName)} title="Remove from roster"
+                        className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                     <div className="font-black text-gray-900 mb-2">🎒 {s.displayName}</div>
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-2 text-gray-600"><Hash size={13} className="text-gray-400" /> Class code: <b className="font-mono">{cls.code}</b></div>

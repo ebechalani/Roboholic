@@ -93,6 +93,18 @@ export async function removeStudentFromRoster(classId: string, uid: string): Pro
   await deleteDoc(doc(db, 'classes', classId, 'students', uid));
 }
 
+export async function renameStudent(classId: string, uid: string, displayName: string): Promise<void> {
+  await updateDoc(doc(db, 'classes', classId, 'students', uid), { displayName: displayName.trim() });
+}
+
+/** Deletes a class and its whole roster. (Student auth accounts become
+ *  unused — they can't reach anything without an assigned class.) */
+export async function deleteClass(classId: string): Promise<void> {
+  const roster = await getDocs(collection(db, 'classes', classId, 'students'));
+  await Promise.all(roster.docs.map(d => deleteDoc(d.ref)));
+  await deleteDoc(doc(db, 'classes', classId));
+}
+
 // ─── Student account creation (secondary app keeps coach signed in) ──
 function getSecondaryApp() {
   const NAME = 'student-factory';

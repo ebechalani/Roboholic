@@ -13,11 +13,9 @@ import { studentEmail, studentPassword } from '@/lib/classes';
 
 type Tab = 'coach' | 'student';
 
-function CoachForm() {
+function CoachForm({ next }: { next: string }) {
   const { signIn, resetPassword } = useAuth();
   const router = useRouter();
-  const params = useSearchParams();
-  const next = params.get('next') || '/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -177,7 +175,17 @@ function StudentForm() {
 }
 
 export default function LoginPage() {
-  const [tab, setTab] = useState<Tab>('coach');
+  return (
+    <Suspense fallback={<div className="min-h-screen" style={{ background: '#F8FAFF' }} />}>
+      <LoginInner />
+    </Suspense>
+  );
+}
+
+function LoginInner() {
+  const params = useSearchParams();
+  const next = params.get('next') || '/dashboard';
+  const [tab, setTab] = useState<Tab>(params.get('tab') === 'student' ? 'student' : 'coach');
 
   return (
     <div className="min-h-screen flex">
@@ -209,8 +217,8 @@ export default function LoginPage() {
             <span className="font-black text-gray-900">RoboHolic</span>
           </Link>
 
-          <h2 className="text-2xl font-black text-gray-900 mb-1">Log In</h2>
-          <p className="text-gray-500 text-sm mb-6">Welcome back! Choose how you log in.</p>
+          <h2 className="text-2xl font-black text-gray-900 mb-1">{tab === 'student' ? 'Student Log In' : 'Log In'}</h2>
+          <p className="text-gray-500 text-sm mb-6">{tab === 'student' ? 'Enter your class code, username, and PIN.' : 'Welcome back! Choose how you log in.'}</p>
 
           {/* Tabs */}
           <div className="grid grid-cols-2 gap-2 mb-6">
@@ -226,9 +234,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <Suspense fallback={<div className="text-gray-400 text-sm">Loading…</div>}>
-            {tab === 'coach' ? <CoachForm /> : <StudentForm />}
-          </Suspense>
+          {tab === 'coach' ? <CoachForm next={next} /> : <StudentForm />}
         </div>
       </div>
     </div>

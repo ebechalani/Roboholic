@@ -12,6 +12,16 @@ function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname);
 }
 
+// Students may ONLY see their own dashboard, their student pages, and the
+// individual lesson pages assigned to them (the lesson page enforces the
+// per-lesson check). They cannot browse the catalogue, coach, or admin areas —
+// this keeps the curriculum from being browsable/copied by students.
+function studentBlocked(pathname: string): boolean {
+  if (pathname === '/lessons') return true;
+  if (pathname.startsWith('/dashboard/coach') || pathname.startsWith('/dashboard/admin')) return true;
+  return /^\/(curriculum|projects|competitions|resources|admin)(\/|$)/.test(pathname);
+}
+
 /**
  * Global access gate:
  *  - Demo mode (no Firebase keys): everything stays open.
@@ -26,10 +36,12 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
 
   const open = isPublic(pathname);
   const needsLogin = configured && !loading && !firebaseUser && !open;
+  const studentLockout = configured && !loading && !!firebaseUser && role === 'student' && !open && studentBlocked(pathname);
 
   useEffect(() => {
     if (needsLogin) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-  }, [needsLogin, router, pathname]);
+    else if (studentLockout) router.replace('/dashboard/student');
+  }, [needsLogin, studentLockout, router, pathname]);
 
   if (!configured) return <>{children}</>;
   if (open) return <>{children}</>;
@@ -43,6 +55,7 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
   }
 
   if (!firebaseUser) return null; // redirecting to /login
+  if (studentLockout) return null; // redirecting student to their dashboard
 
   // Coaches awaiting approval are blocked from the whole app.
   if (role === 'coach' && (status === 'pending' || status === 'rejected')) {

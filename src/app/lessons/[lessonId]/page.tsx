@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth/AuthProvider';
+import ContentGuard from '@/components/auth/ContentGuard';
+import { getClass } from '@/lib/classes';
 import {
   ArrowLeft, Clock, Users, BarChart2, ChevronRight, BookOpen,
   CheckCircle, Download, GraduationCap, Star, Eye, EyeOff,
@@ -360,8 +363,38 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
   const [studentMode, setStudentMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'lesson' | 'resources' | 'assessment'>('lesson');
 
+  // Students may only open lessons their coach assigned to their class.
+  const { role, profile, configured } = useAuth();
+  const [studentAccess, setStudentAccess] = useState<'checking' | 'ok' | 'denied'>('checking');
+  useEffect(() => {
+    if (!configured || role !== 'student') { setStudentAccess('ok'); return; }
+    let on = true;
+    if (!profile?.classId) { setStudentAccess('denied'); return; }
+    getClass(profile.classId)
+      .then(cls => { if (on) setStudentAccess((cls?.lessonIds ?? []).includes(lessonId) ? 'ok' : 'denied'); })
+      .catch(() => { if (on) setStudentAccess('denied'); });
+    return () => { on = false; };
+  }, [configured, role, profile?.classId, lessonId]);
+
   const difficultyLabels = ['', 'Very Easy', 'Easy', 'Medium', 'Hard', 'Very Hard'];
   const difficultyColors = ['', '#10B981', '#3B82F6', '#F59E0B', '#F97316', '#EF4444'];
+
+  // Student trying to open a lesson that isn't assigned to their class.
+  if (role === 'student' && studentAccess === 'denied') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: '#FFF7ED' }}>
+        <div className="text-center max-w-sm">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-black text-gray-900 mb-2">Not in your missions yet</h1>
+          <p className="text-gray-500 text-sm mb-6">This lesson isn&apos;t one your coach has given you. Check your dashboard for your missions!</p>
+          <Link href="/dashboard/student" className="inline-flex px-5 py-2.5 rounded-xl font-bold text-white text-sm"
+            style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}>
+            Go to my missions
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!lesson) {
     return (
@@ -378,6 +411,9 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
 
   return (
     <div className={`min-h-screen ${studentMode ? 'student-mode' : ''}`} style={{ background: '#F8FAFF' }}>
+
+      {/* Per-user watermark + copy deterrent (deterrent, not DRM) */}
+      <ContentGuard />
 
       {/* Top navigation bar */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50 no-print">

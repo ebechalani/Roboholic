@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Menu, X, BookOpen, Cpu, Trophy, GraduationCap, Users,
-  LayoutDashboard, Shield, LogOut,
+  LayoutDashboard, Shield, LogOut, Star,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
 
@@ -41,12 +41,19 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop nav */}
+          {/* Desktop nav — catalogue hidden from students */}
           <div className="hidden md:flex items-center gap-1">
-            <NavLink href="/curriculum"><BookOpen size={14} /> Curriculum</NavLink>
-            <NavLink href="/lessons"><Cpu size={14} /> Lessons</NavLink>
-            <NavLink href="/resources">Resources</NavLink>
-            <NavLink href="/competitions"><Trophy size={14} /> Competitions</NavLink>
+            {role !== 'student' && (
+              <>
+                <NavLink href="/curriculum"><BookOpen size={14} /> Curriculum</NavLink>
+                <NavLink href="/lessons"><Cpu size={14} /> Lessons</NavLink>
+                <NavLink href="/resources">Resources</NavLink>
+                <NavLink href="/competitions"><Trophy size={14} /> Competitions</NavLink>
+              </>
+            )}
+            {role === 'student' && (
+              <NavLink href="/dashboard/student"><Star size={14} /> My Missions</NavLink>
+            )}
             {role === 'admin' && (
               <NavLink href="/admin"><Shield size={14} /> Admin</NavLink>
             )}
@@ -99,10 +106,17 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t border-white/10 px-4 py-4 space-y-1"
           style={{ background: 'rgba(15,32,68,0.97)' }}>
-          <MobileLink href="/curriculum" onClick={() => setMenuOpen(false)}>Curriculum</MobileLink>
-          <MobileLink href="/lessons" onClick={() => setMenuOpen(false)}>Lessons</MobileLink>
-          <MobileLink href="/resources" onClick={() => setMenuOpen(false)}>Resources</MobileLink>
-          <MobileLink href="/competitions" onClick={() => setMenuOpen(false)}>Competitions</MobileLink>
+          {role !== 'student' && (
+            <>
+              <MobileLink href="/curriculum" onClick={() => setMenuOpen(false)}>Curriculum</MobileLink>
+              <MobileLink href="/lessons" onClick={() => setMenuOpen(false)}>Lessons</MobileLink>
+              <MobileLink href="/resources" onClick={() => setMenuOpen(false)}>Resources</MobileLink>
+              <MobileLink href="/competitions" onClick={() => setMenuOpen(false)}>Competitions</MobileLink>
+            </>
+          )}
+          {role === 'student' && (
+            <MobileLink href="/dashboard/student" onClick={() => setMenuOpen(false)}>My Missions</MobileLink>
+          )}
           {role === 'admin' && (
             <MobileLink href="/admin" onClick={() => setMenuOpen(false)}>🛡️ Admin</MobileLink>
           )}

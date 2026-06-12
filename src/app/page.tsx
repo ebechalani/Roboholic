@@ -53,7 +53,7 @@ function HeroSection() {
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
             <Link
-              href="/dashboard/coach"
+              href="/login"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
               style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}
             >
@@ -62,7 +62,7 @@ function HeroSection() {
               <ArrowRight size={16} />
             </Link>
             <Link
-              href="/dashboard/student"
+              href="/login?tab=student"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
               style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}
             >
@@ -326,7 +326,7 @@ function FeaturesSection() {
                 </li>
               ))}
             </ul>
-            <Link href="/dashboard/coach" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl font-semibold text-white text-sm"
+            <Link href="/login" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl font-semibold text-white text-sm"
               style={{ background: 'linear-gradient(135deg, #0F2044, #2563EB)' }}>
               Coach Dashboard <ArrowRight size={14} />
             </Link>
@@ -353,7 +353,7 @@ function FeaturesSection() {
                 </li>
               ))}
             </ul>
-            <Link href="/dashboard/student" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl font-semibold text-white text-sm"
+            <Link href="/login?tab=student" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl font-semibold text-white text-sm"
               style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}>
               Student Dashboard <ArrowRight size={14} />
             </Link>
@@ -472,7 +472,7 @@ function CTASection() {
           and every student discovers they can create anything.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/dashboard/coach"
+          <Link href="/login"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-bold text-base text-white transition-all hover:scale-105 shadow-xl"
             style={{ background: 'linear-gradient(135deg, #0F2044, #2563EB)' }}>
             <GraduationCap size={20} /> Enter Coach Portal
