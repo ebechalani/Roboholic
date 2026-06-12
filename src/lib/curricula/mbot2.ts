@@ -1,32 +1,33 @@
 import type { Course, LessonDetail } from '@/types';
+import { CYBERPI_MODULES } from './cyberpi-basics';
 
 // ════════════════════════════════════════════════════════════════
-//  mBot2 / CyberPi — "Coding & IoT, Part 1"
-//  Converted from RoboHolic Summer Camp 2025 materials
-//  (9-12 yo → Mbot2 Activities Part 1). Lesson plans by Makeblock.
+//  mBot2 / CyberPi — "Coding, IoT & CyberPi"
+//  Part 1 (Activities, 5E lessons 1–14) + Part 2 (CyberPi Basics
+//  project kit, modules 4–6 from cyberpi-basics.ts). Makeblock.
 // ════════════════════════════════════════════════════════════════
 export const MBOT2_COURSE: Course = {
   id: 'mbot2-iot-1',
   slug: 'coding-and-iot-part-1',
-  title: 'mBot2 Coding & IoT — Part 1',
+  title: 'mBot2: Coding, IoT & CyberPi',
   programId: 'mbot2',
   programSlug: 'mbot2',
   ageGroup: '10-12',
   level: 'Intermediate',
   description:
-    'Students use the CyberPi controller and mBlock to build real smart devices — from a noise detector to a houseplant carer and a self-driving vehicle. Each project follows the 5E model (Engage, Explore, Explain, Elaborate, Evaluate) and connects coding to everyday life.',
+    'Students use the CyberPi controller and mBlock to build real smart devices. Part 1 covers data, sensors, and IoT projects (5E model); Part 2 (CyberPi Basics) is a project-based kit — distance detector, electric gate, oscillating fan, smart trash can, and an autonomous vehicle.',
   objectives: [
     'Use CyberPi sensors to retrieve real-world data',
     'Display data and feedback on the CyberPi screen and LEDs',
     'Use variables, conditionals, and broadcasts in mBlock',
-    'Connect computing concepts to real-life problems',
-    'Design, build, test, and present a working smart device',
+    'Build and program servos, motors, and sensor projects',
+    'Design, build, test, and present working smart devices',
   ],
-  duration: '14 sessions × 45 minutes',
-  totalHours: 10.5,
-  lessonCount: 14,
+  duration: '26 sessions × 40–45 minutes',
+  totalHours: 19,
+  lessonCount: 26,
   prerequisites: ['Comfortable with block-based coding', 'Basic knowledge of sensors'],
-  skills: ['Sensors & Data', 'Variables', 'Conditionals', 'IoT Thinking', 'Problem Solving'],
+  skills: ['Sensors & Data', 'Variables', 'Conditionals', 'Servos & Motors', 'IoT Thinking'],
   modules: [
     {
       id: 'mb2-m1',
@@ -66,6 +67,8 @@ export const MBOT2_COURSE: Course = {
         { id: 'mbot2-l14', title: 'Dodge the Bird II',        duration: '45 min', difficulty: 5, skills: ['Game Polish', 'Levels'],      order: 14 },
       ],
     },
+    // Part 2 — CyberPi Basics project kit (Modules 4–6).
+    ...CYBERPI_MODULES,
   ],
 };
 

@@ -11,6 +11,7 @@ import { CODEY_COURSE, CODEY_LESSONS } from './codey-rocky';
 import { WEDO_COURSE, WEDO_LESSONS } from './wedo';
 import { EV3_COURSE, EV3_LESSONS } from './ev3';
 import { ARDUINO_COURSE, ARDUINO_LESSONS } from './arduino';
+import { CYBERPI_LESSONS } from './cyberpi-basics';
 import {
   MBOT2_COURSE,
   MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4,
@@ -28,6 +29,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(WEDO_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(EV3_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(ARDUINO_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(CYBERPI_LESSONS.map(l => [l.id, l])),
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
   [MBOT2_LESSON_3.id]: MBOT2_LESSON_3,
