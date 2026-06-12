@@ -2,10 +2,27 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, BookOpen, Cpu, Trophy, GraduationCap, Users, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  Menu, X, BookOpen, Cpu, Trophy, GraduationCap, Users,
+  LayoutDashboard, Shield, LogOut,
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth/AuthProvider';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { configured, loading, firebaseUser, profile, role, signOutUser } = useAuth();
+  const router = useRouter();
+
+  const signedIn = configured && !loading && !!firebaseUser;
+  const firstName = (profile?.full_name || firebaseUser?.displayName || 'Account').split(/\s+/)[0];
+  const dashboardHref = role === 'student' ? '/dashboard/student' : '/dashboard/coach';
+
+  async function handleSignOut() {
+    try { await signOutUser(); } catch { /* ignore */ }
+    setMenuOpen(false);
+    router.replace('/login');
+  }
 
   return (
     <nav className="sticky top-0 z-50 glass-dark">
@@ -26,35 +43,45 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            <NavLink href="/curriculum">
-              <BookOpen size={14} /> Curriculum
-            </NavLink>
-            <NavLink href="/lessons">
-              <Cpu size={14} /> Lessons
-            </NavLink>
-            <NavLink href="/resources">
-              Resources
-            </NavLink>
-            <NavLink href="/competitions">
-              <Trophy size={14} /> Competitions
-            </NavLink>
+            <NavLink href="/curriculum"><BookOpen size={14} /> Curriculum</NavLink>
+            <NavLink href="/lessons"><Cpu size={14} /> Lessons</NavLink>
+            <NavLink href="/resources">Resources</NavLink>
+            <NavLink href="/competitions"><Trophy size={14} /> Competitions</NavLink>
+            {role === 'admin' && (
+              <NavLink href="/admin"><Shield size={14} /> Admin</NavLink>
+            )}
           </div>
 
-          {/* Auth buttons */}
+          {/* Auth area */}
           <div className="hidden md:flex items-center gap-2">
-            <Link
-              href="/login"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white/75 hover:text-white hover:bg-white/10 text-sm font-medium transition-all"
-            >
-              <GraduationCap size={15} /> Log In
-            </Link>
-            <Link
-              href="/register"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-bold transition-all shadow-sm"
-              style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}
-            >
-              <Users size={15} /> Sign Up
-            </Link>
+            {signedIn ? (
+              <>
+                <Link href={dashboardHref}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-bold transition-all shadow-sm"
+                  style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}>
+                  <LayoutDashboard size={15} /> Dashboard
+                </Link>
+                <span className="px-3 py-2 rounded-lg bg-white/10 text-white/85 text-sm font-semibold">
+                  {role === 'admin' ? '🛡️' : role === 'student' ? '⭐' : '🎓'} {firstName}
+                </span>
+                <button onClick={handleSignOut} title="Sign out"
+                  className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all">
+                  <LogOut size={16} />
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white/75 hover:text-white hover:bg-white/10 text-sm font-medium transition-all">
+                  <GraduationCap size={15} /> Log In
+                </Link>
+                <Link href="/register"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-bold transition-all shadow-sm"
+                  style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}>
+                  <Users size={15} /> Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu toggle */}
@@ -76,23 +103,35 @@ export default function Navbar() {
           <MobileLink href="/lessons" onClick={() => setMenuOpen(false)}>Lessons</MobileLink>
           <MobileLink href="/resources" onClick={() => setMenuOpen(false)}>Resources</MobileLink>
           <MobileLink href="/competitions" onClick={() => setMenuOpen(false)}>Competitions</MobileLink>
-          <div className="pt-3 grid grid-cols-2 gap-2">
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
-              className="text-center py-2.5 border border-white/25 text-white rounded-xl text-sm font-semibold"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMenuOpen(false)}
-              className="text-center py-2.5 text-white rounded-xl text-sm font-bold"
-              style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}
-            >
-              Sign Up
-            </Link>
-          </div>
+          {role === 'admin' && (
+            <MobileLink href="/admin" onClick={() => setMenuOpen(false)}>🛡️ Admin</MobileLink>
+          )}
+
+          {signedIn ? (
+            <div className="pt-3 space-y-2">
+              <Link href={dashboardHref} onClick={() => setMenuOpen(false)}
+                className="block text-center py-2.5 text-white rounded-xl text-sm font-bold"
+                style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}>
+                Open Dashboard
+              </Link>
+              <button onClick={handleSignOut}
+                className="w-full text-center py-2.5 border border-white/25 text-white/80 rounded-xl text-sm font-semibold">
+                Sign out ({firstName})
+              </button>
+            </div>
+          ) : (
+            <div className="pt-3 grid grid-cols-2 gap-2">
+              <Link href="/login" onClick={() => setMenuOpen(false)}
+                className="text-center py-2.5 border border-white/25 text-white rounded-xl text-sm font-semibold">
+                Log In
+              </Link>
+              <Link href="/register" onClick={() => setMenuOpen(false)}
+                className="text-center py-2.5 text-white rounded-xl text-sm font-bold"
+                style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}>
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </nav>
