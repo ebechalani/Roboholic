@@ -1,5 +1,6 @@
 import type { Course, LessonDetail } from '@/types';
 import { CYBERPI_MODULES } from './cyberpi-basics';
+import { MBOT2_P2_MODULES, MBOT2_P2_LESSON_COUNT } from './mbot2-part2';
 
 // ════════════════════════════════════════════════════════════════
 //  mBot2 / CyberPi — "Coding, IoT & CyberPi"
@@ -9,25 +10,26 @@ import { CYBERPI_MODULES } from './cyberpi-basics';
 export const MBOT2_COURSE: Course = {
   id: 'mbot2-iot-1',
   slug: 'coding-and-iot-part-1',
-  title: 'mBot2: Coding, IoT & CyberPi',
+  title: 'mBot2: Coding, Robotics, IoT & AI',
   programId: 'mbot2',
   programSlug: 'mbot2',
   ageGroup: '10-12',
   level: 'Intermediate',
   description:
-    'Students use the CyberPi controller and mBlock to build real smart devices. Part 1 covers data, sensors, and IoT projects (5E model); Part 2 (CyberPi Basics) is a project-based kit — distance detector, electric gate, oscillating fan, smart trash can, and an autonomous vehicle.',
+    'Students use the mBot2 robot, the CyberPi controller and mBlock to build real smart devices and robots. Part 1: data, sensors and IoT projects (5E model). Part 2 (CyberPi Basics): a project-based kit — distance detector, electric gate, oscillating fan, smart trash can, autonomous vehicle. Part 3: the 9 official Getting Started activities, advanced AI with the Smart Camera (visual recognition, object/line tracking, sorting), smart-logistics challenges, and mini-projects.',
   objectives: [
-    'Use CyberPi sensors to retrieve real-world data',
-    'Display data and feedback on the CyberPi screen and LEDs',
-    'Use variables, conditionals, and broadcasts in mBlock',
+    'Drive and sense with the mBot2 (ultrasonic, quad RGB, gyro, sound)',
+    'Use CyberPi sensors, screen and LEDs to retrieve and show data',
+    'Use variables, conditionals, broadcasts and wireless messaging in mBlock',
     'Build and program servos, motors, and sensor projects',
-    'Design, build, test, and present working smart devices',
+    'Apply machine vision (Smart Camera) and machine learning / AI',
+    'Design, build, test, and present working smart devices and robots',
   ],
-  duration: '26 sessions × 40–45 minutes',
-  totalHours: 19,
-  lessonCount: 26,
+  duration: `${26 + MBOT2_P2_LESSON_COUNT} sessions × 40–45 minutes`,
+  totalHours: 19 + MBOT2_P2_LESSON_COUNT,
+  lessonCount: 26 + MBOT2_P2_LESSON_COUNT,
   prerequisites: ['Comfortable with block-based coding', 'Basic knowledge of sensors'],
-  skills: ['Sensors & Data', 'Variables', 'Conditionals', 'Servos & Motors', 'IoT Thinking'],
+  skills: ['Sensors & Data', 'Variables & Logic', 'Servos & Motors', 'Wireless & IoT', 'Machine Vision', 'AI / Machine Learning'],
   modules: [
     {
       id: 'mb2-m1',
@@ -69,6 +71,8 @@ export const MBOT2_COURSE: Course = {
     },
     // Part 2 — CyberPi Basics project kit (Modules 4–6).
     ...CYBERPI_MODULES,
+    // Part 3 — Getting Started, Smart Camera AI, Logistics, Mini-projects (Modules 7–10).
+    ...MBOT2_P2_MODULES,
   ],
 };
 
