@@ -194,6 +194,9 @@ const M3 = 'Module 3: Sensors & Challenges';
 const L2A = 'Level II · My Blocks & Reusable Code';
 const L2B = 'Level II · Sensors & Reliability';
 const L2C = 'Level II · Logic, Variables & Parallelism';
+const L3A = 'Level III · Proportional Control';
+const L3B = 'Level III · Gyro & Alignment';
+const L3C = 'Level III · Data & Systems';
 
 const CONFIGS: Ev3Config[] = [
   {
@@ -446,6 +449,120 @@ const CONFIGS: Ev3Config[] = [
     challengeSteps: ['From the Start block, drag two separate sequence beams.', 'Beam 1: drive. Beam 2: loop the display animation.', 'Run both at once and observe.', 'Add a sensor watch on a third beam if you like.'],
     skills: ['Parallel Beams', 'Multitasking', 'Coordination'],
   },
+
+  // ─── LEVEL III (Advanced) ────────────────────────────────────────
+  {
+    id: 'ev3-iii3', slug: 'ev3-iii3', title: 'Introduction to Proportional Control', order: 33, moduleId: 'ev3-m7', moduleTitle: L3A, emoji: '📈', pages: 12, difficulty: 4,
+    concept: 'proportional control', conceptExplain: 'Instead of hard "turn left / turn right", proportional control corrects by an amount proportional to the error (how far off you are) × a gain. Bigger error → bigger correction → smooth, accurate behaviour.',
+    objectives: ['Understand error, gain, and proportional correction.', 'Replace harsh on/off control with smooth proportional control.'],
+    challenge: 'Compute an error from a sensor and feed (error × gain) into the steering to react smoothly.',
+    challengeSteps: ['Pick a target value (e.g. colour sensor = 50 at the line edge).', 'Error = reading − target; multiply by a gain.', 'Wire the result into the Move Steering "steering" input.', 'Tune the gain until it\'s smooth, not wobbly.'],
+    skills: ['Proportional Control', 'Error & Gain', 'Data Wires'],
+  },
+  {
+    id: 'ev3-iii4', slug: 'ev3-iii4', title: 'Proportional Line Follower', order: 34, moduleId: 'ev3-m7', moduleTitle: L3A, emoji: '〰️', pages: 12, difficulty: 4,
+    concept: 'proportional line following', conceptExplain: 'A proportional line follower steers by (light − target) × gain, so it hugs the line edge smoothly instead of zig-zagging like the basic on/off follower.',
+    objectives: ['Build a smooth proportional line follower.', 'Tune the gain for speed vs. stability.'],
+    challenge: 'Replace your basic line follower with a proportional one and follow a curvy line smoothly.',
+    challengeSteps: ['Error = reflected light − edge value (≈50).', 'Steering = error × gain.', 'Put it in a loop with Move Steering.', 'Tune gain; raise speed once stable.'],
+    skills: ['Proportional Control', 'Line Following', 'Tuning'],
+  },
+  {
+    id: 'ev3-iii5', slug: 'ev3-iii5', title: 'Proportional Two-Colour Line Follower', order: 35, moduleId: 'ev3-m7', moduleTitle: L3A, emoji: '🎨', pages: 12, difficulty: 4,
+    concept: 'two-colour proportional following', conceptExplain: 'Follow the boundary between two colours using the difference in their reflected light as the error — useful when the line isn\'t simple black-on-white.',
+    objectives: ['Follow the edge between two colours proportionally.'],
+    challenge: 'Proportionally follow the boundary between two colours around a course.',
+    challengeSteps: ['Identify the two colours\' reflected-light values.', 'Target = midpoint between them; error = reading − target.', 'Steering = error × gain in a loop.', 'Tune and test on the two-colour track.'],
+    skills: ['Proportional Control', 'Colour Sensor', 'Edges'],
+  },
+  {
+    id: 'ev3-iii6', slug: 'ev3-iii6', title: 'Proportional Ultrasonic Wall Follower', order: 36, moduleId: 'ev3-m7', moduleTitle: L3A, emoji: '🧱', pages: 5, difficulty: 4,
+    concept: 'proportional wall following', conceptExplain: 'Keep a set distance from a wall by steering proportionally to (distance − target): drift closer → steer out, drift away → steer in. Smoother than on/off wall following.',
+    objectives: ['Follow a wall smoothly with proportional control.'],
+    challenge: 'Follow a wall at a steady 15 cm using proportional steering.',
+    challengeSteps: ['Error = ultrasonic distance − 15.', 'Steering = error × gain.', 'Loop with Move Steering.', 'Tune the gain so it doesn\'t oscillate.'],
+    skills: ['Proportional Control', 'Ultrasonic', 'Wall Following'],
+  },
+  {
+    id: 'ev3-iii7', slug: 'ev3-iii7', title: 'Ramping Up (Acceleration)', order: 37, moduleId: 'ev3-m7', moduleTitle: L3A, emoji: '🛫', pages: 12, difficulty: 4,
+    concept: 'ramping power up and down', conceptExplain: 'Starting/stopping at full power makes wheels slip and the robot veer. Ramping gradually increases power at the start (and decreases at the end) for accuracy and smoothness.',
+    objectives: ['Ramp motor power up gradually using a loop + variable.', 'Improve straightness and accuracy.'],
+    challenge: 'Drive a set distance, ramping power up at the start so the robot doesn\'t jerk or slip.',
+    challengeSteps: ['Use a variable for power, starting low.', 'In a loop, increase power a little each cycle up to a max.', 'Drive until the target distance.', 'Compare accuracy vs. starting at full power.'],
+    skills: ['Ramping', 'Variables', 'Accuracy'],
+  },
+  {
+    id: 'ev3-iii8', slug: 'ev3-iii8', title: 'Introduction to the Gyro Sensor', order: 38, moduleId: 'ev3-m8', moduleTitle: L3B, emoji: '🧭', pages: 12, difficulty: 4,
+    concept: 'the Gyro sensor', conceptExplain: 'The gyro measures the robot\'s rotation angle and rate of turn. It must be reset (and kept still) at the start because it can drift — once calibrated it gives accurate heading.',
+    objectives: ['Read the gyro angle and rate.', 'Reset the gyro and handle drift.'],
+    challenge: 'Reset the gyro and display the live angle as you turn the robot by hand.',
+    challengeSteps: ['Keep the robot still; reset the gyro.', 'Read the angle and show it on the screen in a loop.', 'Turn the robot and watch the angle.', 'Note any drift and re-reset.'],
+    skills: ['Gyro Sensor', 'Angle', 'Calibration'],
+  },
+  {
+    id: 'ev3-iii9', slug: 'ev3-iii9', title: 'Gyro Sensor Turns', order: 39, moduleId: 'ev3-m8', moduleTitle: L3B, emoji: '🔄', pages: 12, difficulty: 4,
+    concept: 'accurate turns with the gyro', conceptExplain: 'Turning "until the gyro angle reaches N°" is far more accurate and repeatable than guessing motor degrees — the robot turns exactly the angle you want.',
+    objectives: ['Turn an exact angle using the gyro.', 'Make turns repeatable.'],
+    challenge: 'Make the robot turn exactly 90° using the gyro, then drive a precise square.',
+    challengeSteps: ['Reset the gyro.', 'Turn while the loop waits until |angle| ≥ 90.', 'Wrap it in a Turn-by-gyro My Block.', 'Drive a square and check it closes.'],
+    skills: ['Gyro Sensor', 'Turns', 'Accuracy'],
+  },
+  {
+    id: 'ev3-iii10', slug: 'ev3-iii10', title: 'Gyro: Move Straight & Wall Follow', order: 40, moduleId: 'ev3-m8', moduleTitle: L3B, emoji: '📏', pages: 10, difficulty: 4,
+    concept: 'gyro-corrected driving', conceptExplain: 'Use the gyro angle as the error to drive perfectly straight (steer to keep angle = 0) — and the same idea to hold a heading along a wall.',
+    objectives: ['Drive straight using gyro correction.', 'Hold a heading proportionally.'],
+    challenge: 'Drive dead-straight for 2 m using the gyro to correct any drift.',
+    challengeSteps: ['Reset the gyro to 0.', 'Steering = gyro angle × gain (proportional).', 'Loop with Move Steering until the distance.', 'Test that it tracks straight.'],
+    skills: ['Gyro Sensor', 'Proportional Control', 'Straight Driving'],
+  },
+  {
+    id: 'ev3-iii11', slug: 'ev3-iii11', title: 'Squaring on Lines', order: 41, moduleId: 'ev3-m8', moduleTitle: L3B, emoji: '📐', pages: 12, difficulty: 4,
+    concept: 'squaring (aligning) on a line', conceptExplain: 'With two colour sensors, the robot can square up to a line: each wheel stops when its sensor hits the line, leaving the robot perfectly aligned — a key reliability trick.',
+    objectives: ['Use two colour sensors to align to a line.', 'Improve run reliability by re-squaring.'],
+    challenge: 'Drive forward until the robot is squared on a black line using two sensors.',
+    challengeSteps: ['Run both motors forward independently.', 'Stop the left motor when the left sensor sees the line; same for right.', 'When both have stopped, the robot is square.', 'Use it mid-run to re-align.'],
+    skills: ['Squaring', 'Two Sensors', 'Reliability'],
+  },
+  {
+    id: 'ev3-iii12', slug: 'ev3-iii12', title: 'Stall Detection', order: 42, moduleId: 'ev3-m8', moduleTitle: L3B, emoji: '🛑', pages: 10, difficulty: 4,
+    concept: 'detecting a stalled motor', conceptExplain: 'When a motor is pushing against something it stops turning (stalls). Watching the motor\'s rotation: if it isn\'t changing while powered, it has stalled — useful to detect walls or "fully raised" arms without extra sensors.',
+    objectives: ['Detect when a motor has stalled.', 'React to a stall (stop / next step).'],
+    challenge: 'Drive into a wall and detect the stall (rotation stops) to know you\'ve arrived.',
+    challengeSteps: ['Power the drive motors forward.', 'In a loop, check if the rotation has changed.', 'If it hasn\'t changed (stalled), stop.', 'Use it to square against a wall.'],
+    skills: ['Stall Detection', 'Motor Rotation', 'Sensing'],
+  },
+  {
+    id: 'ev3-iii1', slug: 'ev3-iii1', title: 'Parallel Beam Synchronization', order: 43, moduleId: 'ev3-m9', moduleTitle: L3C, emoji: '🪢', pages: 11, difficulty: 4,
+    concept: 'synchronising parallel beams', conceptExplain: 'When two beams run at once, you sometimes need them to wait for each other. Using variables/flags as signals, one beam can tell the other when to proceed — coordinating multitasking.',
+    objectives: ['Run parallel beams that coordinate.', 'Use a flag/variable to synchronise them.'],
+    challenge: 'Run two beams where beam 2 waits for beam 1 to finish a step before continuing.',
+    challengeSteps: ['Create a "ready" variable.', 'Beam 1 does its task, then sets ready = true.', 'Beam 2 waits until ready = true, then continues.', 'Test the hand-off.'],
+    skills: ['Parallel Beams', 'Synchronisation', 'Variables'],
+  },
+  {
+    id: 'ev3-iii2', slug: 'ev3-iii2', title: 'Arrays', order: 44, moduleId: 'ev3-m9', moduleTitle: L3C, emoji: '🗃️', pages: 12, difficulty: 4,
+    concept: 'arrays (lists of values)', conceptExplain: 'An array stores many values under one name (e.g. a series of readings or moves). You can fill it, read items by index, and loop over it — essential for data and sequences.',
+    objectives: ['Create and fill an array.', 'Read and use array elements.'],
+    challenge: 'Record a series of sensor readings into an array, then replay/average them.',
+    challengeSteps: ['Create an array variable.', 'In a loop, append readings (write by index).', 'Loop again to read them back.', 'Compute something (e.g. an average).'],
+    skills: ['Arrays', 'Indexing', 'Data'],
+  },
+  {
+    id: 'ev3-iii13', slug: 'ev3-iii13', title: 'Menu System', order: 45, moduleId: 'ev3-m9', moduleTitle: L3C, emoji: '📋', pages: 8, difficulty: 4,
+    concept: 'an on-brick menu', conceptExplain: 'A menu lets you choose which program/run to launch using the brick buttons + screen — so one download holds many missions, picked on the field.',
+    objectives: ['Build a menu using the brick buttons and display.', 'Launch different routines from the menu.'],
+    challenge: 'Build a menu: scroll options with the buttons, press to run the chosen routine.',
+    challengeSteps: ['Display the current option; use up/down to change a "selection" variable.', 'Show the selected option clearly.', 'On centre press, run the matching My Block.', 'Return to the menu afterwards.'],
+    skills: ['Menu', 'Brick Buttons', 'Variables', 'My Blocks'],
+  },
+  {
+    id: 'ev3-iii14', slug: 'ev3-iii14', title: 'Data Logging', order: 46, moduleId: 'ev3-m9', moduleTitle: L3C, emoji: '📊', pages: 11, difficulty: 4,
+    concept: 'data logging', conceptExplain: 'Record sensor values over time (to an array or the EV3\'s data log) so you can analyse behaviour — e.g. how the light reading changes along a line, or speed over a run.',
+    objectives: ['Log sensor data over time.', 'Review/analyse the logged values.'],
+    challenge: 'Log the colour sensor\'s reading as the robot drives, then review the data.',
+    challengeSteps: ['In a loop, read the sensor and store each value (array) with a timer.', 'Drive the route while logging.', 'Display or export the values.', 'Discuss what the data shows.'],
+    skills: ['Data Logging', 'Arrays', 'Analysis'],
+  },
 ];
 
 export const EV3_LESSONS: LessonDetail[] = CONFIGS.map(makeEv3Lesson);
@@ -456,25 +573,26 @@ const L = (id: string, title: string, order: number, difficulty: 2 | 3 | 4, skil
 export const EV3_COURSE: Course = {
   id: 'ev3-beginner',
   slug: 'beginner-programming',
-  title: 'EV3 Robotics Programming (Levels I–II)',
+  title: 'EV3 Robotics Programming (Levels I–III)',
   programId: 'ev3',
   programSlug: 'ev3',
   ageGroup: '10-12',
   level: 'Intermediate',
   description:
-    'Program the LEGO MINDSTORMS EV3 robot FLL-style. Level I covers driving, turning, Port View, pseudocode, loops, switches, and the sensors. Level II goes further — data wires, My Blocks (custom blocks), wall following, calibration, reliability, variables, logic, and parallel beams.',
+    'Program the LEGO MINDSTORMS EV3 robot FLL-style. Level I covers driving, turning, Port View, pseudocode, loops, switches, and the sensors. Level II adds data wires, My Blocks, wall following, calibration, reliability, variables, logic, and parallel beams. Level III reaches competition technique — proportional control, the gyro sensor, ramping, squaring, stall detection, arrays, menus, and data logging.',
   objectives: [
     'Drive and turn the EV3 accurately with Move Steering / Move Tank',
     'Measure with Port View and pass values with data wires',
     'Build reusable My Blocks with inputs',
-    'Use touch, colour, ultrasonic, IR sensors — and calibrate them',
+    'Use touch, colour, ultrasonic, IR, and gyro sensors — and calibrate them',
     'Use variables, logic, parallel beams, and reliability techniques',
+    'Apply proportional control, ramping, squaring, stall detection, arrays, menus, and data logging',
   ],
-  duration: '31 sessions × 45–60 minutes',
-  totalHours: 27,
-  lessonCount: 31,
+  duration: '45 sessions × 45–60 minutes',
+  totalHours: 41,
+  lessonCount: 45,
   prerequisites: [],
-  skills: ['EV3 Software', 'My Blocks', 'Sensors', 'Data Wires', 'Variables & Logic', 'FLL'],
+  skills: ['EV3 Software', 'My Blocks', 'Sensors', 'Data Wires', 'Proportional Control', 'Gyro', 'Variables & Logic', 'FLL'],
   modules: [
     {
       id: 'ev3-m1', title: M1, order: 1,
@@ -541,6 +659,38 @@ export const EV3_COURSE: Course = {
         L('ev3-ii13', 'Variables', 30, 3, ['Variables']),
         L('ev3-ii14', 'Logic Operations & Decision Making', 31, 4, ['Logic']),
         L('ev3-ii15', 'Introduction to Parallel Beams', 32, 4, ['Parallel Beams']),
+      ],
+    },
+    {
+      id: 'ev3-m7', title: L3A, order: 7,
+      description: 'Smooth, accurate control with proportional steering and ramping.',
+      lessons: [
+        L('ev3-iii3', 'Introduction to Proportional Control', 33, 4, ['Proportional Control']),
+        L('ev3-iii4', 'Proportional Line Follower', 34, 4, ['Line Following']),
+        L('ev3-iii5', 'Proportional Two-Colour Line Follower', 35, 4, ['Colour Sensor']),
+        L('ev3-iii6', 'Proportional Ultrasonic Wall Follower', 36, 4, ['Wall Following']),
+        L('ev3-iii7', 'Ramping Up (Acceleration)', 37, 4, ['Ramping']),
+      ],
+    },
+    {
+      id: 'ev3-m8', title: L3B, order: 8,
+      description: 'The gyro sensor, accurate turns, straight driving, squaring, and stall detection.',
+      lessons: [
+        L('ev3-iii8', 'Introduction to the Gyro Sensor', 38, 4, ['Gyro Sensor']),
+        L('ev3-iii9', 'Gyro Sensor Turns', 39, 4, ['Gyro Sensor']),
+        L('ev3-iii10', 'Gyro: Move Straight & Wall Follow', 40, 4, ['Gyro Sensor']),
+        L('ev3-iii11', 'Squaring on Lines', 41, 4, ['Squaring']),
+        L('ev3-iii12', 'Stall Detection', 42, 4, ['Stall Detection']),
+      ],
+    },
+    {
+      id: 'ev3-m9', title: L3C, order: 9,
+      description: 'Coordinating parallel code, arrays, on-brick menus, and data logging.',
+      lessons: [
+        L('ev3-iii1', 'Parallel Beam Synchronization', 43, 4, ['Synchronisation']),
+        L('ev3-iii2', 'Arrays', 44, 4, ['Arrays']),
+        L('ev3-iii13', 'Menu System', 45, 4, ['Menu']),
+        L('ev3-iii14', 'Data Logging', 46, 4, ['Data Logging']),
       ],
     },
   ],
