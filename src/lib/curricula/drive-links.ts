@@ -244,5 +244,8 @@ export const DRIVE_LINKS: Record<string, string> = {
   "cp2-l11-r1": "https://drive.google.com/file/d/1hcWDPVYj5hnlCpnsOz7rR7GnO4kGhJLk/view?usp=sharing",
   "cp2-l11-r2": "https://drive.google.com/file/d/1pQjmnOxGiJTZN5wAeaFBBp7yNtFatA-T/view?usp=sharing",
   "cp2-l12-r1": "https://drive.google.com/file/d/1p0mx5WZDsa6IBc8bs8Hz-Z0RqOoiEQN3/view?usp=sharing",
-  "cp2-l12-r2": "https://drive.google.com/file/d/1ctyQvTtDu4m4crL9MH-lus5bO2LGZFbB/view?usp=sharing"
+  "cp2-l12-r2": "https://drive.google.com/file/d/1ctyQvTtDu4m4crL9MH-lus5bO2LGZFbB/view?usp=sharing",
+  "3d-l1-r1": "https://drive.google.com/file/d/1eJ2BqWJRcam_cncclv-hnTkv-9Jh1h1E/view?usp=sharing",
+  "3d-l2-r1": "https://drive.google.com/file/d/1whd1H6jwG10himaSIModQu4H5Pd74qmE/view?usp=sharing",
+  "3d-l3-r1": "https://drive.google.com/file/d/1CByHcyyB7dIRDigwscNDD10n9ovT1dRs/view?usp=sharing"
 };
