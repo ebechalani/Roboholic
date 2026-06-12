@@ -29,6 +29,9 @@ export interface Profile {
   classId?: string;
   classCode?: string;
   username?: string;
+  // Confidentiality / acceptable-use agreement:
+  termsAcceptedAt?: string;
+  termsVersion?: number;
 }
 
 /** A coach's class (Firestore: classes/{id}). */

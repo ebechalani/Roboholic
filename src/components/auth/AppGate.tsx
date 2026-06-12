@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2, Hourglass, XCircle, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import TermsGate from '@/components/auth/TermsGate';
+import { TERMS_VERSION } from '@/lib/legal';
 
 // Pages anyone may see without an account.
 const PUBLIC_PATHS = ['/', '/login', '/register'];
@@ -30,7 +32,7 @@ function studentBlocked(pathname: string): boolean {
  *    instead of the app until the admin approves them.
  */
 export default function AppGate({ children }: { children: React.ReactNode }) {
-  const { configured, loading, firebaseUser, role, status, signOutUser } = useAuth();
+  const { configured, loading, firebaseUser, profile, role, status, signOutUser, refreshProfile } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -84,6 +86,11 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  // Coaches & admins must accept the confidentiality agreement (recorded per user).
+  if ((role === 'coach' || role === 'admin') && profile && (profile.termsVersion ?? 0) < TERMS_VERSION) {
+    return <TermsGate onAccepted={() => { void refreshProfile(); }} />;
   }
 
   return <>{children}</>;
