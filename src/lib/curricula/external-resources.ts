@@ -185,6 +185,30 @@ export const MICROBIT_CREATEAI_MODULE: Module = {
   lessons: CREATEAI_LESSONS_CFG.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: 85 + i })),
 };
 
+// Cross-listed under the AI / ML / IoT program — same lessons (no duplication;
+// they live in the micro:bit course and are reused here by id).
+export const AI_ML_COURSE: Course = {
+  id: 'ai-ml-createai', slug: 'ai-machine-learning-foundations',
+  title: 'AI & Machine Learning Foundations',
+  programId: 'ai-ml-iot', programSlug: 'ai-ml-iot', ageGroup: '10-12', level: 'Intermediate',
+  description: 'A hands-on first course in artificial intelligence and machine learning, delivered with micro:bit CreateAI. From "what is AI?" and finding patterns in data, through collecting movement data and training, testing and using a model in code, to evaluating an AI system for fairness and reducing bias with diverse data. (Lessons run on the BBC micro:bit.)',
+  objectives: [
+    'Explain what AI and machine learning are, with everyday examples',
+    'Collect and label data, then train and test an ML model',
+    'Use a trained model as an input in a program',
+    'Evaluate an AI system and understand data bias and diversity',
+  ],
+  duration: '7 lessons × 45–60 minutes', totalHours: 7, lessonCount: 7,
+  prerequisites: [], skills: ['AI Literacy', 'Machine Learning', 'Data', 'AI Ethics'],
+  modules: [
+    {
+      id: 'aiml-m1', title: 'AI & Machine Learning with micro:bit CreateAI', order: 1,
+      description: 'The full CreateAI unit — unplugged AI concepts through training, using and evaluating your own ML model.',
+      lessons: CREATEAI_LESSONS_CFG.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: i + 1 })),
+    },
+  ],
+};
+
 // ─── Electronics · Maker Electronics & Wearables (NEW course) ────
 const EL = { programId: 'electronics', programSlug: 'electronics', programTitle: 'Electronics', programColor: '#EAB308', courseId: 'electronics-maker', courseTitle: 'Maker Electronics & Wearables', moduleId: 'elec-m1', moduleTitle: 'Circuits You Can Make & Wear' };
 const ELECTRONICS_CHAPS: Ext[] = [
