@@ -13,6 +13,14 @@ interface SpikeBuild {
   module: 1 | 2; build: string; mechanism: string; skills: string[]; code: string;
 }
 
+// Builds are organised into three LEVELS by difficulty.
+function levelOf(d: Difficulty): 1 | 2 | 3 { return d <= 2 ? 1 : d === 3 ? 2 : 3; }
+const LEVEL_TITLE: Record<1 | 2 | 3, string> = {
+  1: 'Level I · Beginner Builds',
+  2: 'Level II · Intermediate Builds',
+  3: 'Level III · Advanced Builds',
+};
+
 function makeBuild(v: SpikeBuild): LessonDetail {
   const id = `spike-v${v.n}`;
   const sections: LessonSection[] = [
@@ -77,8 +85,8 @@ function makeBuild(v: SpikeBuild): LessonDetail {
     id, slug: id, title: v.title,
     programId: 'spike-prime', programSlug: 'spike-prime', programTitle: 'Spike Prime', programColor: '#F97316',
     courseId: 'spike-builds', courseTitle: 'SPIKE Prime — Building Instructions (Video)',
-    moduleId: v.module === 1 ? 'spike-m1' : 'spike-m2',
-    moduleTitle: v.module === 1 ? 'Machines & Mechanisms' : 'Robots & Automation',
+    moduleId: `spike-m${levelOf(v.difficulty)}`,
+    moduleTitle: LEVEL_TITLE[levelOf(v.difficulty)],
     ageGroup: '10-12', level: 'Intermediate', duration: '45–60 minutes', difficulty: v.difficulty,
     skills: v.skills,
     materials: [
@@ -121,8 +129,9 @@ export const SPIKE_LESSONS: LessonDetail[] = BUILDS.map(makeBuild);
 const sum = (v: SpikeBuild) => ({ id: `spike-v${v.n}`, title: v.title, duration: '45–60 min', difficulty: v.difficulty, skills: v.skills.slice(0, 2), order: v.n });
 
 const MODULES: Module[] = [
-  { id: 'spike-m1', title: 'Machines & Mechanisms', order: 1, description: 'Build motorised machines and explore gears, steering, torque and force: helicopter, gyroscope, weightlifter, Ferris wheel, simple car and an electronic scale.', lessons: BUILDS.filter(b => b.module === 1).map(sum) },
-  { id: 'spike-m2', title: 'Robots & Automation', order: 2, description: 'Build sensing, automated robots: a doodler, a mini piano, a self-balancing line follower, a scanner/printer, a size-sorter, an aerospace penguin and an automatic door.', lessons: BUILDS.filter(b => b.module === 2).map(sum) },
+  { id: 'spike-m1', title: LEVEL_TITLE[1], order: 1, description: 'Gentle first builds focusing on gears and motors: helicopter, mini piano and Ferris wheel.', lessons: BUILDS.filter(b => levelOf(b.difficulty) === 1).map(sum) },
+  { id: 'spike-m2', title: LEVEL_TITLE[2], order: 2, description: 'Step up to mechanisms and single sensors: gyroscope, doodler, weightlifter, aerospace penguin, steering car, electronic scale and automatic door.', lessons: BUILDS.filter(b => levelOf(b.difficulty) === 2).map(sum) },
+  { id: 'spike-m3', title: LEVEL_TITLE[3], order: 3, description: 'Advanced, multi-sensor robots and control: self-balancing line follower, scanner/printer and size-sorting robot.', lessons: BUILDS.filter(b => levelOf(b.difficulty) === 3).map(sum) },
 ];
 
 export const SPIKE_COURSE: Course = {
