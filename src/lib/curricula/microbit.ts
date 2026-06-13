@@ -1,6 +1,7 @@
 import type { Course, LessonDetail, LessonSection } from '@/types';
 import { MICROBIT_UNIT_MODULES, MICROBIT_UNIT_LESSON_COUNT, MICROBIT_COURSE_TITLE } from './microbit-units';
 import { MICROBIT_CHAPTER_MODULE, MICROBIT_CHAPTER_LESSONS } from './school-chapters';
+import { MICROBIT_EXTRA_MODULE, MICROBIT_EXTRA_LESSONS } from './external-resources';
 
 // ════════════════════════════════════════════════════════════════
 //  micro:bit — "First Lessons with MakeCode" (BBC micro:bit Foundation)
@@ -221,9 +222,9 @@ export const MICROBIT_COURSE: Course = {
     'Apply coding to real-world, cross-curricular projects (the UN Global Goals)',
     'Test in the simulator and flash code to a real micro:bit',
   ],
-  duration: `${6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length} sessions × 45–60 minutes`,
-  totalHours: 6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length,
-  lessonCount: 6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length,
+  duration: `${6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length + MICROBIT_EXTRA_LESSONS.length} sessions × 45–60 minutes`,
+  totalHours: 6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length + MICROBIT_EXTRA_LESSONS.length,
+  lessonCount: 6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length + MICROBIT_EXTRA_LESSONS.length,
   prerequisites: [],
   skills: ['MakeCode', 'Inputs & Outputs', 'Loops & Variables', 'Sensors', 'Conditionals', 'Data', 'Global Goals'],
   modules: [
@@ -234,5 +235,6 @@ export const MICROBIT_COURSE: Course = {
     },
     ...MICROBIT_UNIT_MODULES,
     MICROBIT_CHAPTER_MODULE,
+    MICROBIT_EXTRA_MODULE,
   ],
 };
