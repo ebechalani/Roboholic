@@ -157,6 +157,7 @@ export interface LessonDetail {
   resources: Resource[];
   assessmentChecklist: string[];
   heroImage?: string;          // illustrative image shown in the lesson header
+  youtubeId?: string;          // if set, an embedded YouTube player is shown in the lesson header
 }
 
 export interface LessonImage {

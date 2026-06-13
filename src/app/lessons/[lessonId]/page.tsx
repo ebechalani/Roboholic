@@ -489,8 +489,22 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
                   {studentMode && <span className="ml-2">🚀</span>}
                 </h1>
 
+                {/* Embedded video tutorial */}
+                {lesson.youtubeId && (
+                  <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 bg-black aspect-video">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube-nocookie.com/embed/${lesson.youtubeId}`}
+                      title={lesson.title}
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
                 {/* Hero image */}
-                {lesson.heroImage && (
+                {!lesson.youtubeId && lesson.heroImage && (
                   <div className="mb-4 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center p-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={lesson.heroImage} alt={lesson.title} className="max-h-44 w-auto object-contain" />

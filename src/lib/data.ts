@@ -147,9 +147,9 @@ export const PROGRAMS: Program[] = [
     category: 'robotics',
     ageGroups: ['10-12', '13-15'],
     levels: ['Intermediate', 'Advanced'],
-    courseCount: 3,
-    lessonCount: 28,
-    tags: ['LEGO', 'FLL', 'Python', 'Competition'],
+    courseCount: 1,
+    lessonCount: 13,
+    tags: ['LEGO', 'Building', 'Video', 'FLL'],
   },
   {
     id: 'microbit',
