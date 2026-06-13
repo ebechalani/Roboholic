@@ -83,21 +83,8 @@ const MICROBIT_LESSONS_HUB: Resource = { id: 'mbhub', title: 'More micro:bit Les
 const KITRONIK_CATALOGUE: Resource = { id: 'kitronik-cat', title: 'Kitronik Materials Catalogue 2025–26 (PDF)', type: 'pdf', audience: 'coach', url: 'https://resources.kitronik.co.uk/pdf/kitronik-materials-computing-design-technology-catalogue-2025-2026-web.pdf', description: 'Computing & Design-Technology kit catalogue (for ordering materials)' };
 
 // ─── micro:bit · Explore More (AI & Real-World) ──────────────────
-const MBX = { programId: 'microbit', programSlug: 'microbit', programTitle: 'micro:bit', programColor: '#10B981', courseId: 'microbit-first', courseTitle: 'micro:bit Coding & Computing (MakeCode)', moduleId: 'mbx-explore', moduleTitle: 'Explore More · AI & Real-World' };
+const MBX = { programId: 'microbit', programSlug: 'microbit', programTitle: 'micro:bit', programColor: '#10B981', courseId: 'microbit-first', courseTitle: 'micro:bit Coding & Computing (MakeCode)', moduleId: 'mbx-explore', moduleTitle: 'Explore More · Real-World' };
 const MICROBIT_EXTRAS: Ext[] = [
-  {
-    ...MBX, id: 'mbx-createai', title: 'AI with the micro:bit (CreateAI)', emoji: '🧠', difficulty: 4, ageGroup: '13-15',
-    concept: 'training a machine-learning model on the micro:bit', conceptExplain: 'micro:bit CreateAI lets students record real movement data from the micro:bit\'s sensors, train a machine-learning model to recognise actions (e.g. waving, running), and use the trained model in a MakeCode program — hands-on AI literacy.',
-    objectives: ['Explain how a model learns from example data', 'Record movement data and train a model in CreateAI', 'Use the trained model in a MakeCode program'],
-    steps: ['Open micro:bit CreateAI (microbit.org/createai).', 'Record several examples of each action you want to recognise.', 'Train the model and test its accuracy live.', 'Export to MakeCode and make the micro:bit react to each recognised action.'],
-    challenge: 'Train a model to recognise 3 of your own gestures and make the micro:bit show a different icon for each.',
-    skills: ['Machine Learning', 'Data', 'AI Literacy'],
-    materials: [{ item: 'BBC micro:bit (v2) + USB lead', quantity: '1 per pair' }, { item: 'Computer with micro:bit CreateAI', quantity: '1 per pair' }],
-    resources: [
-      { id: 'mbx-createai-r1', title: 'micro:bit CreateAI (official)', type: 'link', audience: 'both', url: 'https://microbit.org/createai/', description: 'Train & use a machine-learning model on the micro:bit' },
-      MICROBIT_LESSONS_HUB,
-    ],
-  },
   {
     ...MBX, id: 'mbx-sport', title: 'micro:bit in Sport', emoji: '🏃', difficulty: 3, ageGroup: '10-12',
     concept: 'using micro:bit sensors to measure and improve in sport', conceptExplain: 'The micro:bit\'s accelerometer and timer turn it into a sports gadget — a step counter, jump/shot counter, reaction timer or stopwatch — so students collect real data about movement and performance.',
@@ -115,9 +102,87 @@ const MICROBIT_EXTRAS: Ext[] = [
 
 export const MICROBIT_EXTRA_LESSONS: LessonDetail[] = MICROBIT_EXTRAS.map(makeExt);
 export const MICROBIT_EXTRA_MODULE: Module = {
-  id: 'mbx-explore', title: 'Explore More · AI & Real-World', order: 22,
-  description: 'Go beyond coding: train a machine-learning model with micro:bit CreateAI, and use the micro:bit\'s sensors in sport. Includes a link to the official micro:bit lessons hub.',
+  id: 'mbx-explore', title: 'Explore More · Real-World', order: 22,
+  description: 'Go beyond coding: use the micro:bit\'s sensors in sport. Includes a link to the official micro:bit lessons hub.',
   lessons: MICROBIT_EXTRAS.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: 83 + i })),
+};
+
+// ─── micro:bit · First Lessons with CreateAI (official 7-lesson unit, ages 9–12) ───
+const CAI = { programId: 'microbit', programSlug: 'microbit', programTitle: 'micro:bit', programColor: '#10B981', courseId: 'microbit-first', courseTitle: 'micro:bit Coding & Computing (MakeCode)', moduleId: 'mbx-createai', moduleTitle: 'micro:bit CreateAI · First Lessons (AI & Machine Learning)' };
+const CREATEAI_UNIT_LINK: Resource = { id: 'cai-unit', title: 'First Lessons with micro:bit CreateAI (official unit)', type: 'link', audience: 'both', url: 'https://microbit.org/teach/lessons/first-lessons-with-microbit-createai/', description: 'micro:bit Foundation: the full 7-lesson unit (plans, slides, handouts)' };
+const CREATEAI_TOOL_LINK: Resource = { id: 'cai-tool', title: 'micro:bit CreateAI tool', type: 'link', audience: 'both', url: 'https://microbit.org/createai/', description: 'Record data, train and test a machine-learning model' };
+const CAI_MATS = [{ item: 'BBC micro:bit (v2) + USB lead', quantity: '1 per pair' }, { item: 'Computer with micro:bit CreateAI', quantity: '1 per pair' }];
+const CREATEAI_LESSONS_CFG: Ext[] = [
+  {
+    ...CAI, id: 'createai-1', title: 'Introducing AI', emoji: '🤖', difficulty: 2, ageGroup: '10-12',
+    concept: 'what AI is (and is not)', conceptExplain: 'An unplugged introduction: students explore everyday technologies and decide which ones use artificial intelligence and which do not, building a first mental model of AI.',
+    objectives: ['Give examples of technology that does and does not use AI', 'Explain in simple terms what AI is'],
+    steps: ['Brainstorm technologies you use every day.', 'Sort them into "uses AI" / "does not use AI".', 'Discuss what the AI ones have in common (they learn or decide).', 'Agree a class definition of AI.'],
+    challenge: 'Find one device at home you think uses AI and explain why.',
+    skills: ['AI Literacy', 'Discussion'], materials: [{ item: 'No hardware needed (unplugged)' }],
+    resources: [CREATEAI_UNIT_LINK, MICROBIT_LESSONS_HUB],
+  },
+  {
+    ...CAI, id: 'createai-2', title: 'Exploring Patterns in Data', emoji: '🔢', difficulty: 2, ageGroup: '10-12',
+    concept: 'patterns and rules in data', conceptExplain: 'Unplugged: students spot patterns and apply rules to sort data into categories — the same idea a machine-learning model uses to classify data.',
+    objectives: ['Identify patterns in a set of data', 'Apply rules to sort data into categories'],
+    steps: ['Look at a set of examples (cards/objects).', 'Find features that group them.', 'Write a rule that sorts them into categories.', 'Test your rule on new examples.'],
+    challenge: 'Invent a rule that sorts classmates\' shoes into 3 groups, then test it.',
+    skills: ['Data', 'Classification', 'Patterns'], materials: [{ item: 'Sorting cards/objects (unplugged)' }],
+    resources: [CREATEAI_UNIT_LINK],
+  },
+  {
+    ...CAI, id: 'createai-3', title: 'Adding Labels & Collecting Data', emoji: '🏷️', difficulty: 3, ageGroup: '10-12',
+    concept: 'collecting labelled movement data', conceptExplain: 'Students use the micro:bit\'s accelerometer in CreateAI to record movement-data samples and give each action a label — the training data a model learns from.',
+    objectives: ['Use the accelerometer to collect movement-data samples', 'Add a clear label to each action'],
+    steps: ['Open micro:bit CreateAI and pick 2–3 actions (e.g. wave, shake, still).', 'Add a label for each action.', 'Record several samples of each by performing the action.', 'Check you have enough samples per label.'],
+    challenge: 'Collect clean data for three of your own actions, with at least 5 samples each.',
+    skills: ['Data Collection', 'Accelerometer', 'Labels'], materials: CAI_MATS,
+    resources: [CREATEAI_TOOL_LINK, CREATEAI_UNIT_LINK],
+  },
+  {
+    ...CAI, id: 'createai-4', title: 'Training & Testing an ML Model', emoji: '🧠', difficulty: 3, ageGroup: '10-12',
+    concept: 'training and improving a model', conceptExplain: 'Students train a machine-learning model on their labelled data, test how well it recognises each action, and improve it by cleaning the data and adding more samples.',
+    objectives: ['Train a model from labelled data', 'Test the model and read its accuracy', 'Improve a model by cleaning and adding data'],
+    steps: ['Train the model on your collected data.', 'Test it live — does it recognise each action?', 'Remove bad samples and add more good ones.', 'Re-train and compare the results.'],
+    challenge: 'Get your model to reliably tell two similar actions apart.',
+    skills: ['Machine Learning', 'Testing', 'Iteration'], materials: CAI_MATS,
+    resources: [CREATEAI_TOOL_LINK, CREATEAI_UNIT_LINK],
+  },
+  {
+    ...CAI, id: 'createai-5', title: 'Enhancing Code with ML', emoji: '💻', difficulty: 3, ageGroup: '10-12',
+    concept: 'using an ML model as an input in MakeCode', conceptExplain: 'Students bring their trained model into MakeCode and use "the model recognises X" as an input/event — so the micro:bit reacts to real actions.',
+    objectives: ['Use a trained ML model as an input in MakeCode', 'Make the micro:bit respond to recognised actions'],
+    steps: ['Open your model in MakeCode.', 'Add an "on ML event" block for each action.', 'Make the micro:bit react (icon/sound) per action.', 'Flash it and test on the device.'],
+    challenge: 'Build a project where each recognised action does something different (e.g. a gesture-controlled pet).',
+    skills: ['MakeCode', 'ML as Input', 'Events'], materials: CAI_MATS,
+    resources: [CREATEAI_TOOL_LINK, CREATEAI_UNIT_LINK],
+  },
+  {
+    ...CAI, id: 'createai-6', title: 'Evaluating an AI System', emoji: '🧪', difficulty: 4, ageGroup: '10-12',
+    concept: 'evaluating a model on real, varied users', conceptExplain: 'Students test their project on actual micro:bits with live data from different people — discovering that a model trained on one person may not work for everyone.',
+    objectives: ['Test an AI system with live data from different people', 'Identify where the model fails and why'],
+    steps: ['Flash your project to a micro:bit.', 'Have several different people try the actions.', 'Record where it works and where it fails.', 'Discuss why it might fail for some people.'],
+    challenge: 'List two reasons your model failed for some people and how you could fix it.',
+    skills: ['Evaluation', 'Testing', 'AI Ethics'], materials: CAI_MATS,
+    resources: [CREATEAI_TOOL_LINK, CREATEAI_UNIT_LINK],
+  },
+  {
+    ...CAI, id: 'createai-7', title: 'Strengthening Models with Diverse Data', emoji: '🌍', difficulty: 4, ageGroup: '10-12',
+    concept: 'data diversity and bias', conceptExplain: 'Students improve their model by adding training data from different people, learning why diverse data reduces bias — and the human role in designing fair AI.',
+    objectives: ['Improve a model by adding diverse data', 'Explain why diverse data reduces bias', 'Describe the human role in designing AI'],
+    steps: ['Collect extra samples from several different people.', 'Add them to your training data and re-train.', 'Re-test with new people and compare to before.', 'Discuss how data choices affect fairness.'],
+    challenge: 'Show that adding diverse data made your model work better for more people.',
+    skills: ['Data Bias', 'Diversity', 'AI Ethics'], materials: CAI_MATS,
+    resources: [CREATEAI_TOOL_LINK, CREATEAI_UNIT_LINK],
+  },
+];
+
+export const MICROBIT_CREATEAI_LESSONS: LessonDetail[] = CREATEAI_LESSONS_CFG.map(makeExt);
+export const MICROBIT_CREATEAI_MODULE: Module = {
+  id: 'mbx-createai', title: 'micro:bit CreateAI · First Lessons (AI & Machine Learning)', order: 23,
+  description: 'The official 7-lesson micro:bit CreateAI unit (ages 9–12): from "what is AI?" and patterns in data, through collecting movement data, training & testing a model, using it in MakeCode, to evaluating fairness and strengthening models with diverse data.',
+  lessons: CREATEAI_LESSONS_CFG.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: 85 + i })),
 };
 
 // ─── Electronics · Maker Electronics & Wearables (NEW course) ────

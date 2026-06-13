@@ -19,7 +19,7 @@ import { MBOT2_P2_LESSONS } from './mbot2-part2';
 import { SCHOOL_CHAPTER_LESSONS, SMALLBASIC_COURSE, SMALLBASIC_LESSONS } from './school-chapters';
 import { PYTHON_COURSE, PYTHON_LESSONS } from './python';
 import { SPIKE_COURSE, SPIKE_LESSONS } from './spike-prime';
-import { MICROBIT_EXTRA_LESSONS, ELECTRONICS_COURSE, ELECTRONICS_LESSONS } from './external-resources';
+import { MICROBIT_EXTRA_LESSONS, MICROBIT_CREATEAI_LESSONS, ELECTRONICS_COURSE, ELECTRONICS_LESSONS } from './external-resources';
 import { MTINY_COURSE, MTINY_LESSON } from './mtiny';
 import {
   MBOT2_COURSE,
@@ -47,6 +47,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(PYTHON_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(SPIKE_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(MICROBIT_EXTRA_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(MICROBIT_CREATEAI_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(ELECTRONICS_LESSONS.map(l => [l.id, l])),
   [MTINY_LESSON.id]: MTINY_LESSON,
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
