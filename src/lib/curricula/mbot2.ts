@@ -1,6 +1,7 @@
 import type { Course, LessonDetail } from '@/types';
 import { CYBERPI_MODULES } from './cyberpi-basics';
 import { MBOT2_P2_MODULES, MBOT2_P2_LESSON_COUNT } from './mbot2-part2';
+import { ROBOTICS_CHAPTER_MODULE, ROBOTICS_CHAPTER_LESSONS } from './school-chapters';
 
 // ════════════════════════════════════════════════════════════════
 //  mBot2 / CyberPi — "Coding, IoT & CyberPi"
@@ -25,9 +26,9 @@ export const MBOT2_COURSE: Course = {
     'Apply machine vision (Smart Camera) and machine learning / AI',
     'Design, build, test, and present working smart devices and robots',
   ],
-  duration: `${26 + MBOT2_P2_LESSON_COUNT} sessions × 40–45 minutes`,
-  totalHours: 19 + MBOT2_P2_LESSON_COUNT,
-  lessonCount: 26 + MBOT2_P2_LESSON_COUNT,
+  duration: `${26 + MBOT2_P2_LESSON_COUNT + ROBOTICS_CHAPTER_LESSONS.length} sessions × 40–45 minutes`,
+  totalHours: 19 + MBOT2_P2_LESSON_COUNT + ROBOTICS_CHAPTER_LESSONS.length,
+  lessonCount: 26 + MBOT2_P2_LESSON_COUNT + ROBOTICS_CHAPTER_LESSONS.length,
   prerequisites: ['Comfortable with block-based coding', 'Basic knowledge of sensors'],
   skills: ['Sensors & Data', 'Variables & Logic', 'Servos & Motors', 'Wireless & IoT', 'Machine Vision', 'AI / Machine Learning'],
   modules: [
@@ -73,6 +74,8 @@ export const MBOT2_COURSE: Course = {
     ...CYBERPI_MODULES,
     // Part 3 — Getting Started, Smart Camera AI, Logistics, Mini-projects (Modules 7–10).
     ...MBOT2_P2_MODULES,
+    // Part 4 — Robotics theory (school curriculum, Module 11).
+    ROBOTICS_CHAPTER_MODULE,
   ],
 };
 

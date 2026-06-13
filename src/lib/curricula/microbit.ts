@@ -1,5 +1,6 @@
 import type { Course, LessonDetail, LessonSection } from '@/types';
 import { MICROBIT_UNIT_MODULES, MICROBIT_UNIT_LESSON_COUNT, MICROBIT_COURSE_TITLE } from './microbit-units';
+import { MICROBIT_CHAPTER_MODULE, MICROBIT_CHAPTER_LESSONS } from './school-chapters';
 
 // ════════════════════════════════════════════════════════════════
 //  micro:bit — "First Lessons with MakeCode" (BBC micro:bit Foundation)
@@ -220,9 +221,9 @@ export const MICROBIT_COURSE: Course = {
     'Apply coding to real-world, cross-curricular projects (the UN Global Goals)',
     'Test in the simulator and flash code to a real micro:bit',
   ],
-  duration: `${6 + MICROBIT_UNIT_LESSON_COUNT} sessions × 45–60 minutes`,
-  totalHours: 6 + MICROBIT_UNIT_LESSON_COUNT,
-  lessonCount: 6 + MICROBIT_UNIT_LESSON_COUNT,
+  duration: `${6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length} sessions × 45–60 minutes`,
+  totalHours: 6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length,
+  lessonCount: 6 + MICROBIT_UNIT_LESSON_COUNT + MICROBIT_CHAPTER_LESSONS.length,
   prerequisites: [],
   skills: ['MakeCode', 'Inputs & Outputs', 'Loops & Variables', 'Sensors', 'Conditionals', 'Data', 'Global Goals'],
   modules: [
@@ -232,5 +233,6 @@ export const MICROBIT_COURSE: Course = {
       lessons: CONFIGS.map(c => ({ id: `mb-l${c.n}`, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: c.n })),
     },
     ...MICROBIT_UNIT_MODULES,
+    MICROBIT_CHAPTER_MODULE,
   ],
 };

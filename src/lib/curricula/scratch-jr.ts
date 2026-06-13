@@ -1,4 +1,5 @@
 import type { Course, LessonDetail } from '@/types';
+import { SCRATCH_CHAPTER_MODULE } from './school-chapters';
 
 // ─── Complete Scratch Jr Course: "My First Stories" ──────────────
 export const SCRATCH_JR_COURSE: Course = {
@@ -18,9 +19,9 @@ export const SCRATCH_JR_COURSE: Course = {
     'Understand the concept of sequences and simple loops',
     'Create and present a complete animated story',
   ],
-  duration: '17 sessions × 30–45 minutes',
-  totalHours: 10,
-  lessonCount: 17,
+  duration: '20 sessions × 30–45 minutes',
+  totalHours: 12,
+  lessonCount: 20,
   prerequisites: [],
   skills: ['Sequencing', 'Visual Coding', 'Storytelling', 'Creativity', 'Problem Solving'],
   modules: [
@@ -73,6 +74,7 @@ export const SCRATCH_JR_COURSE: Course = {
         { id: 'sjr-v15', title: 'Make a Jumping Game', duration: '30–45 min', difficulty: 3, skills: ['Game Design'], order: 17 },
       ],
     },
+    SCRATCH_CHAPTER_MODULE,
   ],
 };
 

@@ -451,5 +451,16 @@ export const DRIVE_LINKS: Record<string, string> = {
   "mbot-ch-5-r1": "https://drive.google.com/file/d/1Ym6U6LsFMKcr75kdglChH_Q8rSg9MW4y/view?usp=sharing",
   "mbot-x-1-r1": "https://drive.google.com/file/d/11arKbauTqn6P_ZevS4_c59mc9zZQYCa1/view?usp=sharing",
   "mbot-x-2-r1": "https://drive.google.com/file/d/18LWggPAsaWM7HwojrFm0oLISKd-mnd_b/view?usp=sharing",
-  "mbot-x-3-r1": "https://drive.google.com/file/d/1fWXuCO3hOr8-uHur5LGfqDcdc5ZkPPPg/view?usp=sharing"
+  "mbot-x-3-r1": "https://drive.google.com/file/d/1fWXuCO3hOr8-uHur5LGfqDcdc5ZkPPPg/view?usp=sharing",
+  "sch-g1-ch5-r1": "https://drive.google.com/file/d/1p9-1Hqh-veliHweIcLv0wPg_vYIqg1l_/view?usp=sharing",
+  "sch-g2-ch4-r1": "https://drive.google.com/file/d/1hiJF5D2x6twlP4Qc_VHe7wHPT4bxGiOq/view?usp=sharing",
+  "sch-g3-ch1-r1": "https://drive.google.com/file/d/1jlCS_UOq3l1_OQLQlqSLOZkrIPhTiaHw/view?usp=sharing",
+  "rob-g2-ch5-r1": "https://drive.google.com/file/d/1vvDlSfVkzcXlZ-BSUzTz993tuIHgRsDZ/view?usp=sharing",
+  "rob-g5-ch5-r1": "https://drive.google.com/file/d/1apfhYRy-BtsTfoyiSzJvUrQfihMRBRcx/view?usp=sharing",
+  "rob-g6-ch4-r1": "https://drive.google.com/file/d/17vGVd9UhpNZlxh8EZnsHzvIWbWduqY9e/view?usp=sharing",
+  "mbk-g5-ch1-r1": "https://drive.google.com/file/d/1bIq6ONK9GkIaaS1SNd4uYyNCkYf6PfSp/view?usp=sharing",
+  "sb-g7-ch1-r1": "https://drive.google.com/file/d/1v_eBrPtWJfdqFEW_Xb5wMuTUzg7lfCyD/view?usp=sharing",
+  "sb-g8-r1": "https://drive.google.com/file/d/15apkCDFTtXmJhvSGC6aL-W63P5E95sOc/view?usp=sharing",
+  "python-bk1": "https://drive.google.com/file/d/17UB9xPaDNI7QxlxEpjxgJ2sbyd32p1Ce/view?usp=sharing",
+  "python-bk2": "https://drive.google.com/file/d/1g4osO8ZsdUFjJ7X-89CkW_okXFsDskY_/view?usp=sharing"
 };
