@@ -178,9 +178,9 @@ export const PROGRAMS: Program[] = [
     textColor: '#0E7490',
     category: 'electronics',
     ageGroups: ['8-9', '10-12'],
-    levels: ['Beginner', 'Intermediate'],
-    courseCount: 2,
-    lessonCount: 14,
+    levels: ['Beginner', 'Intermediate', 'Advanced'],
+    courseCount: 1,
+    lessonCount: 11,
     tags: ['Invention', 'Creativity', 'Conductivity', 'Scratch'],
   },
   {

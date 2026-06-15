@@ -20,6 +20,7 @@ import { SCHOOL_CHAPTER_LESSONS, SMALLBASIC_COURSE, SMALLBASIC_LESSONS } from '.
 import { PYTHON_COURSE, PYTHON_LESSONS } from './python';
 import { SPIKE_COURSE, SPIKE_LESSONS } from './spike-prime';
 import { MICROBIT_EXTRA_LESSONS, MICROBIT_CREATEAI_LESSONS, ELECTRONICS_COURSE, ELECTRONICS_LESSONS, AI_ML_COURSE } from './external-resources';
+import { MAKEY_COURSE, MAKEY_LESSONS } from './makey-makey';
 import { MTINY_COURSE, MTINY_LESSON } from './mtiny';
 import {
   MBOT2_COURSE,
@@ -49,6 +50,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(MICROBIT_EXTRA_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(MICROBIT_CREATEAI_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(ELECTRONICS_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(MAKEY_LESSONS.map(l => [l.id, l])),
   [MTINY_LESSON.id]: MTINY_LESSON,
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
@@ -83,10 +85,11 @@ export const COURSES_BY_PROGRAM: Record<string, Course> = {
   [SPIKE_COURSE.programSlug]: SPIKE_COURSE,
   [ELECTRONICS_COURSE.programSlug]: ELECTRONICS_COURSE,
   [AI_ML_COURSE.programSlug]: AI_ML_COURSE,
+  [MAKEY_COURSE.programSlug]: MAKEY_COURSE,
 };
 
 /** All courses as a list (for the lesson library, etc.). */
-export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE, ARDUINO_COURSE, TINKERCAD_COURSE, MICROBIT_COURSE, MTINY_COURSE, SMALLBASIC_COURSE, PYTHON_COURSE, SPIKE_COURSE, ELECTRONICS_COURSE, AI_ML_COURSE];
+export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE, ARDUINO_COURSE, TINKERCAD_COURSE, MICROBIT_COURSE, MTINY_COURSE, SMALLBASIC_COURSE, PYTHON_COURSE, SPIKE_COURSE, ELECTRONICS_COURSE, AI_ML_COURSE, MAKEY_COURSE];
 
 export function getLessonById(id: string): LessonDetail | undefined {
   return ALL_LESSONS[id];
