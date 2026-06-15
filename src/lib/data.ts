@@ -319,7 +319,7 @@ export const PROGRAMS: Program[] = [
     id: 'game-design',
     slug: 'game-design',
     title: 'Game Design',
-    description: 'Design and build real video games. Learn game mechanics, level design, and how to publish your creations.',
+    description: 'Design and build real video games in MakeCode Arcade — sprites, tilemaps, projectiles, multiplayer — then code in JavaScript/Python and share your creations.',
     icon: '🎮',
     color: '#DC2626',
     bgColor: '#FEF2F2',
@@ -327,9 +327,9 @@ export const PROGRAMS: Program[] = [
     category: 'design',
     ageGroups: ['10-12', '13-15'],
     levels: ['Beginner', 'Intermediate', 'Advanced'],
-    courseCount: 3,
-    lessonCount: 24,
-    tags: ['Unity', 'Godot', 'Level Design', 'Mechanics'],
+    courseCount: 1,
+    lessonCount: 12,
+    tags: ['MakeCode Arcade', 'Sprites & Tilemaps', 'Multiplayer', 'JavaScript/Python'],
   },
 
   // ── Coding Languages ──
