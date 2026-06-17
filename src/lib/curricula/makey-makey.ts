@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId } from '@/types';
+import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Makey Makey — "Invent with Everyday Objects" (3 levels, 11 lessons)
@@ -18,7 +18,7 @@ interface MM {
   concept: string; conceptExplain: string; objectives: string[];
   steps: string[]; challenge: string; skills: string[];
   materials: { item: string; quantity?: string; isOptional?: boolean }[];
-  resources: Resource[];
+  resources: Resource[]; quiz?: QuizQuestion[];
 }
 
 function makeMM(c: MM): LessonDetail {
@@ -75,6 +75,7 @@ function makeMM(c: MM): LessonDetail {
     objectives: c.objectives, assessmentChecklist: c.objectives,
     sections,
     ...(c.youtubeId ? { youtubeId: c.youtubeId } : {}),
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: c.resources,
   };
 }
@@ -93,6 +94,11 @@ const CONFIGS: MM[] = [
     steps: ['Watch the intro video above.', 'Plug the Makey Makey into the computer with the USB cable.', 'Clip one alligator wire to "Space" and one to "EARTH".', 'Hold the EARTH clip and tap the Space clip — you just pressed the spacebar!'],
     challenge: 'Open the Makey Makey piano app and play a note using just your two hands as the connection.',
     skills: ['Invention', 'Circuits', 'Setup'],
+    quiz: [
+      { question: 'A Makey Makey makes the computer think it is a:', options: ['keyboard/mouse', 'printer', 'speaker', 'camera'], answerIndex: 0 },
+      { question: 'It connects to the computer with a:', options: ['USB cable', 'HDMI cable', 'Wi-Fi only', 'battery'], answerIndex: 0 },
+      { question: 'You press a key by:', options: ['closing a circuit through a conductive object', 'shouting', 'shaking it', 'plugging in headphones'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Makey Makey kit (board, USB cable, alligator clips)', quantity: '1 per pair' }, { item: 'Computer', quantity: '1 per pair' }],
     resources: [{ id: 'mm-1-r1', title: 'Intro Video: An Invention Kit for Everyone', type: 'video', audience: 'both', url: 'https://www.youtube.com/watch?v=rfQqh7iCcOU', description: 'Official Makey Makey introduction' }, MM101, MM_EDU],
   },
@@ -103,6 +109,11 @@ const CONFIGS: MM[] = [
     steps: ['Clip "Space" to a conductive object (e.g. foil).', 'Try tapping the object WITHOUT holding EARTH — nothing happens.', 'Now hold the EARTH clip and tap again — it works!', 'Explain why: you closed the loop back to EARTH.'],
     challenge: 'Make a two-person circuit: hold hands so the key only presses when you both touch the board and EARTH.',
     skills: ['Circuits', 'Conductivity', 'Prediction'],
+    quiz: [
+      { question: 'Makey Makey only works when the circuit is:', options: ['complete (a closed loop back to EARTH)', 'broken', 'wet', 'cold'], answerIndex: 0 },
+      { question: 'If nothing happens when you tap an object, you probably forgot to:', options: ['hold/connect EARTH', 'turn up the volume', 'charge it', 'press the spacebar'], answerIndex: 0 },
+      { question: 'EARTH is needed because it:', options: ['completes the loop through you', 'plays a sound', 'lights an LED', 'saves the file'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Makey Makey kit', quantity: '1 per pair' }, { item: 'Aluminium foil, a banana', isOptional: true }],
     resources: [{ id: 'mm-2-r1', title: 'Maker Class: Craft a Simple Circuit', type: 'link', audience: 'both', url: 'https://makeymakey.com/blogs/how-to-instructions', description: 'Official simple-circuit lesson' }, MM101],
   },
@@ -123,6 +134,11 @@ const CONFIGS: MM[] = [
     steps: ['Clip "Space" to a material and hold EARTH; tap it.', 'If the key fires, the material conducts; if not, it doesn\'t.', 'Test 8–10 objects (banana, foil, pencil graphite, plastic, water, coin…).', 'Record your results in a conductor/insulator table.'],
     challenge: 'Find the most surprising conductor and the most surprising insulator in the room and explain your test.',
     skills: ['Conductivity', 'Testing', 'Data'],
+    quiz: [
+      { question: 'A material that lets electricity flow is a:', options: ['conductor', 'insulator', 'magnet', 'battery'], answerIndex: 0 },
+      { question: 'Which is usually a conductor?', options: ['a banana / metal foil', 'dry plastic', 'paper', 'glass'], answerIndex: 0 },
+      { question: 'Plastic and dry paper are:', options: ['insulators (don\'t conduct)', 'conductors', 'magnets', 'sensors'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Makey Makey kit', quantity: '1 per pair' }, { item: 'A tray of test objects (metal, fruit, plastic, paper, pencil)', quantity: 'per group' }],
     resources: [{ id: 'mm-4-r1', title: 'Lesson Three: What Is Conductive?', type: 'link', audience: 'both', url: 'https://makeymakey.com/blogs/how-to-instructions', description: 'Official conductivity lesson' }, MM_HOWTO],
   },
@@ -145,6 +161,11 @@ const CONFIGS: MM[] = [
     steps: ['Open Scratch and add a sprite.', 'Add "when space key pressed → play sound / move".', 'Plug in the Makey Makey and clip Space to a conductive object.', 'Hold EARTH, tap the object, and watch Scratch respond.'],
     challenge: 'Make a sprite that moves up/down/left/right using four conductive objects wired to the arrow inputs.',
     skills: ['Scratch', 'Events', 'Debugging'],
+    quiz: [
+      { question: 'Scratch reacts to the Makey Makey because the board sends real:', options: ['key presses', 'emails', 'photos', 'sounds'], answerIndex: 0 },
+      { question: 'Which Scratch block responds to a Makey Makey input?', options: ['"when [space] key pressed"', '"go to x y"', '"set pen colour"', '"play sound"'], answerIndex: 0 },
+      { question: 'To control a sprite with 4 objects you wire them to:', options: ['the arrow inputs', 'EARTH only', 'the USB port', 'the speaker'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Makey Makey kit', quantity: '1 per pair' }, { item: 'Computer with Scratch (scratch.mit.edu)', quantity: '1 per pair' }],
     resources: [{ id: 'mm-6-r1', title: 'Maker Class: Code Key Presses in Scratch', type: 'link', audience: 'both', url: 'https://makeymakey.com/pages/how-to', description: 'Official Scratch lesson' }, MM101],
   },
@@ -187,6 +208,11 @@ const CONFIGS: MM[] = [
     steps: ['Pick a switch type (pinch, tilt, pressure, door).', 'Build it from card + foil so two conductors touch when activated.', 'Wire it to an input + EARTH.', 'Code or use an app so closing the switch does something.'],
     challenge: 'Invent a switch that reacts to a real-world event (door opens, cup lifted, seat sat on) and demo it.',
     skills: ['Switches', 'Invention', 'Engineering'],
+    quiz: [
+      { question: 'A switch is really just:', options: ['two conductors that touch to close a circuit', 'a battery', 'a speaker', 'a sensor chip'], answerIndex: 0 },
+      { question: 'A pressure-pad switch closes when you:', options: ['press the two conductive layers together', 'shout at it', 'unplug it', 'charge it'], answerIndex: 0 },
+      { question: 'Designing your own switches is part of:', options: ['invention/engineering', 'charging', 'printing', 'emailing'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Makey Makey kit', quantity: '1 per pair' }, { item: 'Card, foil, clothespins, tape', quantity: 'per group' }],
     resources: [{ id: 'mm-10-r1', title: 'Maker Class: Crafting & Designing Switches', type: 'link', audience: 'both', url: 'https://makeymakey.com/blogs/how-to-instructions/lesson-eight-crafting-and-designing-switches', description: 'Official switches lesson' }, MM_HOWTO],
   },

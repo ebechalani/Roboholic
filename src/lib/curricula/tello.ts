@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId } from '@/types';
+import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Drones — "Code & Fly with Tello EDU" (3 levels, 12 lessons)
@@ -19,7 +19,7 @@ interface TL {
   concept: string; conceptExplain: string; objectives: string[];
   steps: string[]; code?: string[]; challenge: string; skills: string[];
   materials: { item: string; quantity?: string; isOptional?: boolean }[];
-  resources: Resource[];
+  resources: Resource[]; quiz?: QuizQuestion[];
 }
 
 function makeTL(c: TL): LessonDetail {
@@ -75,6 +75,7 @@ function makeTL(c: TL): LessonDetail {
     duration: '45–60 minutes', difficulty: c.difficulty, skills: c.skills, materials: c.materials,
     objectives: c.objectives, assessmentChecklist: c.objectives,
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: c.resources,
   };
 }
@@ -94,6 +95,11 @@ const CONFIGS: TL[] = [
     steps: ['Identify the parts: 4 props/motors, downward vision sensor, camera, battery, status LED.', 'Fit the prop guards and check the props are tight and undamaged.', 'Power on; connect your device to the TELLO-XXXX Wi-Fi network.', 'Agree the safety rules: clear zone, props away from fingers, one drone flying at a time, land on low battery.'],
     challenge: 'Write your team\'s 5 flight-safety rules and a pre-flight checklist, then do a battery + props check.',
     skills: ['Drone Basics', 'Safety', 'Setup'],
+    quiz: [
+      { question: 'Before flying you should always:', options: ['clear the area, fit prop guards, check the battery', 'turn off the lights', 'remove the propellers', 'fly near people'], answerIndex: 0 },
+      { question: 'How many propellers does the Tello (a quadcopter) have?', options: ['4', '2', '6', '1'], answerIndex: 0 },
+      { question: 'You connect a device to the Tello over:', options: ['its Wi-Fi network', 'a USB cable', 'Bluetooth headset', 'HDMI'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Tello EDU drone + charged battery + prop guards', quantity: '1 per group' }, { item: 'Tablet/phone or computer', quantity: '1 per group' }],
     resources: [DB_INTRO, RYZE],
   },
@@ -104,6 +110,11 @@ const CONFIGS: TL[] = [
     steps: ['Open DroneBlocks and connect to the Tello.', 'Drag: takeoff → wait 3 seconds → land.', 'Clear the flight zone; everyone stands back.', 'Run it and observe the autonomous flight.'],
     challenge: 'Make the drone take off, hover for 5 seconds, then land gently — and time how long the whole flight takes.',
     skills: ['DroneBlocks', 'Autonomous Flight', 'Sequencing'],
+    quiz: [
+      { question: 'DroneBlocks lets you fly the Tello using:', options: ['block code (no manual sticks)', 'a game controller only', 'voice only', 'a keyboard mouse'], answerIndex: 0 },
+      { question: 'The safest first program is:', options: ['takeoff → wait → land', 'flip → flip → flip', 'full speed forward', 'spin forever'], answerIndex: 0 },
+      { question: '"Autonomous" flight means the drone:', options: ['follows its program by itself', 'is flown by hand', 'never moves', 'needs two pilots'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Tello EDU + prop guards', quantity: '1 per group' }, { item: 'Device with DroneBlocks app', quantity: '1 per group' }],
     resources: [DB_INTRO],
   },
@@ -124,6 +135,11 @@ const CONFIGS: TL[] = [
     steps: ['Take off.', 'Repeat 4 times: { forward 50 cm → rotate clockwise 90° }.', 'Land.', 'Now change it to a triangle (repeat 3, turn 120°).'],
     challenge: 'Fly a pentagon (or hexagon) by working out the correct turn angle (360 ÷ number of sides).',
     skills: ['Loops', 'Geometry', 'Patterns'],
+    quiz: [
+      { question: 'To fly a square with a loop you repeat "forward + turn 90°":', options: ['4 times', '1 time', 'forever', '360 times'], answerIndex: 0 },
+      { question: 'For a regular polygon the turn angle is:', options: ['360 ÷ number of sides', 'always 90°', 'always 45°', 'the number of sides'], answerIndex: 0, explanation: 'Triangle = 360/3 = 120°, pentagon = 72°, etc.' },
+      { question: 'Loops make a flight program:', options: ['shorter and easier to change', 'longer', 'impossible', 'louder'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Tello EDU + prop guards', quantity: '1 per group' }, { item: 'Device with DroneBlocks', quantity: '1 per group' }],
     resources: [DB_INTRO],
   },
@@ -156,6 +172,11 @@ const CONFIGS: TL[] = [
     steps: ['Lay out mission pads in a bright area.', 'Enable mission-pad detection in DroneBlocks.', 'Take off over a pad and read the detected pad ID.', 'Fly to a set x/y/z position relative to the pad, then land.'],
     challenge: 'Fly a route that hops from pad 1 to pad 2 to pad 3, landing accurately on the last pad.',
     skills: ['Mission Pads', 'Navigation', 'Positioning'],
+    quiz: [
+      { question: 'Mission pads let the Tello EDU:', options: ['know its position and fly to exact coordinates', 'charge in the air', 'fly faster', 'play music'], answerIndex: 0 },
+      { question: 'The Tello detects mission pads with its:', options: ['downward camera', 'propellers', 'Wi-Fi antenna', 'battery'], answerIndex: 0 },
+      { question: 'Mission pads need:', options: ['a bright, well-lit area', 'total darkness', 'water', 'no battery'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Tello EDU + mission pads (1–8)', quantity: '1 set per group' }, { item: 'Bright, well-lit flight area', isOptional: false }],
     resources: [DB_INTRO, RYZE],
   },
@@ -179,6 +200,11 @@ const CONFIGS: TL[] = [
     code: ['from djitellopy import Tello', 'tello = Tello()', 'tello.connect()', 'print(tello.get_battery())', 'tello.takeoff()', 'tello.land()'],
     challenge: 'Add a check that refuses to take off if the battery is below 30% (print a warning instead).',
     skills: ['Python', 'DJITelloPy', 'SDK'],
+    quiz: [
+      { question: 'DJITelloPy is a:', options: ['Python library to control the Tello', 'block editor', 'video game', 'battery'], answerIndex: 0 },
+      { question: 'You install it with:', options: ['pip install djitellopy', 'download a .hex', 'a USB stick', 'the app store'], answerIndex: 0 },
+      { question: 'In code, tello.takeoff() then tello.land() will:', options: ['take off then land safely', 'do nothing', 'spin forever', 'charge the drone'], answerIndex: 0 },
+    ],
     materials: [{ item: 'Tello EDU + prop guards', quantity: '1 per group' }, { item: 'Computer with Python + djitellopy', quantity: '1 per group' }],
     resources: [DB_PY, TELLO_PY_DOCS],
   },
