@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonImage, LessonSection } from '@/types';
+import type { Course, LessonDetail, LessonImage, LessonSection, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Codey Rocky — "Block Coding & Game Design"
@@ -28,6 +28,7 @@ interface CodeyConfig {
   create: string[];      // Imitate & Create tasks
   reflect: string;       // self-review prompt 3
   skills: string[];
+  quiz?: QuizQuestion[];
 }
 
 // Sheet pages p-02..N as a gallery (p-01 is the cover → used as hero).
@@ -194,6 +195,7 @@ function makeCodeyLesson(c: CodeyConfig): LessonDetail {
       'Completed a Create task.',
     ],
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${c.id}-r1`, title: `${c.title} — Lesson Sheet (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-codey', description: 'Official lesson sheet with the coding blocks', needsReview: true },
       { id: `${c.id}-r2`, title: `${c.title} — Slideshow`, type: 'slides', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-codey', description: 'Projector slides', needsReview: true },
@@ -235,6 +237,11 @@ const CONFIGS: CodeyConfig[] = [
     ],
     reflect: 'Can you think of where programs are used in daily life?',
     skills: ['What is a Program', 'mBlock 5', 'Uploading', 'Robot Basics'],
+    quiz: [
+      { question: 'A program is:', options: ['a set of instructions a computer/robot follows', 'a type of battery', 'a sticker', 'a wheel'], answerIndex: 0 },
+      { question: 'Codey Rocky is programmed with:', options: ['mBlock', 'Microsoft Word', 'a TV remote', 'a calculator'], answerIndex: 0 },
+      { question: 'To run your code on Codey you:', options: ['upload it to the robot', 'print it', 'read it aloud', 'email it'], answerIndex: 0 },
+    ],
   },
   {
     id: 'codey-l2', slug: 'codey-l2', title: 'Press Buttons to Change Emotions', order: 2,
@@ -264,6 +271,11 @@ const CONFIGS: CodeyConfig[] = [
     ],
     reflect: 'Can you think of events in daily life?',
     skills: ['Events', 'Buttons', 'LED Display', 'Triggers'],
+    quiz: [
+      { question: 'Pressing a button to make something happen is an example of an:', options: ['event', 'output', 'battery', 'wheel'], answerIndex: 0 },
+      { question: 'Codey shows faces/emotions on its:', options: ['LED display', 'wheels', 'speaker only', 'cable'], answerIndex: 0 },
+      { question: 'A different face for button A and button B uses:', options: ['two button events', 'one loop only', 'no code', 'the motor'], answerIndex: 0 },
+    ],
   },
   {
     id: 'codey-l3', slug: 'codey-l3', title: 'To Be an Animation Designer', order: 3,
@@ -294,6 +306,11 @@ const CONFIGS: CodeyConfig[] = [
     ],
     reflect: 'I want to design my own animation. It will be like…',
     skills: ['Sequence', 'Animation', 'Order of Steps', 'Images'],
+    quiz: [
+      { question: 'An animation is made by showing images:', options: ['one after another in order', 'all at once', 'never', 'backwards only'], answerIndex: 0 },
+      { question: 'Running steps in a set order is called a:', options: ['sequence', 'sensor', 'battery', 'wheel'], answerIndex: 0 },
+      { question: 'If the order of steps is wrong, the animation will:', options: ['not look right', 'be perfect', 'delete itself', 'speed up'], answerIndex: 0 },
+    ],
   },
   {
     id: 'codey-l4', slug: 'codey-l4', title: 'Identify the Bug', order: 4,

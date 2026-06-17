@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonImage, LessonSection } from '@/types';
+import type { Course, LessonDetail, LessonImage, LessonSection, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Arduino — "37 Sensor Kit" (RobotLinking)
@@ -19,6 +19,7 @@ interface ArdConfig {
   emoji: string;
   difficulty: 3 | 4;
   kit?: 'ps' | 's';  // 'ps' = Power Supply Kit, 's' = 37 Sensor Kit (default)
+  quiz?: QuizQuestion[];
 }
 
 function gallery(slug: string, pages: number): LessonImage[] {
@@ -208,6 +209,7 @@ function makeArdLesson(c: ArdConfig): LessonDetail {
       'Modified a value.',
     ],
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${slug}-r1`, title: `${kitName} — Tutorial (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-arduino', description: 'Official kit guide (wiring + code for every module)', needsReview: true },
     ],
@@ -216,13 +218,33 @@ function makeArdLesson(c: ArdConfig): LessonDetail {
 
 const CONFIGS: ArdConfig[] = [
   // ── Power Supply Learning Kit (foundational: 23 lessons) ──
-  { n: 1,  kit: 'ps', title: 'Blink', module: 1, emoji: '💡', pages: 7, difficulty: 3, concept: 'The classic first Arduino program.', does: 'It blinks the on-board LED on and off — proving your code uploads and runs on the board.', skills: ['Digital Output', 'delay()', 'IDE Basics'] },
-  { n: 2,  kit: 'ps', title: 'Button', module: 1, emoji: '🔘', pages: 4, difficulty: 3, concept: 'A push button input.', does: 'The Arduino reads whether the button is pressed and reacts (e.g. lights an LED).', skills: ['Digital Input', 'Buttons', 'if'] },
+  { n: 1,  kit: 'ps', title: 'Blink', module: 1, emoji: '💡', pages: 7, difficulty: 3, concept: 'The classic first Arduino program.', does: 'It blinks the on-board LED on and off — proving your code uploads and runs on the board.', skills: ['Digital Output', 'delay()', 'IDE Basics'],
+    quiz: [
+      { question: 'In Arduino code, which function runs once at the start?', options: ['setup()', 'loop()', 'main()', 'start()'], answerIndex: 0, explanation: 'setup() runs once; loop() repeats forever.' },
+      { question: 'digitalWrite(pin, HIGH) does what to an LED pin?', options: ['turns it on', 'turns it off', 'reads it', 'deletes it'], answerIndex: 0 },
+      { question: 'delay(1000) pauses for:', options: ['1 second (1000 ms)', '1000 seconds', '1 minute', 'no time'], answerIndex: 0 },
+    ] },
+  { n: 2,  kit: 'ps', title: 'Button', module: 1, emoji: '🔘', pages: 4, difficulty: 3, concept: 'A push button input.', does: 'The Arduino reads whether the button is pressed and reacts (e.g. lights an LED).', skills: ['Digital Input', 'Buttons', 'if'],
+    quiz: [
+      { question: 'Which function reads whether a button pin is pressed?', options: ['digitalRead()', 'digitalWrite()', 'delay()', 'tone()'], answerIndex: 0 },
+      { question: 'A button is an example of a digital:', options: ['input', 'output', 'motor', 'resistor'], answerIndex: 0 },
+      { question: 'To do something only when pressed you use:', options: ['an if statement', 'a delay', 'a comment', 'a colour'], answerIndex: 0 },
+    ] },
   { n: 3,  kit: 'ps', title: 'Flowing LED Lights', module: 1, emoji: '🌊', pages: 3, difficulty: 3, concept: 'A row of LEDs.', does: 'Lighting them one after another with a loop makes a flowing "chase" effect.', skills: ['Loops', 'Arrays', 'LEDs'] },
   { n: 4,  kit: 'ps', title: 'Active Buzzer', module: 1, emoji: '🔔', pages: 3, difficulty: 3, concept: 'An active buzzer.', does: 'It beeps with a fixed tone when switched on — the simplest sound output.', skills: ['Buzzer', 'Digital Output', 'Sound'] },
   { n: 5,  kit: 'ps', title: 'Passive Buzzer', module: 1, emoji: '🎵', pages: 3, difficulty: 3, concept: 'A passive buzzer.', does: 'Toggling it at different speeds plays different tones — you can play a melody.', skills: ['tone()', 'Frequency', 'Music'] },
-  { n: 6,  kit: 'ps', title: 'Photoresistor', module: 1, emoji: '🔆', pages: 3, difficulty: 3, concept: 'A light-dependent resistor (LDR).', does: 'The Arduino reads the surrounding light level as an analog value.', skills: ['analogRead', 'Light', 'Sensors'] },
-  { n: 7,  kit: 'ps', title: 'RGB LED', module: 1, emoji: '🌈', pages: 3, difficulty: 3, concept: 'A full-colour RGB LED.', does: 'Mixing red, green, and blue with PWM (analogWrite) makes any colour.', skills: ['PWM', 'analogWrite', 'Colour'] },
+  { n: 6,  kit: 'ps', title: 'Photoresistor', module: 1, emoji: '🔆', pages: 3, difficulty: 3, concept: 'A light-dependent resistor (LDR).', does: 'The Arduino reads the surrounding light level as an analog value.', skills: ['analogRead', 'Light', 'Sensors'],
+    quiz: [
+      { question: 'A photoresistor (LDR) changes its resistance with:', options: ['light level', 'temperature', 'sound', 'colour of the wire'], answerIndex: 0 },
+      { question: 'Which function reads a varying (analog) sensor value?', options: ['analogRead()', 'digitalRead()', 'digitalWrite()', 'delay()'], answerIndex: 0 },
+      { question: 'A digital input is on/off, while an analog input gives:', options: ['a range of values', 'only HIGH', 'only LOW', 'no value'], answerIndex: 0 },
+    ] },
+  { n: 7,  kit: 'ps', title: 'RGB LED', module: 1, emoji: '🌈', pages: 3, difficulty: 3, concept: 'A full-colour RGB LED.', does: 'Mixing red, green, and blue with PWM (analogWrite) makes any colour.', skills: ['PWM', 'analogWrite', 'Colour'],
+    quiz: [
+      { question: 'Which function sets a PWM (varying) output, e.g. brightness?', options: ['analogWrite()', 'digitalWrite()', 'digitalRead()', 'delay()'], answerIndex: 0 },
+      { question: 'An RGB LED makes colours by mixing:', options: ['red, green and blue', 'black and white', 'yellow only', 'sound'], answerIndex: 0 },
+      { question: 'PWM works by:', options: ['switching the pin on/off very fast to control average power', 'using Wi-Fi', 'reading a sensor', 'playing music'], answerIndex: 0 },
+    ] },
   { n: 8,  kit: 'ps', title: 'Servo Motor', module: 2, emoji: '⚙️', pages: 2, difficulty: 3, concept: 'A servo motor.', does: 'It moves to a precise angle (0–180°) on command — used for steering and arms.', skills: ['Servo', 'Angles', 'Libraries'] },
   { n: 9,  kit: 'ps', title: 'LCD1602 Display', module: 2, emoji: '🔡', pages: 3, difficulty: 3, concept: 'A 16×2 character LCD.', does: 'It displays two lines of text — perfect for showing sensor readings and messages.', skills: ['LCD', 'Display', 'Libraries'] },
   { n: 10, kit: 'ps', title: 'Thermistor', module: 2, emoji: '🌡️', pages: 2, difficulty: 3, concept: 'A thermistor.', does: 'Its resistance changes with temperature; the code converts the analog reading into °C.', skills: ['analogRead', 'Temperature', 'Maths'] },

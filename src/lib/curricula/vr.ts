@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId } from '@/types';
+import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  VR — "Build Virtual Worlds with CoSpaces Edu" (3 levels, 12 lessons)
@@ -19,7 +19,7 @@ interface VR {
   moduleId: string; moduleTitle: string; order: number; youtubeId?: string;
   concept: string; conceptExplain: string; objectives: string[];
   steps: string[]; challenge: string; skills: string[];
-  resources: Resource[];
+  resources: Resource[]; quiz?: QuizQuestion[];
 }
 
 function makeVR(c: VR): LessonDetail {
@@ -84,6 +84,7 @@ function makeVR(c: VR): LessonDetail {
     objectives: c.objectives, assessmentChecklist: c.objectives,
     sections,
     ...(c.youtubeId ? { youtubeId: c.youtubeId } : {}),
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: c.resources,
   };
 }
@@ -103,6 +104,11 @@ const CONFIGS: VR[] = [
     steps: ['Discuss VR vs AR vs 360 and watch a VR example.', 'Learn the headset rules: set the guardian boundary, short sessions, stop if unwell.', 'Sign in to CoSpaces Edu and create a new space.', 'Learn to orbit, pan and zoom the camera in the editor.'],
     challenge: 'Pick an environment, add one object, and open the empty world in the Quest to look around.',
     skills: ['VR Concepts', 'Headset Safety', 'CoSpaces Editor'],
+    quiz: [
+      { question: 'VR (Virtual Reality) means:', options: ['an immersive computer-made 3D world you look around in', 'a 2D photo', 'a phone call', 'a printed book'], answerIndex: 0 },
+      { question: 'CoSpaces Edu is used to:', options: ['build 3D/VR worlds in the browser', 'slice 3D prints', 'edit videos', 'send email'], answerIndex: 0 },
+      { question: 'A headset safety rule is to:', options: ['set the guardian boundary and keep sessions short', 'fly a drone', 'turn off the lights', 'skip breaks'], answerIndex: 0 },
+    ],
     resources: [CS_START, CS_PD],
   },
   {
@@ -112,6 +118,11 @@ const CONFIGS: VR[] = [
     steps: ['Choose an environment (e.g. terrain, space, room).', 'Drag in objects from the library.', 'Use the move/rotate/scale tools to place them.', 'Build a small themed scene (e.g. a park or a planet base).'],
     challenge: 'Design a themed "diorama" scene with at least 8 well-placed objects.',
     skills: ['3D Building', 'Transforms', 'Composition'],
+    quiz: [
+      { question: 'To build a scene in CoSpaces you:', options: ['drag objects from the library onto the scene', 'write C++', 'print them', 'scan a QR code'], answerIndex: 0 },
+      { question: 'Move, rotate and scale are used to:', options: ['position and size objects in 3D', 'change the password', 'export STL', 'connect Wi-Fi'], answerIndex: 0 },
+      { question: 'Good scene composition means:', options: ['placing objects thoughtfully for the viewer', 'using one object only', 'no objects', 'all objects in one spot'], answerIndex: 0 },
+    ],
     resources: [CS_START],
   },
   {
@@ -141,6 +152,11 @@ const CONFIGS: VR[] = [
     steps: ['Watch the CoBlocks basics video above.', 'Mark an object as "usable in CoBlocks".', 'Add "when play → forever → rotate/move" for that object.', 'Press play and preview the motion.'],
     challenge: 'Make an object patrol back and forth (or orbit another object) using a loop.',
     skills: ['CoBlocks', 'Loops', 'Motion'],
+    quiz: [
+      { question: 'CoBlocks is:', options: ['CoSpaces\' drag-and-drop coding language', 'a headset', 'a slicer', 'a 3D printer'], answerIndex: 0 },
+      { question: 'To make an object move continuously you use:', options: ['a forever loop', 'one move block only', 'a quiz', 'an image'], answerIndex: 0 },
+      { question: '"when play" runs the code:', options: ['when the scene starts', 'never', 'only in VR', 'when you exit'], answerIndex: 0 },
+    ],
     resources: [CS_COBLOCKS_VID, CS_START],
   },
   {
@@ -179,6 +195,11 @@ const CONFIGS: VR[] = [
     steps: ['Enable physics on a few objects.', 'Watch them fall and collide with the ground.', 'Stack or knock down objects.', 'Use CoBlocks to push/throw an object on an event.'],
     challenge: 'Build a mini "knock-the-tower" or bowling interaction using physics.',
     skills: ['Physics', 'Gravity', 'Collisions'],
+    quiz: [
+      { question: 'Turning on physics gives objects:', options: ['gravity, mass and collisions', 'a new colour', 'a password', 'Wi-Fi'], answerIndex: 0 },
+      { question: 'With physics on, a raised object will:', options: ['fall and collide with the ground', 'float forever', 'disappear', 'change colour'], answerIndex: 0 },
+      { question: 'Physics makes a VR scene feel:', options: ['believable and playful', 'broken', 'slower to design', 'silent'], answerIndex: 0 },
+    ],
     resources: [CS_START],
   },
   {

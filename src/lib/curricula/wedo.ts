@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonImage, LessonSection } from '@/types';
+import type { Course, LessonDetail, LessonImage, LessonSection, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  LEGO Education WeDo 2.0 — "Build & Program"
@@ -27,6 +27,7 @@ interface WedoConfig {
   realWorld: string[];
   modelChallenge: string;
   skills: string[];
+  quiz?: QuizQuestion[];
 }
 
 function buildGallery(slug: string, pages: number): LessonImage[] {
@@ -212,6 +213,7 @@ function makeWedoLesson(c: WedoConfig): LessonDetail {
       'Gave a real-world example.',
     ],
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${c.id}-r1`, title: `${c.title} — Full Building Instructions (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-wedo', description: 'Official LEGO WeDo 2.0 step-by-step build', needsReview: true },
     ],
@@ -228,17 +230,32 @@ const CONFIGS: WedoConfig[] = [
     concept: 'a motor and a Smarthub', conceptExplain: 'WeDo 2.0 models are driven by a medium motor and controlled by the Smarthub, which talks to your tablet over Bluetooth.',
     motion: 'a motorised robot that drives when you program it.', program: 'turn the motor on so the robot drives forward, then add a stop.',
     observe: 'press play in the app and watch the motor drive the robot.', realWorld: ['a remote-control car', 'a robot vacuum', 'a toy train'],
-    modelChallenge: 'Make the robot drive forward, then backward.', skills: ['Motor', 'Smarthub', 'Building', 'First Program'] },
+    modelChallenge: 'Make the robot drive forward, then backward.', skills: ['Motor', 'Smarthub', 'Building', 'First Program'],
+    quiz: [
+      { question: 'What is the "brain" of WeDo 2.0?', options: ['the Smarthub', 'the wheel', 'the tilt sensor', 'the brick'], answerIndex: 0 },
+      { question: 'Which part makes the robot move?', options: ['the motor', 'the Smarthub light', 'the sticker', 'the cable'], answerIndex: 0 },
+      { question: 'To make Cody drive you:', options: ['program the motor to turn on', 'shake it', 'press a button on the wheel', 'tilt it'], answerIndex: 0 },
+    ] },
   { id: 'wedo-l2', slug: 'wedo-cody-motion', title: 'Cody with a Motion Sensor', order: 2, moduleId: 'wedo-m1', moduleTitle: M1, emoji: '👀', pages: 6, capped: false,
     concept: 'the Motion Sensor', conceptExplain: 'The motion (distance) sensor detects when an object is near. The program can react to what the sensor "sees".',
     motion: 'reacts when something gets close to its sensor.', program: 'use a "wait for distance" block so the robot stops (or reacts) when something is near.',
     observe: 'move your hand toward the sensor and watch the robot react.', realWorld: ['automatic doors', 'a car parking sensor', 'a hand-dryer'],
-    modelChallenge: 'Make it do something different when it senses an object (sound, light, stop).', skills: ['Motion Sensor', 'Input', 'Conditions', 'Building'] },
+    modelChallenge: 'Make it do something different when it senses an object (sound, light, stop).', skills: ['Motion Sensor', 'Input', 'Conditions', 'Building'],
+    quiz: [
+      { question: 'The motion sensor lets the robot:', options: ['detect when something is near', 'drive faster', 'play music', 'change colour'], answerIndex: 0 },
+      { question: 'A sensor is an example of an:', options: ['input (it senses)', 'output', 'motor', 'wheel'], answerIndex: 0 },
+      { question: 'You can make the robot react when it:', options: ['senses an object in front', 'is switched off', 'has no battery', 'is upside down only'], answerIndex: 0 },
+    ] },
   { id: 'wedo-l3', slug: 'wedo-cody-tilt', title: 'Cody with a Tilt Sensor', order: 3, moduleId: 'wedo-m1', moduleTitle: M1, emoji: '📐', pages: 6, capped: false,
     concept: 'the Tilt Sensor', conceptExplain: 'The tilt sensor detects which way it is tilted (up, down, left, right). The program can respond to the tilt.',
     motion: 'reacts when you tilt it in different directions.', program: 'use the tilt sensor to control the motor — e.g. tilt one way to go, the other way to stop.',
     observe: 'tilt the model and watch how it responds.', realWorld: ['a phone screen rotating', 'a game controller', 'a step counter'],
-    modelChallenge: 'Make a different reaction for each tilt direction.', skills: ['Tilt Sensor', 'Input', 'Direction', 'Building'] },
+    modelChallenge: 'Make a different reaction for each tilt direction.', skills: ['Tilt Sensor', 'Input', 'Direction', 'Building'],
+    quiz: [
+      { question: 'The tilt sensor detects:', options: ['which way it is tilted', 'how loud a sound is', 'the colour', 'the distance'], answerIndex: 0 },
+      { question: 'The tilt sensor is an:', options: ['input', 'output', 'motor', 'battery'], answerIndex: 0 },
+      { question: 'You can make a different action for each:', options: ['tilt direction', 'colour', 'sound', 'wheel'], answerIndex: 0 },
+    ] },
   { id: 'wedo-l4', slug: 'wedo-easystart2', title: 'Getting Started — Part 2', order: 4, moduleId: 'wedo-m1', moduleTitle: M1, emoji: '🚀', pages: 11, capped: false,
     concept: 'building with a motor', conceptExplain: 'A guided build that adds the motor to your model and gets it moving with a simple program.',
     motion: 'a guided model that moves with the motor.', program: 'turn the motor on at a chosen power for a set time.',
