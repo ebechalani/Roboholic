@@ -25,6 +25,12 @@ import { TELLO_COURSE, TELLO_LESSONS } from './tello';
 import { GAME_DESIGN_COURSE, GAME_DESIGN_LESSONS } from './game-design';
 import { VR_COURSE, VR_LESSONS } from './vr';
 import { PRINTING_3D_COURSE, PRINTING_3D_LESSONS } from './printing-3d';
+import { SCRATCH_COURSE, SCRATCH_LESSONS } from './scratch';
+import { WEBDEV_COURSE, WEBDEV_LESSONS } from './webdev';
+import { PHP_COURSE, PHP_LESSONS } from './php-mysql';
+import { PROJECTS_COURSE, PROJECTS_LESSONS } from './projects';
+import { MAKEX_COURSE, MAKEX_LESSONS, COMPETITION_COURSE, COMPETITION_LESSONS } from './competition';
+import { INVENTION_COURSE, INVENTION_LESSONS } from './invention';
 import { MTINY_COURSE, MTINY_LESSON } from './mtiny';
 import {
   MBOT2_COURSE,
@@ -59,6 +65,13 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(GAME_DESIGN_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(VR_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(PRINTING_3D_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(SCRATCH_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(WEBDEV_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(PHP_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(PROJECTS_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(MAKEX_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(COMPETITION_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(INVENTION_LESSONS.map(l => [l.id, l])),
   [MTINY_LESSON.id]: MTINY_LESSON,
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
@@ -98,10 +111,17 @@ export const COURSES_BY_PROGRAM: Record<string, Course> = {
   [GAME_DESIGN_COURSE.programSlug]: GAME_DESIGN_COURSE,
   [VR_COURSE.programSlug]: VR_COURSE,
   [PRINTING_3D_COURSE.programSlug]: PRINTING_3D_COURSE,
+  [SCRATCH_COURSE.programSlug]: SCRATCH_COURSE,
+  [WEBDEV_COURSE.programSlug]: WEBDEV_COURSE,
+  [PHP_COURSE.programSlug]: PHP_COURSE,
+  [PROJECTS_COURSE.programSlug]: PROJECTS_COURSE,
+  [MAKEX_COURSE.programSlug]: MAKEX_COURSE,
+  [COMPETITION_COURSE.programSlug]: COMPETITION_COURSE,
+  [INVENTION_COURSE.programSlug]: INVENTION_COURSE,
 };
 
 /** All courses as a list (for the lesson library, etc.). */
-export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE, ARDUINO_COURSE, TINKERCAD_COURSE, MICROBIT_COURSE, MTINY_COURSE, SMALLBASIC_COURSE, PYTHON_COURSE, SPIKE_COURSE, ELECTRONICS_COURSE, AI_ML_COURSE, MAKEY_COURSE, TELLO_COURSE, GAME_DESIGN_COURSE, VR_COURSE, PRINTING_3D_COURSE];
+export const ALL_COURSES: Course[] = [ESM_COURSE, WEDO_COURSE, SCRATCH_JR_COURSE, CODEY_COURSE, MBOT2_COURSE, EV3_COURSE, ARDUINO_COURSE, TINKERCAD_COURSE, MICROBIT_COURSE, MTINY_COURSE, SMALLBASIC_COURSE, PYTHON_COURSE, SPIKE_COURSE, ELECTRONICS_COURSE, AI_ML_COURSE, MAKEY_COURSE, TELLO_COURSE, GAME_DESIGN_COURSE, VR_COURSE, PRINTING_3D_COURSE, SCRATCH_COURSE, WEBDEV_COURSE, PHP_COURSE, PROJECTS_COURSE, MAKEX_COURSE, COMPETITION_COURSE, INVENTION_COURSE];
 
 export function getLessonById(id: string): LessonDetail | undefined {
   return ALL_LESSONS[id];
