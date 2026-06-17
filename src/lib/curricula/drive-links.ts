@@ -1,5 +1,6 @@
 // AUTO-GENERATED from the academy Google Drive (file IDs). Maps resource id -> exact Drive file link.
 export const DRIVE_LINKS: Record<string, string> = {
+  "g12-book": "https://drive.google.com/file/d/11TI6WWA_BJ-zS8uRhZaevriazsF3ZzTb/view?usp=sharing",
   "mb2l1-r1": "https://drive.google.com/file/d/1zS0jc-onv226HbLr6wKmw_Mdfw7yl001/view?usp=sharing",
   "mb2l1-r2": "https://drive.google.com/file/d/1Rt3YkcG1ZeXbce7dESrL0mhWWGwd49q6/view?usp=sharing",
   "mb2l1-r3": "https://drive.google.com/file/d/1AIUC0g51gp1SLNYi9vJr450qoC7B2yOQ/view?usp=sharing",

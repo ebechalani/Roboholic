@@ -396,7 +396,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['13-15'],
     levels: ['Intermediate', 'Advanced'],
     courseCount: 1,
-    lessonCount: 9,
+    lessonCount: 15,
     tags: ['Backend', 'Database', 'CRUD', 'Web Dev'],
   },
 
