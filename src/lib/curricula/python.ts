@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, Module, Difficulty } from '@/types';
+import type { Course, LessonDetail, LessonSection, Module, Difficulty, QuizQuestion, LessonInteraction } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Python & MicroPython (physical computing).
@@ -15,6 +15,7 @@ interface PyLesson {
   concept: string; conceptExplain: string; objectives: string[];
   code: string[]; challenge: string; challengeSteps: string[];
   hardware: string; skills: string[]; book?: 1 | 2;
+  quiz?: QuizQuestion[]; playground?: { lang: 'html' | 'python'; starter: string }; interactions?: LessonInteraction[];
 }
 
 function makeLesson(c: PyLesson): LessonDetail {
@@ -77,6 +78,9 @@ function makeLesson(c: PyLesson): LessonDetail {
     objectives: c.objectives,
     assessmentChecklist: c.objectives,
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
+    ...(c.playground ? { playground: c.playground } : {}),
+    ...(c.interactions ? { interactions: c.interactions } : {}),
     resources,
   };
 }
@@ -91,6 +95,13 @@ const CONFIGS: PyLesson[] = [
     challenge: 'Write a program that asks for two numbers and prints their sum, difference and product.',
     challengeSteps: ['Read two numbers with input() and int().', 'Compute the three results.', 'print() each with a label.', 'Test with different inputs.'],
     skills: ['Python', 'Variables', 'Input/Output'],
+    playground: { lang: 'python', starter: 'name = "RoboHolic"\nage = 14\nprint("Hi " + name + "! Next year you are", age + 1)\n# Change name and age, then Run ▶' },
+    quiz: [
+      { question: 'Which function shows output on the screen?', options: ['input()', 'print()', 'show()', 'echo()'], answerIndex: 1 },
+      { question: 'int("5") gives:', options: ['the text "5"', 'the number 5', 'an error', 'nothing'], answerIndex: 1, explanation: 'int() converts text to a whole number.' },
+      { question: 'A variable in Python:', options: ['must start with $', 'stores a value under a name', 'can only hold numbers', 'never changes'], answerIndex: 1 },
+    ],
+    interactions: [{ kind: 'predict', title: '🔮 Predict', code: 'x = 4\ny = 3\nprint(x + y, x * y)', question: 'What does this print?', options: ['7 12', '43 43', '12 7', 'x+y x*y'], answerIndex: 0, explanation: '4+3=7 and 4×3=12.' }],
   },
   {
     n: 2, title: 'Control Flow & Functions', emoji: '🔀', difficulty: 3,
@@ -101,6 +112,13 @@ const CONFIGS: PyLesson[] = [
     challenge: 'Write a function that returns the largest of three numbers, and test it in a loop.',
     challengeSteps: ['Define max3(a, b, c) using if/else.', 'Return the largest value.', 'Call it with several trios.', 'Print each result.'],
     skills: ['Conditionals', 'Loops', 'Functions'],
+    playground: { lang: 'python', starter: 'def is_even(n):\n    return n % 2 == 0\n\nfor i in range(1, 6):\n    print(i, "even" if is_even(i) else "odd")\n# Try changing range(1, 6)' },
+    quiz: [
+      { question: 'What does a for loop do?', options: ['Makes a decision', 'Repeats code', 'Defines a function', 'Imports a library'], answerIndex: 1 },
+      { question: 'def is used to:', options: ['delete a variable', 'define a function', 'divide numbers', 'declare a loop'], answerIndex: 1 },
+      { question: 'n % 2 == 0 is True when n is:', options: ['odd', 'even', 'negative', 'zero only'], answerIndex: 1, explanation: '% is the remainder; even numbers divide by 2 with remainder 0.' },
+    ],
+    interactions: [{ kind: 'predict', title: '🔮 Predict', code: 'total = 0\nfor i in range(1, 4):\n    total += i\nprint(total)', question: 'What is printed?', options: ['3', '6', '123', '4'], answerIndex: 1, explanation: '1 + 2 + 3 = 6.' }],
   },
   {
     n: 3, title: 'MicroPython on the micro:bit I — Display & Buttons', emoji: '🔘', difficulty: 3, book: 1,
@@ -111,6 +129,12 @@ const CONFIGS: PyLesson[] = [
     challenge: 'Make a counter: button A adds 1, button B resets to 0, and the number shows on the display.',
     challengeSteps: ['Keep a variable count = 0.', 'On button A pressed → count += 1.', 'On button B pressed → count = 0.', 'display.show(count) in the loop.'],
     skills: ['MicroPython', 'LED Display', 'Buttons'],
+    quiz: [
+      { question: 'Which import gives you the micro:bit features?', options: ['import microbit', 'from microbit import *', 'include microbit', 'using microbit'], answerIndex: 1 },
+      { question: 'Which shows a scrolling message on the LEDs?', options: ['display.scroll("Hi")', 'print("Hi")', 'led.write("Hi")', 'show.text("Hi")'], answerIndex: 0 },
+      { question: 'button_a.is_pressed() returns:', options: ['the letter A', 'True or False', 'a number 0-9', 'an image'], answerIndex: 1 },
+    ],
+    interactions: [{ kind: 'predict', title: '🔮 Predict', code: 'from microbit import *\nwhile True:\n    if button_a.is_pressed():\n        display.show(Image.HAPPY)\n    else:\n        display.scroll("Hi")', question: 'What does the micro:bit do?', options: ['Always shows a happy face', 'Scrolls "Hi", but shows a happy face while A is held', 'Does nothing', 'Beeps when A is pressed'], answerIndex: 1, explanation: 'The if checks button A each loop; held → happy face, otherwise it scrolls "Hi".' }],
   },
   {
     n: 4, title: 'MicroPython on the micro:bit II — Sensors, Music & Radio', emoji: '📻', difficulty: 4, book: 1,
@@ -121,6 +145,12 @@ const CONFIGS: PyLesson[] = [
     challenge: 'Build a 2-micro:bit "message ping": shake one to light an icon on the other.',
     challengeSteps: ['radio.on() on both micro:bits.', 'On shake → radio.send a code.', 'On receive → display.show an image.', 'Test between two devices.'],
     skills: ['Sensors', 'Radio', 'Music'],
+    quiz: [
+      { question: 'Which detects the micro:bit being shaken?', options: ['accelerometer.was_gesture("shake")', 'display.shake()', 'button_a.shake()', 'radio.shake()'], answerIndex: 0 },
+      { question: 'What must you call before sending radio messages?', options: ['radio.start()', 'radio.on()', 'radio.connect()', 'radio.begin()'], answerIndex: 1 },
+      { question: 'radio lets two micro:bits:', options: ['charge faster', 'send messages wirelessly to each other', 'play louder', 'show more LEDs'], answerIndex: 1 },
+    ],
+    interactions: [{ kind: 'predict', title: '🔮 Predict', code: 'if accelerometer.was_gesture("shake"):\n    radio.send("hello")', question: 'When is "hello" sent?', options: ['Every loop', 'Only when the micro:bit is shaken', 'When a button is pressed', 'Never'], answerIndex: 1 }],
   },
   {
     n: 5, title: 'MicroPython on the ESP32 — GPIO & Analog', emoji: '🔌', difficulty: 4, book: 2,
@@ -131,6 +161,12 @@ const CONFIGS: PyLesson[] = [
     challenge: 'Make the LED brightness fade up and down using PWM.',
     challengeSteps: ['Import PWM from machine.', 'Create PWM on the LED pin.', 'Loop the duty cycle 0→1023→0.', 'Add small sleeps so the fade is visible.'],
     skills: ['ESP32', 'GPIO', 'PWM'],
+    quiz: [
+      { question: 'Pin(2, Pin.OUT) creates:', options: ['an input button', 'an output pin (e.g. to drive an LED)', 'a Wi-Fi connection', 'a timer'], answerIndex: 1 },
+      { question: 'What is PWM used for here?', options: ['Connecting Wi-Fi', 'Fading an LED\'s brightness', 'Reading a sensor', 'Printing text'], answerIndex: 1, explanation: 'PWM rapidly switches the pin to control average power → brightness.' },
+      { question: 'led.value(1) then led.value(0) with sleeps makes the LED:', options: ['stay off', 'blink', 'get brighter forever', 'beep'], answerIndex: 1 },
+    ],
+    interactions: [{ kind: 'predict', title: '🔮 Predict', code: 'led = Pin(2, Pin.OUT)\nwhile True:\n    led.value(1); sleep(0.5)\n    led.value(0); sleep(0.5)', question: 'What does the LED do?', options: ['Stays on', 'Blinks on/off about once a second', 'Fades smoothly', 'Stays off'], answerIndex: 1, explanation: '0.5s on + 0.5s off ≈ one blink per second.' }],
   },
   {
     n: 6, title: 'ESP32 IoT — Wi-Fi & a Web Server', emoji: '🌐', difficulty: 4, book: 2,
@@ -141,6 +177,12 @@ const CONFIGS: PyLesson[] = [
     challenge: 'Serve a web page with ON/OFF links that switch the LED.',
     challengeSteps: ['Connect to Wi-Fi and print the IP.', 'Open a socket and listen on port 80.', 'Parse the request for /on or /off.', 'Set the LED pin and return an HTML page.'],
     skills: ['Wi-Fi', 'Web Server', 'IoT'],
+    quiz: [
+      { question: 'What does the ESP32 need to be an IoT device?', options: ['A bigger battery', 'A Wi-Fi connection', 'A second LED', 'A printer'], answerIndex: 1 },
+      { question: 'After connecting to Wi-Fi, ifconfig()[0] gives the:', options: ['password', 'IP address', 'temperature', 'time'], answerIndex: 1 },
+      { question: 'A tiny web server on the ESP32 lets you:', options: ['control hardware from a phone/computer on the network', 'charge the board', 'compile C++', 'edit photos'], answerIndex: 0 },
+    ],
+    interactions: [{ kind: 'predict', title: '🔮 Predict', code: 'sta.connect("SSID", "PASSWORD")\nwhile not sta.isconnected():\n    pass\nprint("IP:", sta.ifconfig()[0])', question: 'What does the while loop do?', options: ['Blinks an LED', 'Waits until Wi-Fi is connected', 'Sends a message', 'Counts to 10'], answerIndex: 1, explanation: 'It loops doing nothing until isconnected() becomes True.' }],
   },
 ];
 
