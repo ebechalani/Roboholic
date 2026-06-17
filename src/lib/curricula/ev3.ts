@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonImage, LessonSection } from '@/types';
+import type { Course, LessonDetail, LessonImage, LessonSection, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  LEGO MINDSTORMS EV3 — "Beginner Programming" (Level I)
@@ -24,6 +24,7 @@ interface Ev3Config {
   challengeSteps: string[];  // suggested steps
   skills: string[];
   difficulty: 2 | 3 | 4;
+  quiz?: QuizQuestion[];
 }
 
 function slideGallery(slug: string, pages: number): LessonImage[] {
@@ -182,6 +183,7 @@ function makeEv3Lesson(c: Ev3Config): LessonDetail {
       'Tested and improved it.',
     ],
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${c.id}-r1`, title: `${c.title} — Lesson Slides (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-ev3', description: 'EV3Lessons.com slide deck', needsReview: true },
     ],
@@ -215,6 +217,11 @@ const CONFIGS: Ev3Config[] = [
     challenge: 'Turn on the brick, explore its menus, then build and download a simple one-block program.',
     challengeSteps: ['Power on with the Center button; use Back and the arrows to navigate menus.', 'Open the EV3 software and start a new project.', 'Drag one block (e.g. play a sound or show an image).', 'Download to the brick and run it.'],
     skills: ['EV3 Brick', 'EV3 Software', 'Ports', 'Download & Run'],
+    quiz: [
+      { question: 'Motors plug into ports labelled:', options: ['A, B, C, D', '1, 2, 3, 4', 'X, Y, Z', 'I, II, III'], answerIndex: 0, explanation: 'Motors use letter ports (A–D); sensors use number ports (1–4).' },
+      { question: 'Sensors plug into ports labelled:', options: ['A–D', '1–4', 'red/green', 'USB'], answerIndex: 1 },
+      { question: 'To run your program on the robot you must first:', options: ['download it to the brick', 'print it', 'email it', 'charge the sensor'], answerIndex: 0 },
+    ],
   },
   {
     id: 'ev3-l4', slug: 'ev3-l4', title: 'Moving Straight', order: 4, moduleId: 'ev3-m1', moduleTitle: M1, emoji: '➡️', pages: 12, difficulty: 2,
@@ -223,6 +230,11 @@ const CONFIGS: Ev3Config[] = [
     challenge: 'Drive forward from the start line to the finish line, then back to the start.',
     challengeSteps: ['Add a Move Steering block; set steering to 0 (straight).', 'Choose power and a distance (rotations or degrees).', 'Add a second block to drive back.', 'Download and test; adjust the distance until it stops on the line.'],
     skills: ['Move Steering', 'Distance', 'Power', 'Port View'],
+    quiz: [
+      { question: 'Which block drives the robot straight a set distance?', options: ['Move Steering (rotations/degrees)', 'Sound', 'Display', 'Wait'], answerIndex: 0 },
+      { question: 'To make the robot go further you increase the:', options: ['rotations/degrees', 'volume', 'screen size', 'port number'], answerIndex: 0 },
+      { question: 'If the robot curves instead of going straight, likely cause:', options: ['the steering isn\'t 0 / motors differ', 'the screen is off', 'no sound', 'wrong colour'], answerIndex: 0 },
+    ],
   },
   {
     id: 'ev3-l5', slug: 'ev3-l5', title: 'Using Sensor Data & Port View', order: 5, moduleId: 'ev3-m1', moduleTitle: M1, emoji: '🔎', pages: 9, difficulty: 2,
@@ -247,6 +259,11 @@ const CONFIGS: Ev3Config[] = [
     challenge: 'Baseball player: drive forward and turn to run the bases — then do a 180° turn and return to the same spot.',
     challengeSteps: ['Use Move Steering to drive straight.', 'For a turn, set steering to ±50 (pivot) or ±100 (spin).', 'Use Port View to find the degrees for a real 90°/180° turn.', 'Combine straight + turns to complete the path.'],
     skills: ['Pivot Turn', 'Spin Turn', 'Steering', 'Accuracy'],
+    quiz: [
+      { question: 'A spin turn (rotate on the spot) uses a steering value of:', options: ['100 / -100 (or +/-100)', '0', '50', '10'], answerIndex: 0, explanation: 'Full opposite steering spins in place; 0 goes straight.' },
+      { question: 'A pivot turn (one wheel still) uses steering of about:', options: ['+/-50', '0', '+/-100', '+/-10'], answerIndex: 0 },
+      { question: 'For repeatable turns it is best to:', options: ['tune/test the angle and keep it consistent', 'guess each time', 'turn the volume up', 'change ports'], answerIndex: 0 },
+    ],
   },
   {
     id: 'ev3-l12', slug: 'ev3-l12', title: 'Loops', order: 12, moduleId: 'ev3-m2', moduleTitle: M2, emoji: '🔁', pages: 7, difficulty: 2,
@@ -255,6 +272,11 @@ const CONFIGS: Ev3Config[] = [
     challenge: 'Program the robot to drive around a box (a square path) and return to its starting position — using a loop.',
     challengeSteps: ['Program ONE side + turn (move straight, then a 90° turn).', 'Put those blocks inside a Loop block.', 'Set the loop to repeat 4 times.', 'Test — the robot should trace the square and return.'],
     skills: ['Loops', 'Repetition', 'Efficiency', 'Squares'],
+    quiz: [
+      { question: 'A Loop block is used to:', options: ['repeat blocks without copy-pasting', 'make a sound', 'turn off the robot', 'read a colour'], answerIndex: 0 },
+      { question: 'To drive a square you put "forward + turn 90°" in a loop that repeats:', options: ['4 times', '1 time', 'forever only', '90 times'], answerIndex: 0 },
+      { question: 'Loops make a program:', options: ['shorter and easier to change', 'longer', 'impossible to run', 'louder'], answerIndex: 0 },
+    ],
   },
   {
     id: 'ev3-l13', slug: 'ev3-l13', title: 'Switches', order: 13, moduleId: 'ev3-m2', moduleTitle: M2, emoji: '🔀', pages: 8, difficulty: 3,
@@ -263,6 +285,11 @@ const CONFIGS: Ev3Config[] = [
     challenge: 'Change the EV3 display based on the touch sensor: if pressed, show a happy face; if not, show a sad face.',
     challengeSteps: ['Add a Switch block set to the touch sensor (pressed?).', 'In the "yes" branch, add a Display block with a happy face.', 'In the "no" branch, add a Display block with a sad face.', 'Wrap it in a Loop so it keeps checking; download and test.'],
     skills: ['Switch', 'Conditionals', 'Touch Sensor', 'Display'],
+    quiz: [
+      { question: 'A Switch block lets the robot:', options: ['do different things based on a condition', 'drive faster', 'charge', 'play music only'], answerIndex: 0 },
+      { question: 'A Switch checking the Touch Sensor reacts to whether it is:', options: ['pressed or not', 'red or blue', 'near or far', 'loud or quiet'], answerIndex: 0 },
+      { question: 'A Switch is the EV3 version of:', options: ['an if / else statement', 'a loop', 'a variable', 'a motor'], answerIndex: 0 },
+    ],
   },
   {
     id: 'ev3-l10', slug: 'ev3-l10', title: 'Introduction to the Touch Sensor', order: 10, moduleId: 'ev3-m3', moduleTitle: M3, emoji: '👆', pages: 12, difficulty: 3,
@@ -295,6 +322,11 @@ const CONFIGS: Ev3Config[] = [
     challenge: 'Follow the right edge of a line — then make it stop when the touch sensor is pressed, or after a set distance.',
     challengeSteps: ['Add a Loop; inside it add a Switch on the Colour Sensor.', 'If black → turn right; if white → turn left (small steering values curve more smoothly).', 'Test on straight and curved lines; reduce the steering value if it overshoots.', 'Change the loop end condition to stop on a touch press or after a distance.'],
     skills: ['Line Following', 'Loops', 'Switches', 'Colour Sensor'],
+    quiz: [
+      { question: 'A basic line follower works by:', options: ['steering one way on the line, the other off it, in a loop', 'driving straight only', 'spinning forever', 'beeping'], answerIndex: 0 },
+      { question: 'Which sensor follows the line?', options: ['the colour/light sensor', 'the touch sensor', 'the ultrasonic sensor', 'the gyro'], answerIndex: 0 },
+      { question: 'The basic (on/off) follower tends to:', options: ['zig-zag along the edge', 'go perfectly straight', 'stop', 'reverse'], answerIndex: 0, explanation: 'Proportional control (Level III) makes it smooth.' },
+    ],
   },
   {
     id: 'ev3-l8', slug: 'ev3-l8', title: 'Displaying Text & Graphics', order: 8, moduleId: 'ev3-m2', moduleTitle: M2, emoji: '🖥️', pages: 12, difficulty: 2,
