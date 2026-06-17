@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection } from '@/types';
+import type { Course, LessonDetail, LessonSection, QuizQuestion } from '@/types';
 import { MICROBIT_UNIT_MODULES, MICROBIT_UNIT_LESSON_COUNT, MICROBIT_COURSE_TITLE } from './microbit-units';
 import { MICROBIT_CHAPTER_MODULE, MICROBIT_CHAPTER_LESSONS } from './school-chapters';
 import { MICROBIT_EXTRA_MODULE, MICROBIT_EXTRA_LESSONS, MICROBIT_CREATEAI_MODULE, MICROBIT_CREATEAI_LESSONS } from './external-resources';
@@ -20,7 +20,10 @@ interface MbConfig {
   build: string[];       // the Create coding steps
   skills: string[];
   difficulty: 1 | 2 | 3;
+  quiz?: QuizQuestion[];
 }
+
+const MAKECODE_EMBED = { kind: 'embed' as const, title: '🟩 Code it in MakeCode', url: 'https://makecode.microbit.org/', height: 540, note: 'Build the blocks here and press the simulator’s ▶ to test — right in the page. Drag a real micro:bit’s .hex out when you’re done. (Or open in a new tab.)' };
 
 function makeMbLesson(c: MbConfig): LessonDetail {
   const sections: LessonSection[] = [
@@ -151,6 +154,8 @@ function makeMbLesson(c: MbConfig): LessonDetail {
     objectives: c.objectives,
     assessmentChecklist: [`Built and flashed "${c.title}".`, 'Tested in the simulator and on the micro:bit.', 'Extended it.'],
     sections,
+    interactions: [MAKECODE_EMBED],
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `mb-l${c.n}-r1`, title: `${c.title} — Lesson Plan (DOCX)`, type: 'pdf', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-microbit', description: 'Official micro:bit Foundation lesson plan', needsReview: true },
       { id: `mb-l${c.n}-r2`, title: `${c.title} — Completed Code (.hex)`, type: 'code', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-microbit', description: 'Drag onto the MICROBIT drive', needsReview: true },
@@ -165,6 +170,11 @@ const CONFIGS: MbConfig[] = [
     objectives: ['Understand the micro:bit is a tiny computer that needs coded instructions.', 'Understand a sequence of instructions is an algorithm/program.', 'Use the MakeCode editor and transfer code to the micro:bit.', 'Use the LED display output to show words.'],
     build: ['From "on start", add a "show string" block and type your name.', 'Test in the simulator — your name scrolls across the LEDs.', 'Flash it to the micro:bit.'],
     skills: ['MakeCode', 'LED Display', 'Algorithms'],
+    quiz: [
+      { question: 'Which block shows scrolling words on the micro:bit?', options: ['show leds', 'show string', 'pause', 'on start'], answerIndex: 1 },
+      { question: 'A step-by-step set of instructions is called:', options: ['an algorithm', 'a sensor', 'a pixel', 'a battery'], answerIndex: 0 },
+      { question: 'Code in "on start" runs:', options: ['forever', 'once when the program starts', 'only when shaken', 'never'], answerIndex: 1 },
+    ],
   },
   {
     n: 2, title: 'Beating Heart', emoji: '❤️', difficulty: 1,
@@ -172,6 +182,11 @@ const CONFIGS: MbConfig[] = [
     objectives: ['Use the "forever" loop to repeat actions.', 'Show icons/images on the LED display.', 'Use pauses to control animation speed.'],
     build: ['In "forever", show a big heart icon, then a small heart icon.', 'Add short "pause" blocks between them so it "beats".', 'Test and flash it.'],
     skills: ['Loops', 'Animation', 'Icons'],
+    quiz: [
+      { question: 'Which block repeats forever?', options: ['on start', 'forever', 'on button A', 'show number'], answerIndex: 1 },
+      { question: 'To make a heart "beat", you alternate two icons with a:', options: ['variable', 'pause between them', 'radio', 'sensor'], answerIndex: 1, explanation: 'A short pause makes the change visible as an animation.' },
+      { question: 'Repeating actions is called:', options: ['iteration (looping)', 'selection', 'an input', 'an output'], answerIndex: 0 },
+    ],
   },
   {
     n: 3, title: 'Emotion Badge', emoji: '😀', difficulty: 2,
@@ -179,6 +194,11 @@ const CONFIGS: MbConfig[] = [
     objectives: ['Use button inputs (events) to trigger actions.', 'Show different images for different inputs.', 'Understand how a program responds to the user.'],
     build: ['On "button A pressed", show a happy face.', 'On "button B pressed", show a sad face.', 'Test both buttons in the simulator, then flash it.'],
     skills: ['Inputs', 'Events', 'Selection'],
+    quiz: [
+      { question: 'Pressing button A is an example of an:', options: ['output', 'input/event', 'algorithm', 'icon'], answerIndex: 1 },
+      { question: 'To show a different face for A and B you use:', options: ['two "on button pressed" events', 'one forever loop only', 'a pause', 'a variable'], answerIndex: 0 },
+      { question: 'Choosing between options based on input is called:', options: ['iteration', 'selection', 'storage', 'charging'], answerIndex: 1 },
+    ],
   },
   {
     n: 4, title: 'Step Counter', emoji: '👟', difficulty: 2,
@@ -186,6 +206,11 @@ const CONFIGS: MbConfig[] = [
     objectives: ['Create and use a variable to keep a count.', 'Use the accelerometer "on shake" input.', 'Display the changing value on the LED display.'],
     build: ['Make a variable "steps" set to 0 on start.', 'On "shake", change "steps" by 1.', 'On "button A pressed", show the "steps" number. Test and flash.'],
     skills: ['Variables', 'Accelerometer', 'Counting'],
+    quiz: [
+      { question: 'What stores the step count so it can change?', options: ['a variable', 'an icon', 'a pause', 'the title'], answerIndex: 0 },
+      { question: 'Which input detects movement/steps?', options: ['the light sensor', 'the accelerometer (on shake)', 'button A', 'the radio'], answerIndex: 1 },
+      { question: '"change steps by 1" does what?', options: ['resets steps to 1', 'adds 1 to steps', 'shows the number 1', 'deletes steps'], answerIndex: 1 },
+    ],
   },
   {
     n: 5, title: 'Nightlight', emoji: '🔦', difficulty: 3,
@@ -193,6 +218,11 @@ const CONFIGS: MbConfig[] = [
     objectives: ['Read the light-level sensor.', 'Use an if/else conditional based on the reading.', 'Turn the display on/off as an output.'],
     build: ['In "forever", check "if light level < a threshold".', 'If dark → show a bright image; else → clear the display.', 'Test by covering the micro:bit, then flash it.'],
     skills: ['Light Sensor', 'Conditionals', 'Thresholds'],
+    quiz: [
+      { question: 'The nightlight turns on when:', options: ['the light level is below a threshold (dark)', 'a button is pressed', 'it is shaken', 'the battery is full'], answerIndex: 0 },
+      { question: 'Which structure makes the decision?', options: ['a forever loop only', 'an if/else conditional', 'a variable', 'an icon'], answerIndex: 1 },
+      { question: 'The micro:bit reads brightness with its:', options: ['accelerometer', 'light sensor', 'speaker', 'radio'], answerIndex: 1 },
+    ],
   },
   {
     n: 6, title: 'Rock, Paper, Scissors', emoji: '✊', difficulty: 3,
@@ -200,6 +230,11 @@ const CONFIGS: MbConfig[] = [
     objectives: ['Use a random number.', 'Use a variable and conditionals to choose an outcome.', 'Respond to the shake input with an image.'],
     build: ['On "shake", set a variable to a random number 1–3.', 'If 1 → show rock, 2 → paper, 3 → scissors (use if/else if).', 'Test by shaking in the simulator, then flash it.'],
     skills: ['Random', 'Variables', 'Selection'],
+    quiz: [
+      { question: 'How does the micro:bit "choose" rock, paper or scissors?', options: ['with a random number', 'with the light sensor', 'with the radio', 'with a pause'], answerIndex: 0 },
+      { question: '"pick random 1 to 3" can give:', options: ['only 1', '1, 2 or 3', 'any number', 'letters'], answerIndex: 1 },
+      { question: 'Choosing the image based on the random number uses:', options: ['if / else if (selection)', 'a forever loop only', 'an icon', 'the speaker'], answerIndex: 0 },
+    ],
   },
 ];
 

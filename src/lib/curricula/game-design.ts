@@ -1,4 +1,6 @@
-import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId } from '@/types';
+import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, QuizQuestion } from '@/types';
+
+const ARCADE_EMBED = { kind: 'embed' as const, title: '🕹️ Make a Game (MakeCode Arcade)', url: 'https://arcade.makecode.com/', height: 560, note: 'Build your game here and press ▶ to play it in the page. (Or open in a new tab.)' };
 
 // ════════════════════════════════════════════════════════════════
 //  Game Design — "Make Games with MakeCode Arcade" (3 levels, 12 lessons)
@@ -18,7 +20,7 @@ interface GD {
   moduleId: string; moduleTitle: string; order: number; youtubeId?: string;
   concept: string; conceptExplain: string; objectives: string[];
   steps: string[]; challenge: string; skills: string[];
-  resources: Resource[];
+  resources: Resource[]; quiz?: QuizQuestion[];
 }
 
 function makeGD(c: GD): LessonDetail {
@@ -76,6 +78,8 @@ function makeGD(c: GD): LessonDetail {
     materials: [{ item: 'Computer/tablet with a browser (arcade.makecode.com)', quantity: '1 per student' }, { item: 'MakeCode Arcade handheld', quantity: '1 per student', isOptional: true }],
     objectives: c.objectives, assessmentChecklist: c.objectives,
     sections,
+    interactions: [ARCADE_EMBED],
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     ...(c.youtubeId ? { youtubeId: c.youtubeId } : {}),
     resources: c.resources,
   };
@@ -97,6 +101,11 @@ const CONFIGS: GD[] = [
     challenge: 'Change the player and food art, and make the game faster — then play your version.',
     skills: ['Arcade Basics', 'Sprites', 'Simulator'],
     resources: [{ id: 'gd-1-r1', title: 'Tutorial: Chase the Pizza', type: 'link', audience: 'both', url: 'https://arcade.makecode.com/tutorials/chase-the-pizza', description: 'Official starter tutorial' }, { id: 'gd-1-r2', title: 'Video: Chase the Pizza walkthrough', type: 'video', audience: 'both', url: 'https://www.youtube.com/watch?v=vObUjO-QIRU', description: 'Step-by-step video' }, ARCADE],
+    quiz: [
+      { question: 'In a game, a "sprite" is:', options: ['a sound effect', 'any game object (player, food, enemy)', 'the score', 'the background music'], answerIndex: 1 },
+      { question: 'What plays your game instantly as you code?', options: ['the simulator', 'the printer', 'the database', 'the slicer'], answerIndex: 0 },
+      { question: 'Scoring a point when the player touches the pizza uses:', options: ['an "on overlap" event', 'a pause block', 'a comment', 'the background'], answerIndex: 0, explanation: 'Overlap (collision) between two sprites triggers the score.' },
+    ],
   },
   {
     id: 'gd-2', title: 'Storytelling Game', emoji: '📖', difficulty: 2, ageGroup: '10-12', moduleId: 'gd-m1', moduleTitle: L1, order: 2,
