@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonImage, LessonSection } from '@/types';
+import type { Course, LessonDetail, LessonImage, LessonSection, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  3D Modeling — Tinkercad (3 graded chapters: G4 → G5 → G6)
@@ -17,6 +17,7 @@ interface TcConfig {
   objectives: string[];
   steps: string[];     // what students do this chapter
   skills: string[];
+  quiz?: QuizQuestion[];
 }
 
 function gallery(slug: string, pages: number): LessonImage[] {
@@ -150,6 +151,7 @@ function makeTcLesson(c: TcConfig): LessonDetail {
     objectives: c.objectives,
     assessmentChecklist: [`Completed the ${c.title} chapter in Tinkercad.`, 'Moved, resized, and combined shapes.', 'Personalised a model.'],
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${slug}-r1`, title: `${c.title} — Workbook Chapter (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-3d', description: 'Tinkercad chapter workbook', needsReview: true },
     ],
@@ -163,6 +165,11 @@ const CONFIGS: TcConfig[] = [
     objectives: ['Discover the Tinkercad platform for 3D design.', 'Create an account / join a class.', 'Add shapes to the workplane.', 'Move, resize, and rotate 3D objects.'],
     steps: ['Open tinkercad.com and sign in (or join your class).', 'Start a new design and add a box to the workplane.', 'Move, resize, and rotate it.', 'Add more shapes and arrange them into an object.'],
     skills: ['Tinkercad', 'Shapes', 'Workplane', '3D Basics'],
+    quiz: [
+      { question: 'The flat grid you build shapes on in Tinkercad is called the:', options: ['workplane', 'nozzle', 'timeline', 'canvas'], answerIndex: 0 },
+      { question: 'To add a shape you:', options: ['drag it from the shapes panel onto the workplane', 'type its name', 'print it', 'email it'], answerIndex: 0 },
+      { question: 'Tinkercad runs:', options: ['free in a web browser', 'only on a 3D printer', 'only on phones', 'offline only'], answerIndex: 0 },
+    ],
   },
   {
     n: 2, title: 'Advanced 3D Models', emoji: '🏛️', pages: 12, level: 'Intermediate',
@@ -170,6 +177,11 @@ const CONFIGS: TcConfig[] = [
     objectives: ['Revisit the Tinkercad workplane.', 'Use advanced shape tools and alignment.', 'Combine shapes with group and hole.', 'Produce a more detailed 3D model.'],
     steps: ['Open tinkercad.com and start a new design.', 'Add and precisely position several shapes (use Align).', 'Use "hole" + Group to cut and combine shapes.', 'Build a detailed model and colour it.'],
     skills: ['Align', 'Group & Hole', 'Advanced Shapes', '3D Modeling'],
+    quiz: [
+      { question: 'To cut a hole in a shape you:', options: ['set a shape to "Hole" and Group it with a solid', 'paint it white', 'delete it', 'rotate it'], answerIndex: 0 },
+      { question: 'The Align tool helps you:', options: ['line shapes up exactly', 'change colour', 'export the model', 'add text'], answerIndex: 0 },
+      { question: 'Group (Ctrl/Cmd+G) is used to:', options: ['combine selected shapes into one', 'split a shape', 'undo', 'zoom'], answerIndex: 0 },
+    ],
   },
   {
     n: 3, title: 'Tinkercad for 3D Printing', emoji: '🖨️', pages: 14, level: 'Intermediate',
@@ -177,6 +189,11 @@ const CONFIGS: TcConfig[] = [
     objectives: ['Understand what Tinkercad is and what 3D printing is.', 'Create an account and explore the welcome screen.', 'Design a printable 3D model.', 'Export a model for printing.'],
     steps: ['Open tinkercad.com and explore the welcome screen.', 'Design a solid, printable model from basic shapes.', 'Check it sits flat on the workplane with no floating parts.', 'Export the model (e.g. .STL) ready for a 3D printer.'],
     skills: ['3D Printing', 'STL Export', 'Design for Print', 'Tinkercad'],
+    quiz: [
+      { question: 'To send a model to a 3D printer you export it as:', options: ['STL', 'MP3', 'DOCX', 'ZIP'], answerIndex: 0 },
+      { question: 'A printable model should:', options: ['sit flat on the workplane with no floating parts', 'float in the air', 'have tiny spikes', 'have no base'], answerIndex: 0 },
+      { question: '3D printing turns a digital design into:', options: ['a real physical object', 'a video', 'a website', 'a sound'], answerIndex: 0 },
+    ],
   },
 ];
 

@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId } from '@/types';
+import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, QuizQuestion, LessonInteraction } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  3D Printing — "From Design to Print with Tinkercad" (3 levels, 12 lessons)
@@ -17,7 +17,7 @@ interface TD {
   id: string; title: string; emoji: string; difficulty: Difficulty; ageGroup: AgeGroupId;
   moduleId: string; moduleTitle: string; order: number; youtubeId?: string;
   concept: string; conceptExplain: string; objectives: string[];
-  steps: string[]; challenge: string; skills: string[];
+  steps: string[]; challenge: string; skills: string[]; quiz?: QuizQuestion[]; interactions?: LessonInteraction[];
   resources: Resource[];
 }
 
@@ -82,6 +82,8 @@ function makeTD(c: TD): LessonDetail {
     objectives: c.objectives, assessmentChecklist: c.objectives,
     sections,
     ...(c.youtubeId ? { youtubeId: c.youtubeId } : {}),
+    ...(c.quiz ? { quiz: c.quiz } : {}),
+    ...(c.interactions ? { interactions: c.interactions } : {}),
     resources: c.resources,
   };
 }
@@ -100,6 +102,11 @@ const CONFIGS: TD[] = [
     steps: ['Watch the beginner walkthrough above.', 'Identify the printer parts on a real/diagram printer.', 'List the 3 stages: design (Tinkercad) → slice (Cura) → print.', 'Agree the safety rules (hot nozzle/bed, supervision, ventilation).'],
     challenge: 'Sketch the workflow as a flowchart and label 3 safety rules for the print room.',
     skills: ['3D Printing Basics', 'FDM', 'Safety'],
+    quiz: [
+      { question: 'How does an FDM 3D printer build an object?', options: ['Layer by layer (additive)', 'By carving a block', 'By melting metal', 'By printing ink on paper'], answerIndex: 0 },
+      { question: 'Which part melts the filament?', options: ['the bed', 'the nozzle / hot end', 'the screen', 'the SD card'], answerIndex: 1 },
+      { question: 'The most common beginner filament is:', options: ['PLA', 'steel', 'glass', 'wood'], answerIndex: 0 },
+    ],
     resources: [TC_LEARN, CURA],
   },
   {
@@ -109,6 +116,11 @@ const CONFIGS: TD[] = [
     steps: ['Open Tinkercad and start a new design.', 'Drag in a few basic shapes.', 'Move/rotate/scale them; use the up-arrow to raise a shape.', 'Orbit, pan and zoom to view from all sides.'],
     challenge: 'Build a simple snowman or robot from at least 5 shapes, sized in millimetres.',
     skills: ['Tinkercad', 'Transforms', '3D Navigation'],
+    quiz: [
+      { question: 'Tinkercad is:', options: ['a free browser 3D design tool', 'a slicer', 'a printer', 'a game'], answerIndex: 0 },
+      { question: 'The flat grid you build shapes on is the:', options: ['workplane', 'nozzle', 'infill', 'brim'], answerIndex: 0 },
+      { question: 'To resize a shape you use the:', options: ['scale handles', 'colour picker', 'export button', 'ruler only'], answerIndex: 0 },
+    ],
     resources: [TC_LEARN],
   },
   {
@@ -118,6 +130,11 @@ const CONFIGS: TD[] = [
     steps: ['Make a solid base shape.', 'Add a shape, set it to "Hole", and position it.', 'Select both and Group to cut the hole.', 'Use Align to centre parts.'],
     challenge: 'Design a keychain or name tag with a hole for the ring and raised/cut-out text.',
     skills: ['Group / Hole', 'Align', 'Design'],
+    quiz: [
+      { question: 'To cut a hole in a shape you:', options: ['group a "Hole" shape with a solid', 'paint it black', 'export it', 'rotate it'], answerIndex: 0 },
+      { question: 'The Align tool is used to:', options: ['line shapes up neatly', 'change colour', 'slice the model', 'add infill'], answerIndex: 0 },
+      { question: 'A shape can be set as a solid or a:', options: ['hole', 'layer', 'support', 'brim'], answerIndex: 0 },
+    ],
     resources: [TC_LEARN],
   },
   {
@@ -127,6 +144,11 @@ const CONFIGS: TD[] = [
     steps: ['Review the print rules: flat base, ≥2 mm walls, avoid thin spikes, limit overhangs.', 'Design a small useful object (e.g. a desk hook, token, or coaster).', 'Drop it flat to the workplane.', 'Check walls/features against the rules and fix any problems.'],
     challenge: 'Design a printable object you actually want, that follows all the print rules.',
     skills: ['Design for Printing', 'Wall Thickness', 'Problem Solving'],
+    quiz: [
+      { question: 'A model prints best when it has:', options: ['a flat base on the workplane', 'very thin spikes', 'no base', 'floating parts'], answerIndex: 0 },
+      { question: 'Very thin walls are a problem because they:', options: ['may fail / break when printed', 'print faster', 'use no plastic', 'look better'], answerIndex: 0 },
+      { question: 'Designing with print rules in mind:', options: ['avoids failed prints', 'wastes time', 'is only for experts', 'is impossible'], answerIndex: 0 },
+    ],
     resources: [TC_LEARN, CURA],
   },
 
@@ -138,6 +160,11 @@ const CONFIGS: TD[] = [
     steps: ['In Tinkercad, Export → STL.', 'Open UltiMaker Cura and import the STL.', 'Place it on the virtual bed and preview the layers.', 'Slice it and see the estimated time/material.'],
     challenge: 'Export one of your designs, slice it, and report its print time and filament length.',
     skills: ['STL Export', 'Slicing', 'Workflow'],
+    quiz: [
+      { question: 'For 3D printing you export your model as:', options: ['STL', 'MP3', 'PDF', 'DOCX'], answerIndex: 0 },
+      { question: 'A slicer (like Cura) turns the model into:', options: ['layers / printer instructions (G-code)', 'a photo', 'a website', 'a spreadsheet'], answerIndex: 0 },
+      { question: 'The design → slice → print order means slicing comes:', options: ['after designing, before printing', 'first', 'last', 'never'], answerIndex: 0 },
+    ],
     resources: [TC_EXPORT, CURA],
   },
   {
@@ -147,6 +174,11 @@ const CONFIGS: TD[] = [
     steps: ['In Cura, try 0.2 mm vs 0.1 mm layer height and compare the preview.', 'Change infill (e.g. 15% vs 50%) and see the inside.', 'Adjust wall count.', 'Choose settings for "fast draft" vs "strong functional".'],
     challenge: 'Slice the same model two ways (fast draft vs strong) and compare time, material and look.',
     skills: ['Layer Height', 'Infill', 'Print Tuning'],
+    quiz: [
+      { question: 'A smaller layer height gives:', options: ['more detail but a slower print', 'less detail, faster', 'no change', 'a bigger model'], answerIndex: 0 },
+      { question: 'Infill controls:', options: ['how solid/dense the inside is', 'the colour', 'the file name', 'the bed size'], answerIndex: 0 },
+      { question: 'More infill makes a part:', options: ['stronger (but slower / more material)', 'weaker', 'smaller', 'transparent'], answerIndex: 0 },
+    ],
     resources: [CURA],
   },
   {
@@ -156,6 +188,11 @@ const CONFIGS: TD[] = [
     steps: ['Find overhangs on a model (steeper than ~45°).', 'Turn on supports in Cura and preview them.', 'Rotate the part to a better orientation and re-check supports.', 'Choose the orientation with least support / best strength.'],
     challenge: 'Take a tricky model and find the orientation that needs the least support — justify your choice.',
     skills: ['Supports', 'Orientation', 'Overhangs'],
+    quiz: [
+      { question: 'Overhangs steeper than about 45° usually need:', options: ['supports', 'more colour', 'less infill', 'a bigger nozzle'], answerIndex: 0 },
+      { question: 'Supports are:', options: ['removable scaffolding printed under overhangs', 'permanent parts', 'a type of filament', 'a slicer'], answerIndex: 0 },
+      { question: 'Changing how a part is oriented can:', options: ['reduce supports and improve strength', 'only change the colour', 'do nothing', 'break the slicer'], answerIndex: 0 },
+    ],
     resources: [CURA],
   },
   {
@@ -165,6 +202,11 @@ const CONFIGS: TD[] = [
     steps: ['Check the bed is level and clean; load/confirm filament.', 'Send the sliced file and start the print.', 'Watch the FIRST LAYER stick well (restart if it doesn\'t).', 'When done and cool, remove the part and clean off any brim/supports (carefully).'],
     challenge: 'Run a successful print of your Level-I object and log the settings + result.',
     skills: ['Printer Operation', 'First Layer', 'Safety & Finishing'],
+    quiz: [
+      { question: 'The nozzle and bed are:', options: ['hot — never touch them', 'always cold', 'made of paper', 'safe to grab'], answerIndex: 0 },
+      { question: 'The most important layer to watch is:', options: ['the first layer (adhesion)', 'the last layer', 'the middle', 'none'], answerIndex: 0 },
+      { question: 'If the first layer will not stick you should:', options: ['stop, re-level/clean the bed, restart', 'keep printing anyway', 'turn up the speed', 'unplug everything'], answerIndex: 0 },
+    ],
     resources: [CURA, TC_LEARN],
   },
 
@@ -176,6 +218,11 @@ const CONFIGS: TD[] = [
     steps: ['Measure a real object with a ruler/calliper.', 'In Tinkercad, use the Ruler to set exact dimensions.', 'For a peg + hole, make the hole ~0.3 mm larger so it fits.', 'Print and test the fit; adjust tolerance if needed.'],
     challenge: 'Design a box with a lid that fits snugly (use tolerance), print it, and test the fit.',
     skills: ['Dimensions', 'Tolerance', 'Measuring'],
+    quiz: [
+      { question: 'The Ruler tool in Tinkercad lets you:', options: ['set exact dimensions', 'change colour', 'slice', 'add supports'], answerIndex: 0 },
+      { question: 'For two parts to fit together you add a small:', options: ['clearance / tolerance gap', 'colour', 'support', 'brim'], answerIndex: 0 },
+      { question: 'A lid that is exactly the same size as the box will probably:', options: ['be too tight to fit', 'fit perfectly always', 'be too loose', 'not print'], answerIndex: 0, explanation: 'Printed parts need a small gap (~0.2–0.4 mm) to fit.' },
+    ],
     resources: [TC_LEARN],
   },
   {
@@ -185,6 +232,11 @@ const CONFIGS: TD[] = [
     steps: ['Design two parts that join (e.g. a peg + socket or snap clip).', 'Add the right clearance so they fit after printing.', 'Print both and assemble.', 'Discuss how a print-in-place hinge uses a tiny gap to move.'],
     challenge: 'Design and print a simple 2-part assembly (e.g. a hinged box or a snap-together toy).',
     skills: ['Assemblies', 'Snap-fit', 'Print-in-place'],
+    quiz: [
+      { question: 'A "print-in-place" moving part works because of:', options: ['a tiny gap (clearance) between parts', 'glue', 'paint', 'supports'], answerIndex: 0 },
+      { question: 'A snap-fit:', options: ['clips two parts together', 'melts the plastic', 'slices the model', 'adds infill'], answerIndex: 0 },
+      { question: 'Parts that connect need the correct:', options: ['tolerance', 'colour', 'file name', 'bed size'], answerIndex: 0 },
+    ],
     resources: [TC_LEARN, CURA],
   },
   {
@@ -194,6 +246,11 @@ const CONFIGS: TD[] = [
     steps: ['Open Tinkercad Codeblocks and create a new design.', 'Add blocks to draw a shape.', 'Use a loop to repeat it into a pattern (e.g. a row/spiral).', 'Change a variable and watch the model update; export to print.'],
     challenge: 'Generate a parametric object (e.g. a patterned coaster or vase) by changing variables, then print it.',
     skills: ['Codeblocks', 'Parametric Design', 'Loops'],
+    quiz: [
+      { question: 'Tinkercad Codeblocks builds shapes using:', options: ['code blocks', 'a camera', 'a slicer', 'a printer'], answerIndex: 0 },
+      { question: 'A loop in Codeblocks is great for:', options: ['repeating shapes into a pattern', 'changing colour', 'slicing', 'levelling the bed'], answerIndex: 0 },
+      { question: 'Changing a variable in a parametric design:', options: ['changes the model', 'breaks it', 'does nothing', 'prints it'], answerIndex: 0 },
+    ],
     resources: [TC_LEARN],
   },
   {
@@ -203,6 +260,11 @@ const CONFIGS: TD[] = [
     steps: ['Find a real problem to solve (a holder, hook, tool, organiser…).', 'Design it in Tinkercad following the print rules + tolerances.', 'Slice, print and test it in real use.', 'Note what to improve, revise the model, and print version 2.'],
     challenge: 'Deliver a working printed object plus a short "v1 → v2" reflection on what you changed and why.',
     skills: ['Design Process', 'Iteration', 'Problem Solving'],
+    quiz: [
+      { question: 'Iterative design means:', options: ['test and improve (v1 → v2)', 'print once and stop', 'never test', 'copy someone else'], answerIndex: 0 },
+      { question: 'A good capstone object should:', options: ['solve a real need', 'be impossible to print', 'have no base', 'ignore the rules'], answerIndex: 0 },
+      { question: 'Before printing your design you should:', options: ['check the print rules (flat base, walls, tolerance)', 'skip checking', 'delete it', 'paint it'], answerIndex: 0 },
+    ],
     resources: [TC_LEARN, CURA, TC_EXPORT],
   },
 ];
