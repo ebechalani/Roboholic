@@ -118,6 +118,11 @@ export const SCRATCH_JR_LESSON_1: LessonDetail = {
     'Student tapped the green flag and observed something happen.',
     'Student described one thing they want to make in the next lesson.',
   ],
+  quiz: [
+    { question: 'In Scratch Jr, the character you control is called a:', options: ['Sprite', 'Button', 'Page', 'Brush'], answerIndex: 0 },
+    { question: 'What do you tap to make your project start/play?', options: ['the green flag', 'the red circle', 'the home button', 'the camera'], answerIndex: 0 },
+    { question: 'You make the sprite do things by:', options: ['joining blocks together', 'typing words', 'drawing only', 'singing'], answerIndex: 0 },
+  ],
   sections: [
     {
       type: 'coach_prep',

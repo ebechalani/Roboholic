@@ -164,6 +164,11 @@ export const MTINY_LESSON: LessonDetail = {
     'Told the weekend story.',
   ],
   sections,
+  quiz: [
+    { question: 'How do you tell mTiny what to do?', options: ['tap the coding cards', 'type on a keyboard', 'shout at it', 'shake it'], answerIndex: 0 },
+    { question: 'mTiny moves along the:', options: ['map/mat squares', 'table edge', 'wall', 'ceiling'], answerIndex: 0 },
+    { question: 'Putting the cards in the right order is like making a:', options: ['program (sequence)', 'drawing', 'song', 'snack'], answerIndex: 0 },
+  ],
   resources: [
     { id: `${SLUG}-r1`, title: 'mTiny Coding Activity — Sample Plan (PDF)', type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-mtiny', description: "mTiny's Weekend activity plan", needsReview: true },
     { id: `${SLUG}-r2`, title: 'mTiny — Developing Literacy & Numeracy (Guide)', type: 'pdf', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mtiny', description: 'Background guide on tangible programming', needsReview: true },

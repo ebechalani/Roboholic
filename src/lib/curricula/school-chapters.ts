@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficulty, AgeGroupId } from '@/types';
+import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficulty, AgeGroupId, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  School-curriculum graded chapters (2023 series). Each chapter is a
@@ -14,7 +14,7 @@ interface Chap {
   courseId: string; courseTitle: string; moduleId: string; moduleTitle: string;
   ageGroup: AgeGroupId; grade: string; software: string;
   concept: string; conceptExplain: string; objectives: string[];
-  challenge: string; challengeSteps: string[]; skills: string[];
+  challenge: string; challengeSteps: string[]; skills: string[]; quiz?: QuizQuestion[];
 }
 
 function gallery(slug: string, pages: number): LessonImage[] {
@@ -86,6 +86,7 @@ function makeChapter(c: Chap): LessonDetail {
     assessmentChecklist: c.objectives.map(o => o.replace(/^to\s+/i, '')),
     sections,
     heroImage: `/lessons/${c.id}/p-01.png`,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${c.id}-r1`, title: `${c.title} — Chapter (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-school', description: '2023 school-curriculum chapter', needsReview: true },
     ],
@@ -173,6 +174,11 @@ const SMALLBASIC_CHAPS: Chap[] = [
     challenge: 'Open Small Basic and write your first program that prints a welcome message to the screen.',
     challengeSteps: ['Open the Small Basic editor.', 'Identify the editor area, toolbar and command window.', 'Type TextWindow.WriteLine("Hello!").', 'Run it and read the output.'],
     skills: ['Small Basic', 'Programming Concepts', 'Interface'],
+    quiz: [
+      { question: 'A person who writes programs is a:', options: ['coder', 'user', 'reader', 'player'], answerIndex: 0 },
+      { question: 'Small Basic is a:', options: ['simple beginner programming language', 'spreadsheet', 'web browser', 'game console'], answerIndex: 0 },
+      { question: 'Which command prints a line of text to the screen?', options: ['TextWindow.WriteLine', 'TextWindow.Read', 'Program.End', 'Math.Add'], answerIndex: 0 },
+    ],
   },
   {
     ...SB, id: 'sb-g8', title: 'Variables in Small Basic', emoji: '📦', pages: 14, difficulty: 3, ageGroup: '13-15', grade: 'Grade 8',
@@ -181,6 +187,11 @@ const SMALLBASIC_CHAPS: Chap[] = [
     challenge: 'Write a program that asks for two numbers and prints their sum (then try swapping two variables).',
     challengeSteps: ['Read two numbers into variables nb1 and nb2.', 'Compute sum = nb1 + nb2.', 'Print "Their sum is " + sum.', 'Bonus: swap the values of A and B using a third variable.'],
     skills: ['Variables', 'Input/Output', 'Calculation'],
+    quiz: [
+      { question: 'A variable is used to:', options: ['store a value (from input or a calculation)', 'draw a shape', 'print only', 'delete the program'], answerIndex: 0 },
+      { question: 'Which command reads what the user types?', options: ['TextWindow.Read()', 'TextWindow.WriteLine', 'Math.Sqrt', 'Program.Delay'], answerIndex: 0 },
+      { question: 'A variable can hold, at one time:', options: ['one value', 'many values at once', 'no value ever', 'only text'], answerIndex: 0 },
+    ],
   },
 ];
 

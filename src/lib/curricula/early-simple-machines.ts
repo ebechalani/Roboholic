@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonImage, LessonSection } from '@/types';
+import type { Course, LessonDetail, LessonImage, LessonSection, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Early Simple Machines (LEGO Set 9656) — "Build & Explore"
@@ -28,6 +28,7 @@ interface EsmConfig {
   /** Video-based models (from PPTX): show finished image + key stages, link the build video. */
   videoBased?: boolean;
   galleryFiles?: { file: string; caption: string }[];
+  quiz?: QuizQuestion[];
 }
 
 // Build a step-image gallery from the rasterized pages.
@@ -234,6 +235,7 @@ function makeEsmLesson(c: EsmConfig): LessonDetail {
       'Gave a real-world example.',
     ],
     sections,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: c.videoBased
       ? [
           { id: `${c.id}-r1`, title: `${c.title} — Build Video (animation)`, type: 'video', audience: 'both', url: 'https://drive.google.com/drive/folders/1GQsWABXdQTtO1lZ_h3j8D9hfoKMcxc0p?usp=sharing', description: 'Full animated step-by-step build (Google Drive)', needsReview: true },
@@ -256,6 +258,11 @@ const CONFIGS: EsmConfig[] = [
     realWorld: ['a merry-go-round at a park', 'a bicycle\'s gears', 'a hand whisk'],
     modelChallenge: 'Turn the handle faster, then slower. Does the carousel spin faster too?',
     skills: ['Gears', 'Rotation', 'Following Steps', 'Fine Motor Skills'],
+    quiz: [
+      { question: 'What do gears have around their edge?', options: ['teeth', 'wheels', 'water', 'lights'], answerIndex: 0 },
+      { question: 'When one gear turns, the gear touching it will:', options: ['turn too', 'stay still', 'fall off', 'melt'], answerIndex: 0 },
+      { question: 'Gears help us:', options: ['make things spin/move', 'eat lunch', 'sleep', 'draw'], answerIndex: 0 },
+    ],
   },
   {
     id: 'esm-l2', slug: 'esm-helicopter', title: 'The Helicopter', order: 2,
@@ -278,6 +285,11 @@ const CONFIGS: EsmConfig[] = [
     realWorld: ['a see-saw', 'a spoon flicking peas', 'a door handle'],
     modelChallenge: 'Try launching from different positions. Can you make the ball go higher or further?',
     skills: ['Levers', 'Force & Motion', 'Cause & Effect', 'Following Steps'],
+    quiz: [
+      { question: 'A see-saw in the park is a kind of:', options: ['lever', 'gear', 'wheel', 'pulley'], answerIndex: 0 },
+      { question: 'A lever helps you:', options: ['lift or move things more easily', 'make sound', 'change colour', 'tell time'], answerIndex: 0 },
+      { question: 'When you push down one end of a see-saw, the other end:', options: ['goes up', 'stays down', 'disappears', 'spins'], answerIndex: 0 },
+    ],
   },
   {
     id: 'esm-l4', slug: 'esm-tollbooth', title: 'The Tollbooth', order: 4,
