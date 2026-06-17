@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficulty, AgeGroupId } from '@/types';
+import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficulty, AgeGroupId, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  PHP / MySQL — "Dynamic Websites with PHP & MySQL" (Grade 12, 2023)
@@ -18,7 +18,7 @@ interface PM {
   id: string; title: string; emoji: string; pages: number; difficulty: Difficulty;
   moduleId: string; moduleTitle: string; level: 'Beginner' | 'Intermediate' | 'Advanced'; order: number;
   concept: string; conceptExplain: string; objectives: string[];
-  steps: string[]; challenge: string; skills: string[];
+  steps: string[]; challenge: string; skills: string[]; quiz?: QuizQuestion[];
 }
 
 function gallery(slug: string, pages: number): LessonImage[] {
@@ -93,6 +93,7 @@ function makePM(c: PM): LessonDetail {
     assessmentChecklist: c.objectives,
     sections,
     heroImage: `/lessons/${c.id}/p-01.png`,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [WORKBOOK, ...(sqlLesson ? [W3_SQL, W3_PHP] : [W3_PHP])],
   };
 }
@@ -138,6 +139,13 @@ const CONFIGS: PM[] = [
     steps: ['Complete the True/False questions.', 'Fill in the blanks (mixed, echo, case, include, HTML).', 'Answer the multiple-choice questions.', 'Review any topic you missed.'],
     challenge: 'Score yourself, then re-explain any wrong answer in your own words to a partner.',
     skills: ['Review', 'Assessment', 'PHP'],
+    quiz: [
+      { question: 'Which variable collects form data in PHP when method="post"?', options: ['$_GET', '$_REQUEST', '$_POST', '$_FILES'], answerIndex: 2, explanation: '$_POST holds data sent with the post method.' },
+      { question: 'Which operator checks for equality in PHP?', options: ['==', '!=', '<>', '!=='], answerIndex: 0, explanation: '== compares values; === also compares the type.' },
+      { question: 'PHP variable names start with:', options: ['@', '$', '#', '&'], answerIndex: 1, explanation: 'Every PHP variable begins with the $ sign.' },
+      { question: 'PHP scripts are executed on the client side.', options: ['True', 'False'], answerIndex: 1, explanation: 'PHP is server-side — the server runs it and sends HTML to the browser.' },
+      { question: 'PHP stands for "PHP: Hypertext Preprocessor".', options: ['True', 'False'], answerIndex: 0 },
+    ],
   },
   // ─── Chapter 3 · MySQL basics ───
   {
@@ -204,6 +212,13 @@ const CONFIGS: PM[] = [
     steps: ['Complete True/False and gap-fill.', 'Do the matching (INSERT INTO, SELECT, $_POST, mysqli_query).', 'Answer the MCQs.', 'Write the short-answer SQL+PHP snippets (e.g. update age WHERE ID=5).'],
     challenge: 'Build the mini app from the review: a form to add a student to the "students" table that also lists all students below the form.',
     skills: ['Review', 'CRUD', 'Assessment'],
+    quiz: [
+      { question: 'Which SQL query gets all records from a students table?', options: ['SELECT ALL FROM students', 'GET * FROM students', 'SELECT * FROM students', 'FETCH ALL students'], answerIndex: 2, explanation: 'SELECT * FROM students returns every column of every row.' },
+      { question: 'What is the purpose of the action attribute in a PHP form?', options: ['To set the method (GET/POST)', 'To specify where to send the form data', 'To style the form', 'To add click actions'], answerIndex: 1 },
+      { question: 'The UPDATE statement is used to delete records from a table.', options: ['True', 'False'], answerIndex: 1, explanation: 'UPDATE changes existing data; DELETE removes rows.' },
+      { question: 'mysqli_connect is used to establish a connection with the database in PHP.', options: ['True', 'False'], answerIndex: 0 },
+      { question: 'Which function fetches one row at a time from a result in PHP?', options: ['mysqli_connect', 'mysqli_fetch_assoc', 'mysqli_close', 'mysqli_error'], answerIndex: 1, explanation: 'mysqli_fetch_assoc returns the next row as an associative array — used in a while loop.' },
+    ],
   },
   {
     id: 'g12-sql-9', title: 'Guided Project: School Management System', emoji: '🏫', pages: 2, difficulty: 4, moduleId: 'g12-m3', moduleTitle: M3, level: 'Advanced', order: 14,
@@ -220,6 +235,13 @@ const CONFIGS: PM[] = [
     steps: ['Complete the True/False questions.', 'Fill the gaps (unique identifier, INSERT, fetch function, connection feature).', 'Answer the multiple-choice questions.', 'Revisit any weak topic in the workbook.'],
     challenge: 'Write, from memory, the SQL to create a table, insert a row, select with a filter, update one record, and delete one record.',
     skills: ['Review', 'MySQL', 'Assessment'],
+    quiz: [
+      { question: 'What is the structure of a MySQL database made up of?', options: ['Tables', 'Columns', 'Rows', 'All of the above'], answerIndex: 3, explanation: 'A database has tables; tables have rows (records) and columns (fields).' },
+      { question: 'Which SQL command retrieves data from a MySQL database?', options: ['INSERT', 'SELECT', 'DELETE', 'UPDATE'], answerIndex: 1 },
+      { question: 'In MySQL you cannot modify an existing table.', options: ['True', 'False'], answerIndex: 1, explanation: 'ALTER TABLE modifies a table (e.g. add an ID column).' },
+      { question: 'Which command inserts records into a table?', options: ['ADD ROW', 'INSERT INTO', 'PUT', 'CREATE'], answerIndex: 1 },
+      { question: 'Filtering and sorting data in MySQL is not possible.', options: ['True', 'False'], answerIndex: 1, explanation: 'WHERE filters and ORDER BY sorts.' },
+    ],
   },
 ];
 

@@ -158,6 +158,17 @@ export interface LessonDetail {
   assessmentChecklist: string[];
   heroImage?: string;          // illustrative image shown in the lesson header
   youtubeId?: string;          // if set, an embedded YouTube player is shown in the lesson header
+  quiz?: QuizQuestion[];       // optional interactive quiz shown in the Interactive Exercises panel
+  /** Starter code for the in-lesson code playground. lang picks the runner. */
+  playground?: { lang: 'html' | 'python'; starter: string };
+}
+
+/** An interactive multiple-choice / true-false question shown in a lesson. */
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  answerIndex: number;       // index of the correct option
+  explanation?: string;      // shown after answering
 }
 
 export interface LessonImage {

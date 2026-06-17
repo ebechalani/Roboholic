@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { ALL_LESSONS } from '@/lib/curricula';
 import { DRIVE_LINKS } from '@/lib/curricula/drive-links';
+import InteractiveExercises from '@/components/lesson/InteractiveExercises';
 import type { LessonDetail, LessonSection, LessonSectionType, StepItem, TroubleshootItem, LessonImage } from '@/types';
 
 // ─── Section config ───────────────────────────────────────────────
@@ -613,6 +614,8 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
                     studentMode={studentMode}
                   />
                 ))}
+
+                <InteractiveExercises lesson={lesson} />
               </div>
             )}
 
