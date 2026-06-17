@@ -161,6 +161,8 @@ export interface LessonDetail {
   quiz?: QuizQuestion[];       // optional interactive quiz shown in the Interactive Exercises panel
   /** Starter code for the in-lesson code playground. lang picks the runner. */
   playground?: { lang: 'html' | 'python'; starter: string };
+  /** Extra interactive activities (fill-in, match, predict-output, embedded tools…). */
+  interactions?: LessonInteraction[];
 }
 
 /** An interactive multiple-choice / true-false question shown in a lesson. */
@@ -170,6 +172,15 @@ export interface QuizQuestion {
   answerIndex: number;       // index of the correct option
   explanation?: string;      // shown after answering
 }
+
+/** A rich interactive activity rendered in the lesson's Interactive Exercises panel. */
+export type LessonInteraction =
+  | { kind: 'quiz'; title?: string; questions: QuizQuestion[] }
+  | { kind: 'playground'; title?: string; lang: 'html' | 'python'; starter: string }
+  | { kind: 'fill'; title?: string; intro?: string; text: string; answers: string[] }   // use ___ in text for each blank
+  | { kind: 'match'; title?: string; pairs: { left: string; right: string }[] }
+  | { kind: 'predict'; title?: string; code: string; question: string; options: string[]; answerIndex: number; explanation?: string }
+  | { kind: 'embed'; title?: string; url: string; note?: string; height?: number };
 
 export interface LessonImage {
   src: string;

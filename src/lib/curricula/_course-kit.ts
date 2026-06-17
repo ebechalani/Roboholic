@@ -1,4 +1,4 @@
-import type { LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, Material, Level } from '@/types';
+import type { LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, Material, Level, QuizQuestion, LessonInteraction } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Shared factory for the "link-based" courses (Scratch, web dev,
@@ -18,6 +18,9 @@ export interface KitLesson {
   steps: string[]; code?: string[]; challenge: string; skills: string[];
   materials: Material[]; resources: Resource[];
   safety?: string; // optional extra safety/comfort note for the coach prep
+  quiz?: QuizQuestion[];
+  playground?: { lang: 'html' | 'python'; starter: string };
+  interactions?: LessonInteraction[];
 }
 
 export function makeKitLesson(c: KitLesson, p: KitProgram): LessonDetail {
@@ -74,6 +77,9 @@ export function makeKitLesson(c: KitLesson, p: KitProgram): LessonDetail {
     objectives: c.objectives, assessmentChecklist: c.objectives,
     sections,
     ...(c.youtubeId ? { youtubeId: c.youtubeId } : {}),
+    ...(c.quiz ? { quiz: c.quiz } : {}),
+    ...(c.playground ? { playground: c.playground } : {}),
+    ...(c.interactions ? { interactions: c.interactions } : {}),
     resources: c.resources,
   };
 }
