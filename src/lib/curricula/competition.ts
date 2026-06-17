@@ -5,14 +5,19 @@ import { makeKitLesson, kitSummary, type KitLesson, type KitProgram } from './_c
 const PX: KitProgram = { programId: 'makex', programSlug: 'makex', programTitle: 'MakeX', programColor: '#B45309', courseId: 'makex-1', courseTitle: 'MakeX Robotics Competition' };
 const MX = [{ item: 'Makeblock robot (mBot2 / mBot Neo) + competition kit', quantity: 'per team' }, { item: 'Competition mat / field elements (per season)', quantity: 'per team' }];
 const MAKEX = { id: 'makex-official', title: 'MakeX — official competition site (seasons & rules)', type: 'link' as const, audience: 'both' as const, url: 'https://www.makex.io/', description: 'Official MakeX themes, rules and resources' };
-const mx = (id: string, title: string, emoji: string, diff: 1|2|3|4, lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[]): KitLesson =>
-  ({ id, title, emoji, difficulty: diff, ageGroup: '13-15', level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: MX, resources: [MAKEX] });
+const mx = (id: string, title: string, emoji: string, diff: 1|2|3|4, lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[], quiz?: import('@/types').QuizQuestion[]): KitLesson =>
+  ({ id, title, emoji, difficulty: diff, ageGroup: '13-15', level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: MX, resources: [MAKEX], ...(quiz ? { quiz } : {}) });
 const MXC: KitLesson[] = [
   mx('mx-1', 'What is MakeX? Format & Rules', '🏁', 2, 'Beginner', 'mx-m1', 'Level I · Get Competition-Ready', 1,
     'the MakeX competition format', 'MakeX is a Makeblock robotics competition with a yearly theme. Teams build and program a robot for timed challenge missions (and often a creative project). Knowing the rules and scoring is step one.',
     ['Explain the MakeX format and scoring', 'Read this season\'s rules and field', 'Set team roles'],
     ['Read the current season theme and rulebook.', 'Map the field and the scoring missions.', 'Assign team roles (build, code, strategy).', 'Set a practice schedule.'],
-    'Summarise this season\'s top 3 scoring opportunities and a team plan.', ['Competition', 'Rules', 'Teamwork']),
+    'Summarise this season\'s top 3 scoring opportunities and a team plan.', ['Competition', 'Rules', 'Teamwork'],
+    [
+      { question: 'MakeX is a:', options: ['robotics competition with a yearly theme', 'video game', 'spreadsheet', 'phone app'], answerIndex: 0 },
+      { question: 'What should a team do FIRST?', options: ['read the season rules and scoring', 'build randomly', 'fly a drone', 'paint the robot'], answerIndex: 0 },
+      { question: 'A good team divides up roles like:', options: ['build, code, strategy', 'only one person does everything', 'no roles', 'all build, none code'], answerIndex: 0 },
+    ]),
   mx('mx-2', 'Robot Design for Missions', '🔧', 3, 'Beginner', 'mx-m1', 'Level I · Get Competition-Ready', 2,
     'designing a reliable competition robot', 'A competition robot must be reliable, fast and built for the specific missions — stable drive base, the right attachments, and quick, repeatable behaviour.',
     ['Design a stable, fast drive base', 'Add mission-specific attachments', 'Prioritise reliability'],
@@ -48,14 +53,19 @@ const PC: KitProgram = { programId: 'competition', programSlug: 'competition', p
 const CM = [{ item: 'Competition robot kit (LEGO SPIKE/EV3, mBot2, or per league)', quantity: 'per team' }, { item: 'Engineering notebook', quantity: '1 per team' }];
 const FLL = { id: 'fll', title: 'FIRST LEGO League — official', type: 'link' as const, audience: 'coach' as const, url: 'https://www.firstlegoleague.org/', description: 'FLL Challenge season, rules & rubrics' };
 const WRO = { id: 'wro', title: 'World Robot Olympiad — official', type: 'link' as const, audience: 'coach' as const, url: 'https://wro-association.org/', description: 'WRO categories, rules & seasons' };
-const cm = (id: string, title: string, emoji: string, diff: 1|2|3|4, lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[]): KitLesson =>
-  ({ id, title, emoji, difficulty: diff, ageGroup: '10-12', level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: CM, resources: [FLL, WRO] });
+const cm = (id: string, title: string, emoji: string, diff: 1|2|3|4, lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[], quiz?: import('@/types').QuizQuestion[]): KitLesson =>
+  ({ id, title, emoji, difficulty: diff, ageGroup: '10-12', level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: CM, resources: [FLL, WRO], ...(quiz ? { quiz } : {}) });
 const CC: KitLesson[] = [
   cm('cmp-1', 'Choosing a League & Reading the Rules', '📜', 2, 'Beginner', 'cmp-m1', 'Level I · Foundations', 1,
     'how robotics competitions work', 'Leagues like FIRST LEGO League, World Robot Olympiad and MakeX each have a yearly theme, a game field, missions and judged elements (robot design, project, teamwork). Picking a league and reading its rules comes first.',
     ['Compare the main leagues (FLL/WRO/MakeX)', 'Read a rulebook and scoring', 'Form a balanced team'],
     ['Compare leagues and pick one.', 'Read the season rules + field.', 'List the scoring missions.', 'Form roles and norms.'],
-    'Produce a one-pager: chosen league, top missions, and team roles.', ['Competition', 'Rules', 'Teamwork']),
+    'Produce a one-pager: chosen league, top missions, and team roles.', ['Competition', 'Rules', 'Teamwork'],
+    [
+      { question: 'Which is a real robotics competition league?', options: ['FIRST LEGO League (FLL)', 'FIFA', 'NBA', 'the Olympics of chess'], answerIndex: 0 },
+      { question: 'Most leagues each season have a:', options: ['theme, field, missions and judged parts', 'single fixed robot', 'no rules', 'only a written test'], answerIndex: 0 },
+      { question: 'The first step in competition prep is to:', options: ['read the rules and scoring', 'build blindly', 'buy trophies', 'skip the field'], answerIndex: 0 },
+    ]),
   cm('cmp-2', 'The Engineering Notebook', '📓', 2, 'Beginner', 'cmp-m1', 'Level I · Foundations', 2,
     'documenting the design journey', 'Judged competitions reward documentation. An engineering notebook records ideas, designs, tests and decisions — and is often scored.',
     ['Keep an engineering notebook', 'Document designs, tests and decisions', 'Use it to track progress'],

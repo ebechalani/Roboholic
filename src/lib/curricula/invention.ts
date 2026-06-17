@@ -7,15 +7,20 @@ const L1 = 'Level I · Think Like an Inventor', L2 = 'Level II · Prototype & Bu
 const M = [{ item: 'Maker materials (card, tape, recyclables) + optional Makey Makey / micro:bit', quantity: 'per team' }, { item: 'Invention journal', quantity: '1 per student' }];
 const IDEO = { id: 'ideo', title: 'Design Thinking for Educators (free toolkit)', type: 'link' as const, audience: 'coach' as const, url: 'https://www.ideo.com/journal/design-thinking-for-educators-toolkit', description: 'A simple design-thinking process' };
 
-const mk = (id: string, title: string, emoji: string, diff: 1|2|3|4, age: '8-9'|'10-12'|'13-15', lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[]): KitLesson =>
-  ({ id, title, emoji, difficulty: diff, ageGroup: age, level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: M, resources: [IDEO] });
+const mk = (id: string, title: string, emoji: string, diff: 1|2|3|4, age: '8-9'|'10-12'|'13-15', lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[], quiz?: import('@/types').QuizQuestion[]): KitLesson =>
+  ({ id, title, emoji, difficulty: diff, ageGroup: age, level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: M, resources: [IDEO], ...(quiz ? { quiz } : {}) });
 
 const C: KitLesson[] = [
   mk('inv-1', 'What Is Invention? (Invention Literacy)', '💡', 1, '8-9', 'Beginner', 'inv-m1', L1, 1,
     'inventions and how they come to be', 'Inventions are solutions people create for problems. "Invention literacy" means being able to read how things work AND write (create) your own inventions. We start by spotting problems worth solving.',
     ['Explain what an invention is', 'Spot problems in everyday life', 'Start an invention journal'],
     ['Look at everyday inventions and the problems they solve.', 'List annoyances/problems you notice.', 'Pick one worth solving.', 'Start your invention journal.'],
-    'Fill a journal page with 10 problems you\'d like to solve.', ['Invention Literacy', 'Observation', 'Curiosity']),
+    'Fill a journal page with 10 problems you\'d like to solve.', ['Invention Literacy', 'Observation', 'Curiosity'],
+    [
+      { question: 'An invention is:', options: ['a solution someone creates for a problem', 'a type of battery', 'a sticker', 'a colour'], answerIndex: 0 },
+      { question: '"Invention literacy" means being able to:', options: ['read how things work AND create your own', 'only read books', 'only draw', 'memorise facts'], answerIndex: 0 },
+      { question: 'Inventors start by:', options: ['spotting a real problem worth solving', 'building randomly', 'copying others', 'giving up'], answerIndex: 0 },
+    ]),
   mk('inv-2', 'Empathise & Define the Problem', '🔎', 2, '10-12', 'Beginner', 'inv-m1', L1, 2,
     'understanding the user and the real problem', 'Good inventions solve a real need. You learn about the people affected (empathise) and write a clear problem statement before jumping to solutions.',
     ['Find out who has the problem and why', 'Write a clear problem statement', 'Avoid solving the wrong problem'],

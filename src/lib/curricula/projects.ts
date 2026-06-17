@@ -7,15 +7,20 @@ const L1 = 'Level I · Guided Projects', L2 = 'Level II · Design Challenges', L
 const M = [{ item: 'Mixed kit (depends on the project — robot/micro:bit/craft materials)', quantity: 'per team' }, { item: 'Design journal / planning sheet', quantity: '1 per student' }];
 const DT = { id: 'design-thinking', title: 'Design Thinking for Educators (free toolkit)', type: 'link' as const, audience: 'coach' as const, url: 'https://www.ideo.com/journal/design-thinking-for-educators-toolkit', description: 'Empathise → Define → Ideate → Prototype → Test' };
 
-const mk = (id: string, title: string, emoji: string, diff: 1|2|3|4, age: '8-9'|'10-12'|'13-15', lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[]): KitLesson =>
-  ({ id, title, emoji, difficulty: diff, ageGroup: age, level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: M, resources: [DT] });
+const mk = (id: string, title: string, emoji: string, diff: 1|2|3|4, age: '8-9'|'10-12'|'13-15', lvl: 'Beginner'|'Intermediate'|'Advanced', mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[], quiz?: import('@/types').QuizQuestion[]): KitLesson =>
+  ({ id, title, emoji, difficulty: diff, ageGroup: age, level: lvl, moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills, materials: M, resources: [DT], ...(quiz ? { quiz } : {}) });
 
 const C: KitLesson[] = [
   mk('pj-1', 'The Design Process (Plan Like an Engineer)', '🧭', 2, '10-12', 'Beginner', 'pj-m1', L1, 1,
     'the engineering/design-thinking cycle', 'Great projects follow a process: understand the problem, brainstorm, plan, build, test, and improve. This lesson sets up the design journal you\'ll use throughout.',
     ['Describe the design-thinking stages', 'Define a problem and users', 'Plan a project in a design journal'],
     ['Learn the cycle: Empathise → Define → Ideate → Prototype → Test.', 'Pick a problem and who it helps.', 'Brainstorm 5+ ideas.', 'Plan your first build in the journal.'],
-    'Write a one-page project brief: the problem, the user, and your idea.', ['Design Thinking', 'Planning', 'Teamwork']),
+    'Write a one-page project brief: the problem, the user, and your idea.', ['Design Thinking', 'Planning', 'Teamwork'],
+    [
+      { question: 'The design-thinking cycle starts by:', options: ['understanding the problem and the user (empathise/define)', 'building immediately', 'shipping', 'testing first'], answerIndex: 0 },
+      { question: 'A good order for a project is:', options: ['Empathise → Define → Ideate → Prototype → Test', 'Test → Build → Plan', 'Build → Empathise', 'Ship → Plan'], answerIndex: 0 },
+      { question: 'Brainstorming means:', options: ['generating many ideas before choosing', 'picking the first idea', 'copying', 'no ideas'], answerIndex: 0 },
+    ]),
   mk('pj-2', 'Interactive Poster (micro:bit + Crafts)', '📌', 2, '10-12', 'Beginner', 'pj-m1', L1, 2,
     'combining coding with making', 'Combine a micro:bit (or Makey Makey) with craft materials to make a poster that lights up, plays sound, or responds to touch — coding meets making.',
     ['Combine hardware with a craft build', 'Code a simple interaction', 'Present the result'],

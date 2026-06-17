@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, Module, Difficulty } from '@/types';
+import type { Course, LessonDetail, LessonSection, Module, Difficulty, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  LEGO Education SPIKE Prime — Building Instructions (Video).
@@ -10,7 +10,7 @@ import type { Course, LessonDetail, LessonSection, Module, Difficulty } from '@/
 
 interface SpikeBuild {
   n: number; title: string; emoji: string; youtubeId: string; difficulty: Difficulty;
-  module: 1 | 2; build: string; mechanism: string; skills: string[]; code: string;
+  module: 1 | 2; build: string; mechanism: string; skills: string[]; code: string; quiz?: QuizQuestion[];
 }
 
 // Builds are organised into three LEVELS by difficulty.
@@ -102,6 +102,7 @@ function makeBuild(v: SpikeBuild): LessonDetail {
     assessmentChecklist: [`Built "${v.title}".`, 'Explained the mechanism.', 'Programmed and tested it.'],
     sections,
     youtubeId: v.youtubeId,
+    ...(v.quiz ? { quiz: v.quiz } : {}),
     resources: [
       { id: `${id}-r1`, title: `${v.title} — Build Video`, type: 'video', audience: 'both', url: `https://www.youtube.com/watch?v=${v.youtubeId}`, description: 'Watch & build along (YouTube)' },
     ],
@@ -109,7 +110,12 @@ function makeBuild(v: SpikeBuild): LessonDetail {
 }
 
 const BUILDS: SpikeBuild[] = [
-  { n: 1,  module: 1, title: 'Helicopter', emoji: '🚁', youtubeId: 'EvWXfimxzjE', difficulty: 2, build: 'Build a helicopter with spinning rotor blades driven by a motor.', mechanism: 'gears transferring motor rotation to spin the rotor', skills: ['Building', 'Gears', 'Motors'], code: 'Run the motor to spin the rotor; vary the speed.' },
+  { n: 1,  module: 1, title: 'Helicopter', emoji: '🚁', youtubeId: 'EvWXfimxzjE', difficulty: 2, build: 'Build a helicopter with spinning rotor blades driven by a motor.', mechanism: 'gears transferring motor rotation to spin the rotor', skills: ['Building', 'Gears', 'Motors'], code: 'Run the motor to spin the rotor; vary the speed.',
+    quiz: [
+      { question: 'What spins the helicopter rotor?', options: ['a motor (through gears)', 'the battery', 'a sensor', 'the screen'], answerIndex: 0 },
+      { question: 'Gears are used to:', options: ['transfer motion from the motor to the rotor', 'store data', 'detect colour', 'play sound'], answerIndex: 0 },
+      { question: 'The "brain" you program on SPIKE Prime is the:', options: ['hub', 'rotor', 'gear', 'beam'], answerIndex: 0 },
+    ] },
   { n: 2,  module: 1, title: 'Gyroscope', emoji: '🌀', youtubeId: '8FXHR3tsX6c', difficulty: 3, build: 'Build a spinning gyroscope model.', mechanism: 'high-speed rotation and angular momentum', skills: ['Building', 'Rotation', 'Motors'], code: 'Spin the motor up to speed and observe how it stays balanced.' },
   { n: 3,  module: 2, title: 'Doodler Robot', emoji: '✏️', youtubeId: 'J3AAGIwTeCA', difficulty: 3, build: 'Build a drawing "doodler" robot that scribbles patterns with a pen.', mechanism: 'off-centre (eccentric) rotation creating vibration/movement', skills: ['Building', 'Mechanisms', 'Art'], code: 'Run the motor and watch the pen draw; change speed for different patterns.' },
   { n: 4,  module: 1, title: 'Weightlifting Robot', emoji: '🏋️', youtubeId: 'OOm1JfXjmtQ', difficulty: 3, build: 'Build a robot that lifts a weight like a weightlifter.', mechanism: 'gear reduction for torque (lifting power)', skills: ['Building', 'Gear Ratios', 'Torque'], code: 'Drive the lifting motor up and down; try heavier loads.' },
