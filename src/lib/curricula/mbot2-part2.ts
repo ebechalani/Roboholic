@@ -1,4 +1,4 @@
-import type { LessonDetail, LessonSection, LessonImage, Module, Difficulty } from '@/types';
+import type { LessonDetail, LessonSection, LessonImage, Module, Difficulty, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  mBot2 — Part 2 (Makeblock Education). Four advanced strands added
@@ -21,7 +21,7 @@ interface P2 {
   moduleId: string; moduleTitle: string; order: number;
   concept: string; conceptExplain: string;
   objectives: string[]; focus: string[];
-  challenge: string; challengeSteps: string[]; skills: string[];
+  challenge: string; challengeSteps: string[]; skills: string[]; quiz?: QuizQuestion[];
 }
 
 function gallery(slug: string, pages: number): LessonImage[] {
@@ -103,6 +103,7 @@ function makeLesson(c: P2): LessonDetail {
     assessmentChecklist: [...c.focus.map(f => 'Knows ' + f.toLowerCase()), 'Built and tested the program on the mBot2.'],
     sections,
     heroImage: `/lessons/${c.id}/p-01.png`,
+    ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${c.id}-r1`, title: `${c.title} — Lesson Book (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-mbot2', description: 'Makeblock Education teacher/student book', needsReview: true },
     ],
@@ -119,6 +120,11 @@ const CONFIGS: P2[] = [
     challenge: 'Program the mBot2 to drive a precise square (or your initials) and return to the start.',
     challengeSteps: ['Use move-forward and turn blocks with set distances/angles.', 'Test, measure the error, and adjust the numbers.', 'Loop the four sides for a square.'],
     skills: ['Movement', 'Encoder Motors', 'mBlock'],
+    quiz: [
+      { question: 'What makes the mBot2 drive accurately a set distance?', options: ['its encoder motors', 'its speaker', 'the Wi-Fi', 'the LED ring'], answerIndex: 0 },
+      { question: 'You program the mBot2 with:', options: ['mBlock (blocks/Python)', 'Microsoft Word', 'a TV remote', 'Tinkercad'], answerIndex: 0 },
+      { question: 'To drive a square you repeat "move forward + turn 90°":', options: ['4 times', 'once', 'forever', '90 times'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-2', title: 'Sensing = data', emoji: '📊', pages: 16, difficulty: 2, moduleId: 'mbot2-m4', moduleTitle: M4, order: 16,
@@ -128,6 +134,11 @@ const CONFIGS: P2[] = [
     challenge: 'Build a "classroom monitor" that shows the live sound level and temperature on the CyberPi screen.',
     challengeSteps: ['Read a sensor value into the program.', 'Show it on the CyberPi display in a forever loop.', 'Add a second sensor on another line.', 'Upload it and walk around taking readings.'],
     skills: ['Sensors', 'Data', 'CyberPi Display'],
+    quiz: [
+      { question: 'Where can the mBot2 show sensor data?', options: ['on the CyberPi screen', 'on a printer', 'by email', 'nowhere'], answerIndex: 0 },
+      { question: 'Live mode vs upload mode: live mode runs the program:', options: ['while connected to the computer', 'only when unplugged', 'on a phone', 'never'], answerIndex: 0 },
+      { question: 'A sensor lets the robot:', options: ['measure something about its surroundings', 'charge faster', 'play louder', 'change colour only'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-3', title: 'Listen to mBot2', emoji: '🔊', pages: 9, difficulty: 2, moduleId: 'mbot2-m4', moduleTitle: M4, order: 17,
@@ -137,6 +148,11 @@ const CONFIGS: P2[] = [
     challenge: 'Make the mBot2 a "parrot" — record a short sound, then play it back when you press a button.',
     challengeSteps: ['Use a record block on one event.', 'Play the recording on another event (button press).', 'Add a light/animation that runs in parallel while it plays.'],
     skills: ['Speaker', 'Microphone', 'Parallel Tasks'],
+    quiz: [
+      { question: 'The mBot2 records sound with its:', options: ['microphone', 'speaker', 'motor', 'wheel'], answerIndex: 0 },
+      { question: 'Running two things at the same time is called:', options: ['parallel tasks', 'a single loop', 'uploading', 'charging'], answerIndex: 0 },
+      { question: 'The speaker is used to:', options: ['play sound', 'measure distance', 'detect colour', 'connect Wi-Fi'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-4', title: 'Seeing with sound', emoji: '📡', pages: 8, difficulty: 2, moduleId: 'mbot2-m4', moduleTitle: M4, order: 18,
@@ -146,6 +162,11 @@ const CONFIGS: P2[] = [
     challenge: 'Program an obstacle-avoiding robot that drives forward and turns away whenever something is too close.',
     challengeSteps: ['In a forever loop, read the ultrasonic distance.', 'If distance < a threshold → stop and turn.', 'Else → keep driving forward.', 'Tune the threshold and turn angle.'],
     skills: ['Ultrasonic Sensor', 'Obstacle Avoidance', 'Conditionals'],
+    quiz: [
+      { question: 'The ultrasonic sensor measures:', options: ['distance to objects', 'colour', 'sound volume', 'temperature'], answerIndex: 0 },
+      { question: 'For obstacle avoidance you use an:', options: ['if (distance < threshold) → turn', 'on start only', 'a sound block', 'the LED'], answerIndex: 0 },
+      { question: 'Ultrasonic sensors work using:', options: ['sound waves humans can\'t hear', 'visible light', 'Wi-Fi', 'magnets'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-5', title: 'Sightseeing', emoji: '🎨', pages: 15, difficulty: 3, moduleId: 'mbot2-m4', moduleTitle: M4, order: 19,
@@ -155,6 +176,11 @@ const CONFIGS: P2[] = [
     challenge: 'Make a "tour bus" that follows a line and announces something (sound/display) when it reaches a coloured stop.',
     challengeSteps: ['Set up line-following with the quad RGB sensor.', 'In parallel, check the detected colour.', 'When a specific colour is seen → play a sound / show a message.', 'Test it around a coloured-stop track.'],
     skills: ['Quad RGB Sensor', 'Line Following', 'Colour Detection'],
+    quiz: [
+      { question: 'Which sensor follows a line and reads colour?', options: ['the quad RGB sensor', 'the ultrasonic sensor', 'the gyro', 'the microphone'], answerIndex: 0 },
+      { question: 'A "tour bus" that acts at coloured stops uses:', options: ['colour detection', 'Wi-Fi only', 'the speaker only', 'random numbers'], answerIndex: 0 },
+      { question: 'The quad RGB sensor points:', options: ['down at the floor/line', 'up at the ceiling', 'forward like eyes', 'backward'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-6', title: 'Careful drive', emoji: '🧭', pages: 13, difficulty: 3, moduleId: 'mbot2-m4', moduleTitle: M4, order: 20,
@@ -164,6 +190,11 @@ const CONFIGS: P2[] = [
     challenge: 'Make the mBot2 slow down (or stop and alert) when it detects a bumpy road or a sudden tilt.',
     challengeSteps: ['Read the accelerometer/gyro values.', 'Detect a sudden change (above a threshold).', 'On a bump → slow down or stop and flash a warning.', 'Test by driving over an uneven surface.'],
     skills: ['Gyroscope', 'Accelerometer', 'Motion Sensing'],
+    quiz: [
+      { question: 'A gyroscope measures:', options: ['turning/tilting motion', 'colour', 'distance', 'sound'], answerIndex: 0 },
+      { question: 'Detecting a sudden bump/tilt uses the:', options: ['accelerometer/gyro', 'speaker', 'LED ring', 'Wi-Fi'], answerIndex: 0 },
+      { question: 'These motion sensors help the robot:', options: ['react to how it is moving or tilting', 'play music', 'change colour', 'connect online'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-7', title: 'A network game', emoji: '📶', pages: 10, difficulty: 3, moduleId: 'mbot2-m4', moduleTitle: M4, order: 21,
@@ -173,6 +204,11 @@ const CONFIGS: P2[] = [
     challenge: 'Build a 2-robot game (e.g. "Simon says" or tag) where one mBot2 sends a random command and the other reacts.',
     challengeSteps: ['Set up LAN messaging on both robots.', 'Robot A picks a random command and broadcasts it.', 'Robot B reacts to the received message.', 'Add scoring or rounds.'],
     skills: ['Wireless LAN', 'Messaging', 'Random'],
+    quiz: [
+      { question: 'How do two mBot2 robots talk to each other here?', options: ['wirelessly over a local network (LAN)', 'with cables', 'by Bluetooth headset', 'they can\'t'], answerIndex: 0 },
+      { question: 'A random number makes a game:', options: ['unpredictable / different each time', 'always the same', 'slower', 'silent'], answerIndex: 0 },
+      { question: 'One robot tells another to act by:', options: ['sending a message', 'changing colour', 'beeping only', 'moving away'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-8', title: 'mBot2 at your service', emoji: '🗣️', pages: 18, difficulty: 4, moduleId: 'mbot2-m4', moduleTitle: M4, order: 22,
@@ -182,6 +218,11 @@ const CONFIGS: P2[] = [
     challenge: 'Program a "service robot" dialog: ask a question, recognise the spoken answer, and respond / act on it.',
     challengeSteps: ['Connect the mBot2 to Wi-Fi.', 'Ask a question on the display + speaker.', 'Use speech recognition to capture the answer into a variable.', 'Use Boolean logic to respond differently per answer.'],
     skills: ['Speech Recognition', 'Wi-Fi', 'Cloud Messaging', 'Variables & Boolean'],
+    quiz: [
+      { question: 'Speech recognition converts:', options: ['spoken words into text', 'text into colour', 'distance into sound', 'light into Wi-Fi'], answerIndex: 0 },
+      { question: 'Speech recognition needs:', options: ['a Wi-Fi internet connection', 'no power', 'a second robot', 'a printer'], answerIndex: 0 },
+      { question: 'A Boolean value is:', options: ['true or false', 'any number', 'a colour', 'a sound'], answerIndex: 0 },
+    ],
   },
   {
     id: 'mbot-gs-9', title: 'mBot2 in the wild', emoji: '🤖', pages: 12, difficulty: 4, moduleId: 'mbot2-m4', moduleTitle: M4, order: 23,
@@ -191,6 +232,11 @@ const CONFIGS: P2[] = [
     challenge: 'Train a simple ML model (e.g. gestures or images) and use it to control an mBot2 behaviour.',
     challengeSteps: ['Use mBlock\'s Machine Learning / Teachable Machine extension.', 'Train a model with a few categories of examples.', 'Map each category to an mBot2 action.', 'Test it live, then refine the training data.'],
     skills: ['Machine Learning', 'AI', 'Ecosystem'],
+    quiz: [
+      { question: 'Machine Learning lets a system choose actions based on:', options: ['data it has learned from', 'a coin flip only', 'its colour', 'the time of day'], answerIndex: 0 },
+      { question: 'Machine Learning is a form of:', options: ['Artificial Intelligence (AI)', 'a sensor', 'a motor', 'a battery'], answerIndex: 0 },
+      { question: 'In this lesson the mBot2 features work together as:', options: ['one ecosystem/system', 'separate unrelated parts', 'a single sensor', 'a speaker only'], answerIndex: 0 },
+    ],
   },
 
   // ─── Module 5: Smart Camera (Advanced AI / Visual Recognition) ───
