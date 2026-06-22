@@ -328,7 +328,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['10-12', '13-15'],
     levels: ['Beginner', 'Intermediate', 'Advanced'],
     courseCount: 1,
-    lessonCount: 12,
+    lessonCount: 13,
     tags: ['MakeCode Arcade', 'Sprites & Tilemaps', 'Multiplayer', 'JavaScript/Python'],
   },
 

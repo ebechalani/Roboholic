@@ -1,4 +1,5 @@
 import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty, AgeGroupId, QuizQuestion } from '@/types';
+import { GAMEDESIGN_PLAY_MODULE } from './external-resources';
 
 const ARCADE_EMBED = { kind: 'embed' as const, title: '🕹️ Make a Game (MakeCode Arcade)', url: 'https://arcade.makecode.com/', height: 560, note: 'Build your game here and press ▶ to play it in the page. (Or open in a new tab.)' };
 
@@ -227,11 +228,12 @@ export const GAME_DESIGN_COURSE: Course = {
     'Use variables and arrays to scale difficulty, and build multiplayer games',
     'Design, code (blocks → JavaScript/Python) and share an original game',
   ],
-  duration: '12 lessons × 45–60 minutes', totalHours: 12, lessonCount: 12,
+  duration: '13 lessons × 45–60 minutes', totalHours: 13, lessonCount: 13,
   prerequisites: [], skills: ['Game Design', 'Sprites & Tilemaps', 'Events & Collisions', 'Variables & Arrays', 'JavaScript/Python'],
   modules: [
     { id: 'gd-m1', title: L1, order: 1, description: 'First games with the Beginner Skillmap and Chase the Pizza: sprites, scenes, scoring and an endless runner.', lessons: CONFIGS.filter(c => c.moduleId === 'gd-m1').map(sum) },
     { id: 'gd-m2', title: L2, order: 2, description: 'Core mechanics: controller movement, score/lives/timers, projectiles & enemies, and tilemap levels.', lessons: CONFIGS.filter(c => c.moduleId === 'gd-m2').map(sum) },
     { id: 'gd-m3', title: L3, order: 3, description: 'Polish, scaling difficulty with variables/arrays, multiplayer, and a design-code-share capstone (blocks → text).', lessons: CONFIGS.filter(c => c.moduleId === 'gd-m3').map(sum) },
+    GAMEDESIGN_PLAY_MODULE,
   ],
 };

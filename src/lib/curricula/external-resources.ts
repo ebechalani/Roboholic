@@ -330,3 +330,34 @@ export const PYTHON_PLAY_MODULE: Module = {
   description: 'Practise real Python by playing two free coding games in the browser: CodeCombat (code your hero) and Py-Rates (a pirate Python adventure).',
   lessons: PYTHON_PLAY_CFG.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: i + 1 })),
 };
+
+// ─── Game Design · Code a Game (CodeCombat) ──────────────────────
+const GDP_CFG: Ext[] = [
+  {
+    programId: 'game-design', programSlug: 'game-design', programTitle: 'Game Design', programColor: '#DC2626',
+    courseId: 'game-design-1', courseTitle: 'Make Games with MakeCode Arcade', moduleId: 'gd-m4', moduleTitle: 'Code-a-Game · CodeCombat',
+    id: 'gd-codecombat', title: 'CodeCombat — Code a Game with Real Code', emoji: '⚔️', difficulty: 3, ageGroup: '10-12',
+    concept: 'learning game logic by typing real code in CodeCombat', conceptExplain: 'CodeCombat is a game where you write real Python (or JavaScript) to control a hero — moving, fighting and solving levels. It teaches the same logic as game design (sequences, loops, conditions, coordinates) but with typed code instead of blocks.',
+    objectives: ['Control a game character by typing code', 'Use loops and conditions to beat levels', 'Connect coding logic to game behaviour'],
+    steps: ['Open CodeCombat and start the free intro course.', 'Type the commands to move and act.', 'Use a loop to repeat moves; add a condition to react.', 'Progress through levels, debugging your code.'],
+    challenge: 'Beat a set of levels using a loop and a condition, then explain how your code controlled the game.',
+    skills: ['Coding', 'Game Logic', 'Loops & Conditions'],
+    materials: [{ item: 'Computer with a browser (codecombat.com) — free account', quantity: '1 per student' }],
+    interactions: [{ kind: 'embed', title: '⚔️ Play CodeCombat', url: 'https://codecombat.com/play', height: 560, note: 'Type real code to play. If it doesn\'t load embedded, use "Open in a new tab".' }],
+    quiz: [
+      { question: 'CodeCombat teaches game logic using:', options: ['real typed code (Python/JS)', 'only drag-and-drop blocks', 'paper only', 'video'], answerIndex: 0 },
+      { question: 'Which is most useful for repeating a move in a level?', options: ['a loop', 'a comment', 'a new file', 'a sound'], answerIndex: 0 },
+      { question: 'Reacting differently when an enemy is near uses a:', options: ['condition (if)', 'loop only', 'variable name', 'colour'], answerIndex: 0 },
+    ],
+    resources: [
+      { id: 'gd-cc-r1', title: 'CodeCombat — coding games', type: 'link', audience: 'both', url: 'https://codecombat.com/', description: 'Free core progression; learn by playing' },
+      { id: 'gd-cc-r2', title: 'CodeCombat for Educators', type: 'link', audience: 'coach', url: 'https://codecombat.com/teachers', description: 'Class dashboards & curriculum' },
+    ],
+  },
+];
+export const GAMEDESIGN_PLAY_LESSONS: LessonDetail[] = GDP_CFG.map(makeExt);
+export const GAMEDESIGN_PLAY_MODULE: Module = {
+  id: 'gd-m4', title: 'Code-a-Game · CodeCombat', order: 4,
+  description: 'Go from blocks to real code: play CodeCombat to learn game logic (loops, conditions) by typing Python/JavaScript.',
+  lessons: GDP_CFG.map(c => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: 1 })),
+};
