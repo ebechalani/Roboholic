@@ -1,4 +1,5 @@
 import type { Course, LessonDetail, LessonSection, Module, Difficulty, QuizQuestion, LessonInteraction } from '@/types';
+import { PYTHON_PLAY_MODULE } from './external-resources';
 
 // ════════════════════════════════════════════════════════════════
 //  Python & MicroPython (physical computing).
@@ -201,12 +202,13 @@ export const PYTHON_COURSE: Course = {
     'Control GPIO, PWM and analog hardware',
     'Connect to Wi-Fi and build a simple IoT web server',
   ],
-  duration: '6 lessons × 60 minutes', totalHours: 6, lessonCount: 6,
+  duration: '8 lessons × 45–60 minutes', totalHours: 8, lessonCount: 8,
   prerequisites: ['Comfortable with block coding (e.g. MakeCode/Scratch)'],
   skills: ['Python', 'MicroPython', 'micro:bit', 'ESP32', 'GPIO', 'IoT'],
   modules: [
     { id: 'py-m1', title: 'Module 1: Python Foundations', order: 1, description: 'Core Python: variables, input/output, control flow and functions.', lessons: CONFIGS.filter(c => c.n <= 2).map(sum) },
     { id: 'py-m2', title: 'Module 2: MicroPython on the micro:bit', order: 2, description: 'Bring Python to the micro:bit: display, buttons, sensors, music and radio.', lessons: CONFIGS.filter(c => c.n > 2 && c.n <= 4).map(sum) },
     { id: 'py-m3', title: 'Module 3: MicroPython on the ESP32 (IoT)', order: 3, description: 'GPIO, PWM, analog, Wi-Fi and a web server on the ESP32/ESP8266.', lessons: CONFIGS.filter(c => c.n > 4).map(sum) },
+    PYTHON_PLAY_MODULE,
   ],
 };

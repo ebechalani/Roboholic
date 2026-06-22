@@ -19,7 +19,7 @@ import { MBOT2_P2_LESSONS } from './mbot2-part2';
 import { SCHOOL_CHAPTER_LESSONS, SMALLBASIC_COURSE, SMALLBASIC_LESSONS } from './school-chapters';
 import { PYTHON_COURSE, PYTHON_LESSONS } from './python';
 import { SPIKE_COURSE, SPIKE_LESSONS } from './spike-prime';
-import { MICROBIT_EXTRA_LESSONS, MICROBIT_CREATEAI_LESSONS, ELECTRONICS_COURSE, ELECTRONICS_LESSONS, AI_ML_COURSE } from './external-resources';
+import { MICROBIT_EXTRA_LESSONS, MICROBIT_CREATEAI_LESSONS, ELECTRONICS_COURSE, ELECTRONICS_LESSONS, AI_ML_COURSE, PYTHON_PLAY_LESSONS } from './external-resources';
 import { MAKEY_COURSE, MAKEY_LESSONS } from './makey-makey';
 import { TELLO_COURSE, TELLO_LESSONS } from './tello';
 import { GAME_DESIGN_COURSE, GAME_DESIGN_LESSONS } from './game-design';
@@ -56,6 +56,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(MBOT2_P2_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(SCHOOL_CHAPTER_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(PYTHON_LESSONS.map(l => [l.id, l])),
+  ...Object.fromEntries(PYTHON_PLAY_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(SPIKE_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(MICROBIT_EXTRA_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(MICROBIT_CREATEAI_LESSONS.map(l => [l.id, l])),

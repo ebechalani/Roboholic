@@ -281,3 +281,52 @@ export const ELECTRONICS_COURSE: Course = {
     { id: 'elec-m1', title: 'Circuits You Can Make & Wear', order: 1, description: 'Paper circuits and sewable-LED wearables.', lessons: ELECTRONICS_CHAPS.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: i + 1 })) },
   ],
 };
+
+// ─── Python · Learn by Playing (CodeCombat + Py-Rates) ───────────
+const PY = { programId: 'python', programSlug: 'python', programTitle: 'Python', programColor: '#1D4ED8', courseId: 'python-1', courseTitle: 'Python & MicroPython (Physical Computing)', moduleId: 'py-m4', moduleTitle: 'Module 4: Learn Python by Playing' };
+const PYTHON_PLAY_CFG: Ext[] = [
+  {
+    ...PY, id: 'py-codecombat', title: 'CodeCombat — Code Your Hero in Python', emoji: '⚔️', difficulty: 2, ageGroup: '10-12',
+    concept: 'learning real Python by playing CodeCombat', conceptExplain: 'CodeCombat is a game where you type real Python to move your hero, defeat ogres and solve mazes. Unlike block games it uses actual code, so students practise Python syntax (commands, arguments, loops) while playing. The core levels are free.',
+    objectives: ['Write Python commands to control a character', 'Use methods with arguments (e.g. hero.moveRight())', 'Apply loops to repeat actions in a level'],
+    steps: ['Open CodeCombat and start the free "Dungeon" / Intro to CS course.', 'Type the Python commands shown to move and act.', 'Read the error hints and fix your code to pass each level.', 'Use a loop when you repeat the same action.'],
+    challenge: 'Complete the first set of levels using a loop at least once, then explain what your code did.',
+    skills: ['Python', 'Syntax', 'Game-Based Learning'],
+    materials: [{ item: 'Computer with a browser (codecombat.com) — free account', quantity: '1 per student' }],
+    interactions: [{ kind: 'embed', title: '⚔️ Play CodeCombat', url: 'https://codecombat.com/play', height: 560, note: 'Type real Python to play. If it doesn\'t load embedded, use "Open in a new tab".' }],
+    quiz: [
+      { question: 'How is CodeCombat different from block-coding games?', options: ['you type real Python (and JavaScript) code', 'you only drag blocks', 'you draw pictures', 'you record video'], answerIndex: 0 },
+      { question: 'hero.moveRight() is an example of:', options: ['calling a method (command)', 'a variable', 'a comment', 'a loop'], answerIndex: 0 },
+      { question: 'When you repeat the same action many times you should use a:', options: ['loop', 'new file', 'picture', 'sound'], answerIndex: 0 },
+    ],
+    resources: [
+      { id: 'cc-r1', title: 'CodeCombat — coding games to learn Python', type: 'link', audience: 'both', url: 'https://codecombat.com/', description: 'Free core progression; school dashboards available' },
+      { id: 'cc-r2', title: 'CodeCombat for Educators', type: 'link', audience: 'coach', url: 'https://codecombat.com/teachers', description: 'Class dashboards, guides and curriculum' },
+    ],
+  },
+  {
+    ...PY, id: 'py-pyrates', title: 'Py-Rates — Python Pirate Adventure', emoji: '🏴‍☠️', difficulty: 2, ageGroup: '10-12',
+    concept: 'easing from blocks to text Python with Py-Rates', conceptExplain: 'Py-Rates is a free "serious game" where you control a pirate by writing short Python programs (move, turn, loops, conditions). It is designed to bridge block coding and real Python text — a gentle way into typing code.',
+    objectives: ['Control a character by writing Python', 'Use sequences, loops and conditions in code', 'Build confidence typing Python (not blocks)'],
+    steps: ['Open Py-Rates (py-rates.org) and start the first island.', 'Write Python to move/turn the pirate to the goal.', 'Add a loop to repeat moves, and a condition where needed.', 'Progress through the islands, fixing your code as you go.'],
+    challenge: 'Finish an island using a loop, and explain why the loop was shorter than repeating the moves.',
+    skills: ['Python', 'Loops & Conditions', 'Game-Based Learning'],
+    materials: [{ item: 'Computer with a browser (py-rates.org) — free, no install', quantity: '1 per student' }],
+    interactions: [{ kind: 'embed', title: '🏴‍☠️ Play Py-Rates', url: 'https://py-rates.org/', height: 560, note: 'Write Python to guide the pirate. If it doesn\'t load embedded, use "Open in a new tab".' }],
+    quiz: [
+      { question: 'Py-Rates is designed to help students move from:', options: ['block coding to real text Python', 'Python to blocks', 'drawing to music', 'reading to writing only'], answerIndex: 0 },
+      { question: 'You control the pirate by:', options: ['writing Python code', 'tapping arrows only', 'shaking the mouse', 'speaking'], answerIndex: 0 },
+      { question: 'A loop in Py-Rates lets you:', options: ['repeat moves with less code', 'change the colour', 'add sound', 'end the game'], answerIndex: 0 },
+    ],
+    resources: [
+      { id: 'pyr-r1', title: 'Py-Rates — free Python game', type: 'link', audience: 'both', url: 'https://py-rates.org/', description: 'Serious game easing the block→text Python transition' },
+    ],
+  },
+];
+
+export const PYTHON_PLAY_LESSONS: LessonDetail[] = PYTHON_PLAY_CFG.map(makeExt);
+export const PYTHON_PLAY_MODULE: Module = {
+  id: 'py-m4', title: 'Module 4: Learn Python by Playing', order: 4,
+  description: 'Practise real Python by playing two free coding games in the browser: CodeCombat (code your hero) and Py-Rates (a pirate Python adventure).',
+  lessons: PYTHON_PLAY_CFG.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: i + 1 })),
+};

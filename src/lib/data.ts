@@ -346,7 +346,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['10-12', '13-15'],
     levels: ['Beginner', 'Intermediate', 'Advanced'],
     courseCount: 1,
-    lessonCount: 6,
+    lessonCount: 8,
     tags: ['Text Coding', 'MicroPython', 'micro:bit', 'ESP32 / IoT'],
   },
   {
