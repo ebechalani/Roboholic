@@ -466,6 +466,22 @@ export const PROGRAMS: Program[] = [
     lessonCount: 8,
     tags: ['Design Thinking', 'Innovation', 'Prototype', 'Pitch'],
   },
+  {
+    id: 'chess',
+    slug: 'chess',
+    title: 'Chess',
+    description: 'A clear, all-levels chess course — from the board and pieces to tactics, strategy, endgames and tournament play. Easy to teach, with quizzes and a live practice board in every lesson.',
+    icon: '♟️',
+    color: '#92400E',
+    bgColor: '#FEF7ED',
+    textColor: '#78350F',
+    category: 'competition',
+    ageGroups: ['6-7', '8-9', '10-12', '13-15'],
+    levels: ['Beginner', 'Intermediate', 'Advanced'],
+    courseCount: 1,
+    lessonCount: 18,
+    tags: ['Strategy', 'Tactics', 'Endgames', 'Critical Thinking'],
+  },
 ];
 
 // ─── Badges ──────────────────────────────────────────────────────
