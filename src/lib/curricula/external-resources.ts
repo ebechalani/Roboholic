@@ -19,6 +19,8 @@ interface Ext {
   steps: string[]; challenge: string; skills: string[];
   materials: { item: string; quantity?: string; isOptional?: boolean }[];
   resources: Resource[];
+  quiz?: import('@/types').QuizQuestion[];
+  interactions?: import('@/types').LessonInteraction[];
 }
 
 function makeExt(c: Ext): LessonDetail {
@@ -74,6 +76,8 @@ function makeExt(c: Ext): LessonDetail {
     assessmentChecklist: c.objectives,
     sections,
     ...(c.youtubeId ? { youtubeId: c.youtubeId } : {}),
+    ...(c.quiz ? { quiz: c.quiz } : {}),
+    ...(c.interactions ? { interactions: c.interactions } : {}),
     resources: c.resources,
   };
 }
@@ -85,6 +89,25 @@ const KITRONIK_CATALOGUE: Resource = { id: 'kitronik-cat', title: 'Kitronik Mate
 // ─── micro:bit · Explore More (AI & Real-World) ──────────────────
 const MBX = { programId: 'microbit', programSlug: 'microbit', programTitle: 'micro:bit', programColor: '#10B981', courseId: 'microbit-first', courseTitle: 'micro:bit Coding & Computing (MakeCode)', moduleId: 'mbx-explore', moduleTitle: 'Explore More · Real-World' };
 const MICROBIT_EXTRAS: Ext[] = [
+  {
+    ...MBX, id: 'mbx-music', title: 'Make Music with the micro:bit', emoji: '🎵', difficulty: 3, ageGroup: '10-12',
+    concept: 'coding music and instruments on the micro:bit', conceptExplain: 'The micro:bit can play tunes through a speaker/headphones and even become a touch instrument. Students code melodies with loops, build a button "jukebox", and make a foil-and-cardboard "Touch Tunes" guitar — blending music with coding, loops and conductivity.',
+    objectives: ['Play a melody on the micro:bit using the music blocks', 'Use a loop to repeat a musical phrase efficiently', 'Build a jukebox (buttons → different tunes) or a touch instrument'],
+    steps: ['In MakeCode, use the Music blocks to play a short tune (e.g. Frère Jacques).', 'Wrap a repeated bar in a loop so you don\'t code it twice.', 'Make a "jukebox": play a different built-in tune on button A vs B.', 'Advanced: wire foil strips with crocodile clips to the pins for a "Touch Tunes" guitar.'],
+    challenge: 'Code your favourite song\'s opening, then turn it into a 2-button jukebox (or a touch-pin instrument).',
+    skills: ['Music', 'Loops', 'Inputs & Pins'],
+    materials: [{ item: 'BBC micro:bit + headphones/speaker (crocodile clips)', quantity: '1 per pair' }, { item: 'Computer with MakeCode', quantity: '1 per pair' }, { item: 'Cardboard + foil (for Touch Tunes)', quantity: 'per group', isOptional: true }],
+    interactions: [{ kind: 'embed', title: '🟩 Code it in MakeCode', url: 'https://makecode.microbit.org/', height: 540, note: 'Build your tune with the Music blocks and press ▶ to hear it in the simulator. (Or open in a new tab.)' }],
+    quiz: [
+      { question: 'Why use a loop when coding Frère Jacques?', options: ['to repeat a bar without coding it twice', 'to make it louder', 'to change the colour', 'to connect Wi-Fi'], answerIndex: 0 },
+      { question: 'A "jukebox" project plays a different tune when you:', options: ['press a button (A or B)', 'shake it once', 'plug in USB', 'cover the LEDs'], answerIndex: 0 },
+      { question: 'The "Touch Tunes" guitar uses foil strips because foil is:', options: ['conductive (completes the circuit when touched)', 'colourful', 'loud', 'magnetic'], answerIndex: 0 },
+    ],
+    resources: [
+      { id: 'mbx-music-r1', title: 'Teach Music with the micro:bit (official ideas)', type: 'link', audience: 'both', url: 'https://microbit.org/news/2026-06-21/teach-music-with-the-bbc-microbit/', description: 'Frère Jacques loops, Jukebox, Touch Tunes + classroom examples' },
+      MICROBIT_LESSONS_HUB,
+    ],
+  },
   {
     ...MBX, id: 'mbx-sport', title: 'micro:bit in Sport', emoji: '🏃', difficulty: 3, ageGroup: '10-12',
     concept: 'using micro:bit sensors to measure and improve in sport', conceptExplain: 'The micro:bit\'s accelerometer and timer turn it into a sports gadget — a step counter, jump/shot counter, reaction timer or stopwatch — so students collect real data about movement and performance.',
@@ -103,7 +126,7 @@ const MICROBIT_EXTRAS: Ext[] = [
 export const MICROBIT_EXTRA_LESSONS: LessonDetail[] = MICROBIT_EXTRAS.map(makeExt);
 export const MICROBIT_EXTRA_MODULE: Module = {
   id: 'mbx-explore', title: 'Explore More · Real-World', order: 22,
-  description: 'Go beyond coding: use the micro:bit\'s sensors in sport. Includes a link to the official micro:bit lessons hub.',
+  description: 'Go beyond coding: make music and instruments, and use the micro:bit\'s sensors in sport. Includes a link to the official micro:bit lessons hub.',
   lessons: MICROBIT_EXTRAS.map((c, i) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: 83 + i })),
 };
 
