@@ -1,274 +1,359 @@
-import type { Course, LessonDetail, Module, LessonInteraction, QuizQuestion } from '@/types';
-import { makeKitLesson, kitSummary, type KitLesson, type KitProgram } from './_course-kit';
+import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficulty, AgeGroupId, LessonInteraction, QuizQuestion } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
-//  Chess — "From First Moves to Tournament Play" (3 levels, 18 lessons)
-//  A clear, professional, all-levels chess curriculum: each lesson has
-//  instructor-ready teaching steps, student steps, a quiz, and (where
-//  useful) an embedded Lichess board for live practice/puzzles ($0).
+//  Chess — the official ChessKid.com Curriculum (IM Daniel Rensch),
+//  20 lessons in 5 sections. The real curriculum pages are rendered
+//  as each lesson's deck (so it's visual, not textual); on top we add
+//  a board diagram (FEN→SVG), a quiz, order-the-steps, and a live
+//  Lichess practice board. Designed to teach straight from the screen.
 // ════════════════════════════════════════════════════════════════
 
-const P: KitProgram = { programId: 'chess', programSlug: 'chess', programTitle: 'Chess', programColor: '#92400E', courseId: 'chess-1', courseTitle: 'Chess: From First Moves to Tournament Play' };
-const L1 = 'Level I · Beginner — The Basics';
-const L2 = 'Level II · Intermediate — Tactics & Fundamentals';
-const L3 = 'Level III · Advanced — Strategy & Mastery';
-
-const M = [
-  { item: 'A chess set & board', quantity: '1 per pair' },
-  { item: 'A demonstration board or screen (instructor)', quantity: '1 per class' },
-  { item: 'Computer/tablet with lichess.org (free)', quantity: '1 per pair', isOptional: true },
-];
-// Reusable embeds (Lichess is free; if a page blocks embedding, the "Open in a new tab" fallback works).
-const LEARN: LessonInteraction = { kind: 'embed', title: '♟️ Practice (Lichess Learn)', url: 'https://lichess.org/learn', height: 520, note: 'Interactive board — move the pieces yourself. (Or open in a new tab.)' };
-const PUZZLES: LessonInteraction = { kind: 'embed', title: '🧩 Tactics Puzzles', url: 'https://lichess.org/training', height: 520, note: 'Solve tactics puzzles to train pattern recognition. (Or open in a new tab.)' };
-const PRACTICE: LessonInteraction = { kind: 'embed', title: '♟️ Guided Practice', url: 'https://lichess.org/practice', height: 520, note: 'Guided practice positions (checkmates, endgames…). (Or open in a new tab.)' };
-const PLAY: LessonInteraction = { kind: 'embed', title: '♟️ Play a Game', url: 'https://lichess.org/', height: 520, note: 'Play vs the computer or a friend. (Or open in a new tab.)' };
-const LICHESS = { id: 'lichess', title: 'Lichess — free chess: play, puzzles & lessons', type: 'link' as const, audience: 'both' as const, url: 'https://lichess.org/learn', description: 'Free, no-account interactive chess practice' };
-const CHESSKID = { id: 'chesskid', title: 'ChessKid (kid-safe chess platform)', type: 'link' as const, audience: 'coach' as const, url: 'https://www.chesskid.com/', description: 'Safe play & lessons for younger students' };
-
-type Age = '6-7' | '8-9' | '10-12' | '13-15';
-const ch = (id: string, title: string, emoji: string, diff: 1 | 2 | 3 | 4, age: Age, mod: string, modTitle: string, order: number, concept: string, conceptExplain: string, objectives: string[], steps: string[], challenge: string, skills: string[], quiz: QuizQuestion[], interactions?: LessonInteraction[]): KitLesson => ({
-  id, title, emoji, difficulty: diff, ageGroup: age, level: mod === 'chess-m1' ? 'Beginner' : mod === 'chess-m2' ? 'Intermediate' : 'Advanced',
-  moduleId: mod, moduleTitle: modTitle, order, concept, conceptExplain, objectives, steps, challenge, skills,
-  materials: M, resources: [LICHESS, CHESSKID], quiz, ...(interactions ? { interactions } : {}),
-});
-
-const C: KitLesson[] = [
-  // ─── Level I · Beginner ───
-  ch('chess-1', 'The Board, the Pieces & the Setup', '♟️', 1, '6-7', 'chess-m1', L1, 1,
-    'the board, the pieces and the starting position', 'Chess is played on an 8×8 board of light and dark squares. Each side has 16 pieces. Setting up correctly every time builds good habits — remember "light square on the right" and "queen on her own colour".',
-    ['Orient the board correctly (light square bottom-right)', 'Name all six pieces', 'Set up the starting position'],
-    ['Place the board so each player has a light square in the bottom-right corner.', 'Set the back row: rook, knight, bishop, queen, king, bishop, knight, rook.', 'Remember "queen on her colour" (white queen on a light square).', 'Place all eight pawns on the second row.'],
-    'Set up the full starting position from an empty board in under 60 seconds.', ['Board Setup', 'Piece Names', 'Habits'],
-    [
-      { question: 'When the board is set up correctly, the bottom-right corner square is:', options: ['light', 'dark', 'empty', 'either'], answerIndex: 0, explanation: 'Remember: "light on the right".' },
-      { question: 'The white queen starts on a:', options: ['light square', 'dark square', 'corner', 'knight'], answerIndex: 0, explanation: '"Queen on her own colour" — white queen on a light square.' },
-      { question: 'How many pieces does each player start with?', options: ['16', '8', '12', '32'], answerIndex: 0 },
-    ]),
-  ch('chess-2', 'How the Pieces Move I — Rook, Bishop, Queen', '➕', 1, '6-7', 'chess-m1', L1, 2,
-    'the line pieces (rook, bishop, queen)', 'The rook moves in straight lines (up/down/across), the bishop moves diagonally (staying on its colour), and the queen combines both — the most powerful piece. None of them can jump over other pieces.',
-    ['Move the rook along ranks and files', 'Move the bishop on diagonals', 'Move the queen (rook + bishop combined)'],
-    ['Show the rook sliding any number of empty squares in straight lines.', 'Show the bishop sliding on diagonals — note it never changes colour.', 'Show the queen doing both.', 'Stress: line pieces cannot jump over other pieces.'],
-    'Place a queen on an empty board and find every square it can reach.', ['Rook', 'Bishop', 'Queen'],
-    [
-      { question: 'The bishop moves:', options: ['diagonally', 'in straight lines only', 'in an L-shape', 'one square any way'], answerIndex: 0 },
-      { question: 'The queen moves like a:', options: ['rook and bishop combined', 'knight', 'pawn', 'king only'], answerIndex: 0 },
-      { question: 'Can a rook jump over a piece in its path?', options: ['no', 'yes', 'only on the first move', 'only diagonally'], answerIndex: 0 },
-    ], [LEARN]),
-  ch('chess-3', 'How the Pieces Move II — Knight, King, Pawn', '🐴', 1, '6-7', 'chess-m1', L1, 3,
-    'the knight, king and pawn', 'The knight moves in an "L" (and is the only piece that jumps). The king moves one square in any direction. The pawn moves forward one square (or two on its first move) but captures diagonally.',
-    ['Move the knight in an L-shape (and jump)', 'Move the king one square', 'Move and capture with the pawn correctly'],
-    ['Show the knight\'s L-move (2+1) and that it can jump over pieces.', 'Show the king moving one square in any direction.', 'Show the pawn going forward 1 (or 2 from start) — but capturing diagonally.', 'Emphasise: pawns never move backward.'],
-    'From the start square, count how many squares a knight can jump to (answer: depends on position — try a corner vs the centre).', ['Knight', 'King', 'Pawn'],
-    [
-      { question: 'The knight is special because it:', options: ['can jump over pieces', 'moves diagonally far', 'moves backward only', 'cannot capture'], answerIndex: 0 },
-      { question: 'A pawn captures:', options: ['one square diagonally forward', 'straight ahead', 'in an L-shape', 'sideways'], answerIndex: 0 },
-      { question: 'The king moves:', options: ['one square in any direction', 'like a queen', 'in an L', 'two squares always'], answerIndex: 0 },
-    ], [LEARN]),
-  ch('chess-4', 'Capturing, Check, Checkmate & Stalemate', '👑', 2, '8-9', 'chess-m1', L1, 4,
-    'how to win (and draw) a game', 'You capture by moving onto an enemy piece\'s square. "Check" means the king is attacked and must get out of it. "Checkmate" is check with no escape — that wins the game. "Stalemate" (no legal move but not in check) is a draw.',
-    ['Capture enemy pieces correctly', 'Recognise check and the 3 ways to escape it', 'Tell checkmate from stalemate'],
-    ['Demonstrate a capture (move onto the square, remove the piece).', 'Show a check; escape it 3 ways: move the king, block, or capture the attacker.', 'Show a simple checkmate (king attacked, no escape).', 'Show a stalemate and explain it\'s a DRAW, not a win.'],
-    'Set up a position that is check, then change one piece so it becomes checkmate.', ['Check', 'Checkmate', 'Stalemate'],
-    [
-      { question: 'Checkmate is:', options: ['the king is attacked and cannot escape', 'any capture of the queen', 'a draw', 'when a pawn promotes'], answerIndex: 0 },
-      { question: 'Which is NOT a way to escape check?', options: ['ignore it and move elsewhere', 'move the king', 'block the check', 'capture the attacker'], answerIndex: 0 },
-      { question: 'Stalemate (no legal move, king not in check) is a:', options: ['draw', 'win for the player to move', 'win for the other player', 'checkmate'], answerIndex: 0 },
-    ], [PRACTICE]),
-  ch('chess-5', 'Special Moves — Castling, En Passant, Promotion', '🏰', 2, '8-9', 'chess-m1', L1, 5,
-    'the three special rules', 'Castling moves the king two squares toward a rook and the rook jumps over — it keeps the king safe. En passant is a special pawn capture. Promotion turns a pawn that reaches the far side into any piece (usually a queen).',
-    ['Castle king-side and queen-side (and know the rules)', 'Perform an en passant capture', 'Promote a pawn'],
-    ['Show castling: king moves 2 toward a rook, rook hops over. Rules: nothing between, neither piece has moved, king not in/through/into check.', 'Show en passant: capturing a pawn that just moved two squares, as if it moved one.', 'Show promotion: a pawn reaching the last rank becomes a queen (or other piece).', 'Practise each move on the board.'],
-    'Reach a position where you can legally castle, then do it; then promote a pawn to a queen.', ['Castling', 'En Passant', 'Promotion'],
-    [
-      { question: 'Castling mainly helps to:', options: ['keep the king safe', 'win a pawn', 'promote faster', 'check the queen'], answerIndex: 0 },
-      { question: 'A pawn that reaches the far side:', options: ['promotes (usually to a queen)', 'disappears', 'becomes a king', 'must stop'], answerIndex: 0 },
-      { question: 'You may NOT castle if:', options: ['the king has already moved', 'it is move 10', 'you have a queen', 'the board is full'], answerIndex: 0 },
-    ], [LEARN]),
-  ch('chess-6', 'Your First Full Game & The Rules of Play', '🤝', 2, '8-9', 'chess-m1', L1, 6,
-    'playing a complete game with good manners', 'Time to play! White moves first, then players alternate. Learn touch-move (touch a piece, move it), how games are drawn, and basic etiquette (handshake, "good game"). The goal: checkmate the opponent\'s king.',
-    ['Play a full game start to finish', 'Apply touch-move and turn order', 'Show good sportsmanship'],
-    ['Set up; White moves first, then alternate.', 'Apply touch-move: if you touch a piece you must move it (if legal).', 'Play to checkmate (or a draw); shake hands and say "good game".', 'Know the main draws: stalemate, agreement, repetition, insufficient material.'],
-    'Play a complete game against a partner, following all the rules and good manners.', ['Full Game', 'Etiquette', 'Rules'],
-    [
-      { question: 'Who moves first in chess?', options: ['White', 'Black', 'the higher rated player', 'whoever wants'], answerIndex: 0 },
-      { question: 'Touch-move means:', options: ['if you touch a piece you must move it (if legal)', 'you can take moves back', 'you must touch the king first', 'no touching allowed'], answerIndex: 0 },
-      { question: 'The goal of the game is to:', options: ['checkmate the enemy king', 'capture all pawns', 'promote first', 'control the centre'], answerIndex: 0 },
-    ], [PLAY]),
-  // ─── Level II · Intermediate ───
-  ch('chess-7', 'Piece Values & Good Trades', '⚖️', 2, '8-9', 'chess-m2', L2, 7,
-    'how much each piece is worth', 'Knowing the rough value of pieces guides good decisions: pawn = 1, knight = 3, bishop = 3, rook = 5, queen = 9 (the king is priceless). Trade when you win material or improve your position; avoid giving up a big piece for a small one.',
-    ['State the value of each piece', 'Decide if a trade is good', 'Count material in a position'],
-    ['Introduce the values: P=1, N=3, B=3, R=5, Q=9.', 'Show a good trade (winning material) vs a bad one (losing it).', 'Practise counting material on both sides.', 'Rule of thumb: only trade your big piece for an equal or bigger one (unless there\'s a reason).'],
-    'In a few positions, count the material and say who is ahead and by how much.', ['Piece Value', 'Trading', 'Material'],
-    [
-      { question: 'How many points is a rook worth?', options: ['5', '3', '9', '1'], answerIndex: 0 },
-      { question: 'Trading a queen (9) for a knight (3) is:', options: ['a bad trade', 'a great trade', 'an even trade', 'illegal'], answerIndex: 0 },
-      { question: 'A knight and a bishop are each worth about:', options: ['3 points', '1 point', '5 points', '9 points'], answerIndex: 0 },
-    ]),
-  ch('chess-8', 'Basic Checkmates (Q+K, R+K, Back-Rank)', '🎯', 3, '10-12', 'chess-m2', L2, 8,
-    'finishing the game with a lone king', 'Once you\'re ahead, you must know how to checkmate. Learn King+Queen vs King and King+Rook vs King (the "ladder/box" method), and the common back-rank mate.',
-    ['Checkmate with King + Queen vs King', 'Checkmate with King + Rook (ladder)', 'Spot a back-rank mate'],
-    ['Use the queen to shrink the king\'s box toward an edge (don\'t stalemate!).', 'Bring your own king up to support the mate.', 'Show the rook "ladder" mate against the edge.', 'Show the back-rank mate (rook/queen on the back rank, king trapped by its own pawns).'],
-    'Checkmate a lone king with King + Queen, then with King + Rook, without stalemating.', ['Checkmating Technique', 'King & Queen', 'Back-Rank'],
-    [
-      { question: 'To checkmate with K+Q you push the enemy king toward:', options: ['the edge of the board', 'the centre', 'your queen', 'a corner with your queen alone'], answerIndex: 0 },
-      { question: 'A back-rank mate happens when the king is trapped by:', options: ['its own pawns on the back rank', 'the centre', 'a knight', 'castling'], answerIndex: 0 },
-      { question: 'The biggest danger when mating with a queen is:', options: ['accidental stalemate', 'losing the queen to the king', 'running out of time only', 'promotion'], answerIndex: 0 },
-    ], [PRACTICE]),
-  ch('chess-9', 'Tactics I — Forks, Pins & Skewers', '🍴', 3, '10-12', 'chess-m2', L2, 9,
-    'the three core tactics', 'Tactics win material. A fork attacks two things at once (knights are great forkers). A pin freezes a piece because moving it would expose a more valuable one. A skewer is a "reverse pin" — the valuable piece is in front and must move, losing the one behind.',
-    ['Recognise and play a fork', 'Recognise and use a pin', 'Recognise and use a skewer'],
-    ['Show a knight fork hitting king + queen.', 'Show a bishop pinning a knight to the king (absolute pin).', 'Show a skewer: check the king so it moves and you win the piece behind.', 'Drill: spot the tactic in several positions.'],
-    'Solve 10 fork/pin/skewer puzzles on Lichess and note which tactic each one was.', ['Forks', 'Pins', 'Skewers'],
-    [
-      { question: 'A fork is when one piece:', options: ['attacks two enemy pieces at once', 'defends the king', 'promotes', 'castles'], answerIndex: 0 },
-      { question: 'Which piece is famous for forking?', options: ['the knight', 'the pawn', 'the king', 'the rook only'], answerIndex: 0 },
-      { question: 'A pin works because moving the pinned piece would:', options: ['expose a more valuable piece behind it', 'cause stalemate', 'lose the game instantly', 'promote a pawn'], answerIndex: 0 },
-    ], [PUZZLES]),
-  ch('chess-10', 'Tactics II — Discovered & Double Attacks', '💥', 3, '10-12', 'chess-m2', L2, 10,
-    'more powerful tactics', 'A discovered attack: one piece moves out of the way to reveal an attack from the piece behind. A double attack hits two targets. "Removing the defender" captures or chases away the piece that is guarding a key square or piece.',
-    ['Play a discovered attack (and discovered check)', 'Create a double attack', 'Remove a defender to win material'],
-    ['Show a discovered attack: move a piece to unveil a rook/bishop\'s attack.', 'Show a discovered CHECK (very strong — the moving piece is "free" for a move).', 'Show a double attack with the queen.', 'Show "removing the defender" then winning the now-undefended piece.'],
-    'Find a discovered check and a "remove the defender" idea in puzzle positions.', ['Discovered Attack', 'Double Attack', 'Defender'],
-    [
-      { question: 'A discovered attack works by:', options: ['moving one piece to reveal another\'s attack', 'castling', 'promoting', 'trading queens'], answerIndex: 0 },
-      { question: 'A discovered CHECK is strong because:', options: ['the moving piece can do anything while the king must respond to check', 'it promotes', 'it draws', 'it is illegal'], answerIndex: 0 },
-      { question: '"Removing the defender" means:', options: ['eliminating the piece that guards a target', 'castling early', 'moving the king', 'offering a draw'], answerIndex: 0 },
-    ], [PUZZLES]),
-  ch('chess-11', 'Opening Principles', '🚀', 3, '10-12', 'chess-m2', L2, 11,
-    'how to start a game well', 'A good opening follows simple principles: control the centre (e4/d4), develop your knights and bishops quickly, castle early to keep the king safe, and don\'t move the same piece twice or bring the queen out too early.',
-    ['Control the centre with pawns and pieces', 'Develop minor pieces quickly', 'Castle early'],
-    ['Play 1.e4 (or 1.d4) to fight for the centre.', 'Develop knights before bishops, toward the centre.', 'Castle within the first several moves.', 'Avoid: moving one piece many times, early queen sorties, too many pawn moves.'],
-    'Play the first 8 moves of a game following all the opening principles, then explain your development.', ['Centre Control', 'Development', 'King Safety'],
-    [
-      { question: 'A core opening principle is to:', options: ['control the centre and develop pieces', 'attack with the queen immediately', 'move only pawns', 'leave the king in the centre'], answerIndex: 0 },
-      { question: 'You should usually castle:', options: ['early, to keep the king safe', 'never', 'only in the endgame', 'after losing the queen'], answerIndex: 0 },
-      { question: 'In the opening you should avoid:', options: ['moving the same piece several times', 'developing knights', 'controlling the centre', 'castling'], answerIndex: 0 },
-    ]),
-  ch('chess-12', 'Basic Endgames — King & Pawn vs King', '🏁', 3, '10-12', 'chess-m2', L2, 12,
-    'the most important endgame', 'Endgames decide many games. The key idea is "the opposition" (kings facing with one square between) and using your king actively to escort a pawn to promotion. The "square of the pawn" tells you if a lone king can catch a runner.',
-    ['Use the opposition to make progress', 'Escort a pawn to promotion', 'Use the "square" rule to stop a passed pawn'],
-    ['Show the opposition (kings facing, odd squares apart) and how it gains ground.', 'Walk the king in front of the pawn to promote it.', 'Show the "square of the pawn" rule for catching a runner.', 'Practise King+Pawn vs King from both sides.'],
-    'Promote a pawn in a King+Pawn vs King position using the opposition.', ['Opposition', 'King & Pawn', 'Promotion Technique'],
-    [
-      { question: '"The opposition" refers to:', options: ['the kings facing each other with a square between', 'two queens', 'a pin', 'castling'], answerIndex: 0 },
-      { question: 'In a king-and-pawn endgame your king should be:', options: ['active, escorting the pawn', 'hiding in the corner', 'traded off', 'kept on the back rank'], answerIndex: 0 },
-      { question: 'The "square of the pawn" rule tells you whether:', options: ['a lone king can catch a passed pawn', 'you can castle', 'a fork works', 'the game is a draw by repetition'], answerIndex: 0 },
-    ], [PRACTICE]),
-  // ─── Level III · Advanced ───
-  ch('chess-13', 'Pawn Structure', '🧱', 4, '13-15', 'chess-m3', L3, 13,
-    'the skeleton of the position', 'Pawns can\'t move backward, so their structure is semi-permanent and shapes the whole game. Learn passed, doubled, isolated and backward pawns, and pawn chains — and which are strengths vs weaknesses.',
-    ['Identify passed, doubled, isolated and backward pawns', 'Understand pawn chains and how to attack them', 'Plan around pawn-structure strengths and weaknesses'],
-    ['Define and show each pawn type on the board.', 'Show a passed pawn (no enemy pawns can stop it) as a strength.', 'Show how to attack the base of a pawn chain.', 'Discuss creating/avoiding weaknesses.'],
-    'Analyse a position and list every pawn weakness for both sides.', ['Pawn Structure', 'Weak Pawns', 'Pawn Chains'],
-    [
-      { question: 'A passed pawn is:', options: ['one with no enemy pawns able to stop it from promoting', 'a pawn that moved twice', 'a captured pawn', 'a pinned pawn'], answerIndex: 0 },
-      { question: 'Why is pawn structure so important?', options: ['pawns can\'t move backward, so weaknesses last', 'pawns are the strongest pieces', 'pawns can jump', 'it isn\'t important'], answerIndex: 0 },
-      { question: 'Doubled pawns are two pawns:', options: ['of the same colour on the same file', 'on the same square', 'that promoted', 'pinned together'], answerIndex: 0 },
-    ]),
-  ch('chess-14', 'Positional Play', '🧠', 4, '13-15', 'chess-m3', L3, 14,
-    'winning without tactics', 'Beyond tactics, strong players improve their position: place a knight on an outpost (a safe advanced square), control open files with rooks, prefer a "good" bishop over a "bad" one, and gain space.',
-    ['Use outposts for knights', 'Control open files with rooks', 'Tell a good bishop from a bad one'],
-    ['Show a knight on a protected outpost — hard to remove, very strong.', 'Put a rook on an open or half-open file.', 'Compare a good bishop (pawns off its colour) vs a bad one (blocked by its own pawns).', 'Discuss space and piece activity.'],
-    'Take a quiet position and make three purely positional improving moves; explain each.', ['Outposts', 'Open Files', 'Good vs Bad Bishop'],
-    [
-      { question: 'An outpost is:', options: ['a safe advanced square for a knight', 'a trapped king', 'a doubled pawn', 'a back-rank mate'], answerIndex: 0 },
-      { question: 'Rooks are strongest on:', options: ['open files', 'the first move', 'diagonals', 'the centre squares only'], answerIndex: 0 },
-      { question: 'A "bad bishop" is one that is:', options: ['blocked by its own pawns', 'pinned', 'on an outpost', 'about to promote'], answerIndex: 0 },
-    ]),
-  ch('chess-15', 'Building an Opening Repertoire', '📖', 4, '13-15', 'chess-m3', L3, 15,
-    'choosing your openings', 'A repertoire is the set of openings you play. Learn a solid choice for White (e.g. the Italian Game or Ruy Lopez after 1.e4) and a reliable answer to 1.e4 and 1.d4 as Black — and the common traps to avoid.',
-    ['Choose an opening for White and answers as Black', 'Play the main ideas (not just memorised moves)', 'Avoid common opening traps'],
-    ['Learn the Italian Game (1.e4 e5 2.Nf3 Nc6 3.Bc4) ideas.', 'Pick a defence to 1.e4 and 1.d4 you understand.', 'Focus on the PLANS behind the moves, not memorising 20 moves.', 'Review famous traps (e.g. Scholar\'s Mate) and how to refute them.'],
-    'Write a one-page repertoire: your White opening and your replies to 1.e4 and 1.d4, with the main idea of each.', ['Repertoire', 'Opening Ideas', 'Traps'],
-    [
-      { question: 'A repertoire is:', options: ['the set of openings you choose to play', 'a type of checkmate', 'a tournament', 'a clock'], answerIndex: 0 },
-      { question: 'The best way to learn an opening is to:', options: ['understand its plans/ideas', 'memorise 30 moves blindly', 'avoid the centre', 'copy random games'], answerIndex: 0 },
-      { question: 'Scholar\'s Mate is an example of:', options: ['an early-attack trap to know and refute', 'an endgame', 'a positional plan', 'a draw'], answerIndex: 0 },
-    ]),
-  ch('chess-16', 'Calculation & Combinations', '🧮', 4, '13-15', 'chess-m3', L3, 16,
-    'thinking ahead accurately', 'Strong play needs calculation: identify candidate moves, calculate the forcing lines (checks, captures, threats) move by move, and visualise the resulting position. A combination is a forcing sequence (often a sacrifice) that wins by force.',
-    ['List candidate moves before calculating', 'Calculate forcing lines (checks, captures, threats)', 'Find and play a combination'],
-    ['Teach the habit: look at all checks, captures and threats first.', 'Pick 2–3 candidate moves, then calculate each a few moves deep.', 'Practise visualising the position at the end of a line.', 'Solve combinations that end in mate or winning material.'],
-    'Solve 10 harder puzzles, writing the full forcing line for each before checking.', ['Calculation', 'Candidate Moves', 'Combinations'],
-    [
-      { question: 'When calculating, you should look first at:', options: ['checks, captures and threats (forcing moves)', 'quiet pawn moves', 'castling', 'offering a draw'], answerIndex: 0 },
-      { question: '"Candidate moves" are:', options: ['the few best moves you consider before calculating', 'illegal moves', 'your opponent\'s pieces', 'pawn promotions only'], answerIndex: 0 },
-      { question: 'A combination is:', options: ['a forcing sequence (often a sacrifice) that wins by force', 'a random attack', 'a draw offer', 'an opening'], answerIndex: 0 },
-    ], [PUZZLES]),
-  ch('chess-17', 'Advanced Endgames — Rook Endgames', '♖', 4, '13-15', 'chess-m3', L3, 17,
-    'the most common endgames', 'Rook endgames appear constantly. Learn the two essentials: the Lucena position (how to promote when you\'re a pawn up — "building a bridge") and the Philidor position (how to draw when you\'re defending), plus the rule "rooks belong behind passed pawns".',
-    ['Win the Lucena position (building a bridge)', 'Hold the Philidor draw', 'Place rooks behind passed pawns'],
-    ['Show the Lucena: cut off the king, then "build a bridge" to promote.', 'Show the Philidor: keep the rook on the 3rd rank to defend, then check from behind.', 'State the rule: put your rook BEHIND a passed pawn (yours or the enemy\'s).', 'Practise both positions from each side.'],
-    'Win a Lucena position and hold a Philidor draw against a partner or the computer.', ['Rook Endgames', 'Lucena', 'Philidor'],
-    [
-      { question: 'Rooks are best placed:', options: ['behind passed pawns', 'in front of their own king', 'on the first move', 'on dark squares only'], answerIndex: 0 },
-      { question: 'The Lucena position shows how to:', options: ['win when a pawn up in a rook endgame', 'draw a lost game', 'castle', 'open a game'], answerIndex: 0 },
-      { question: 'The Philidor position is a key:', options: ['drawing defence in rook endgames', 'opening trap', 'winning attack', 'mating net'], answerIndex: 0 },
-    ], [PRACTICE]),
-  ch('chess-18', 'Tournament Play — Notation, Clocks & Analysis', '🏆', 4, '13-15', 'chess-m3', L3, 18,
-    'playing and improving like a competitor', 'To play in events you need algebraic notation (recording moves), how to use a chess clock, tournament etiquette, and — most important for improvement — analysing your own games to learn from mistakes. Online ratings track your progress.',
-    ['Read and write algebraic notation', 'Use a chess clock and know basic tournament rules', 'Analyse a finished game to find improvements'],
-    ['Teach algebraic notation (e4, Nf3, O-O, x for capture, + for check, # for mate).', 'Show how a clock works and time-management basics.', 'Cover etiquette: touch-move, "j\'adoube"/adjust, handshakes.', 'Record a game, then analyse it (your blunders + better moves) on Lichess.'],
-    'Play a clocked game, record it in notation, then analyse it and write down your two biggest mistakes.', ['Notation', 'Clocks', 'Game Analysis'],
-    [
-      { question: '"O-O" in notation means:', options: ['king-side castling', 'a draw', 'check', 'a captured pawn'], answerIndex: 0 },
-      { question: 'The best way to improve after games is to:', options: ['analyse your own games for mistakes', 'never look back', 'only play faster', 'memorise openings only'], answerIndex: 0 },
-      { question: '"#" at the end of a move means:', options: ['checkmate', 'check', 'capture', 'castle'], answerIndex: 0 },
-    ], [PLAY]),
-];
-
-// Board diagrams (FEN) per lesson — rendered as SVG in the "On the Board" panel.
-const BOARDS: Record<string, { fen: string; caption?: string }[]> = {
-  'chess-1': [{ fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR', caption: 'The starting position. Light square on the right; white queen on a light square.' }],
-  'chess-2': [
-    { fen: '8/8/8/3Q4/8/8/8/8', caption: 'The Queen (d5): moves in straight lines AND diagonals — the most powerful piece.' },
-    { fen: '8/8/8/8/2B5/8/8/8', caption: 'The Bishop (c4): only diagonals, so it stays on one colour all game.' },
-  ],
-  'chess-3': [
-    { fen: '8/8/8/3N4/8/8/8/8', caption: 'The Knight (d5): jumps in an "L" — and is the only piece that can jump over others.' },
-    { fen: '8/8/8/8/8/8/3P4/8', caption: 'The Pawn (d2): moves forward 1 (or 2 from its start) but captures one square diagonally.' },
-  ],
-  'chess-4': [
-    { fen: 'kR6/8/K7/8/8/8/8/8', caption: 'Checkmate: the rook checks the king, and the white king covers every escape square.' },
-    { fen: 'k7/8/1Q6/8/8/8/8/7K', caption: 'Stalemate (Black to move): the king is NOT in check but has no legal move — this is a DRAW.' },
-  ],
-  'chess-5': [
-    { fen: '8/P7/8/8/8/8/8/k6K', caption: 'Promotion: the a7 pawn steps to a8 and becomes a queen (or any piece).' },
-    { fen: 'r4rk1/8/8/8/8/8/8/R4RK1', caption: 'After king-side castling (both sides): king on g1/g8, rook on f1/f8 — the king is tucked away safely.' },
-  ],
-  'chess-6': [{ fen: 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR', caption: 'After 1.e4 e5 — both players stake a claim in the centre.' }],
-  'chess-8': [
-    { fen: '7k/6Q1/6K1/8/8/8/8/8', caption: 'King + Queen mate: the queen gives checkmate while the king defends it.' },
-    { fen: '6k1/5ppp/8/8/8/8/8/R5K1', caption: 'Back-rank mate: White plays Ra8# — the king is trapped by its own pawns.' },
-  ],
-  'chess-9': [{ fen: 'k3q3/2N5/8/8/8/8/8/4K3', caption: 'A knight fork: Nc7 attacks the king (check) AND the queen at the same time.' }],
-  'chess-11': [{ fen: 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R', caption: 'Good opening play: centre pawn, knights & bishop developed, ready to castle (Italian Game).' }],
-  'chess-12': [{ fen: '8/8/8/4k3/8/4K3/4P3/8', caption: 'King & pawn vs king: the kings face off in "opposition" — the key to promoting the pawn.' }],
-  'chess-13': [{ fen: '4k3/8/8/3P4/8/8/8/4K3', caption: 'A passed pawn (d5): no enemy pawn can stop it from promoting — a powerful long-term asset.' }],
-  'chess-17': [{ fen: '4k3/8/8/P7/8/8/8/R3K3', caption: 'A golden rook-endgame rule: put your rook BEHIND the passed pawn to support its march.' }],
+const SECTIONS: Record<number, { title: string; level: 'Beginner' | 'Intermediate' | 'Advanced'; age: AgeGroupId }> = {
+  1: { title: 'Section 1 · Starting Out — The Basics of Chess', level: 'Beginner', age: '8-9' },
+  2: { title: 'Section 2 · Playing, the Phases & the Opening', level: 'Beginner', age: '8-9' },
+  3: { title: 'Section 3 · Tactics, Tactics & More Tactics', level: 'Intermediate', age: '10-12' },
+  4: { title: 'Section 4 · Endgame Play — Pawns, Technique & King Play', level: 'Intermediate', age: '10-12' },
+  5: { title: 'Section 5 · Positional Chess & Advanced Play', level: 'Advanced', age: '13-15' },
 };
-C.forEach(c => { if (BOARDS[c.id]) c.boards = BOARDS[c.id]; });
+const PDF = (n: number) => `/lessons/ChessKid_Curriculum/Non_CCSS_Aligned_Curriculum/Lesson%20${n}.pdf`;
+const LICHESS = { id: 'lichess', title: 'Lichess — free play, puzzles & lessons', type: 'link' as const, audience: 'both' as const, url: 'https://lichess.org/learn', description: 'Free, no-account interactive chess practice' };
 
-export const CHESS_LESSONS: LessonDetail[] = C.map(c => makeKitLesson(c, P));
+// Lichess practice embeds (click-to-load; open-in-new-tab fallback if framing is blocked).
+const LEARN: LessonInteraction = { kind: 'embed', title: '♟️ Practice (Lichess Learn)', url: 'https://lichess.org/learn', height: 520, note: 'Interactive board — move the pieces yourself.' };
+const PUZZLES: LessonInteraction = { kind: 'embed', title: '🧩 Tactics Puzzles', url: 'https://lichess.org/training', height: 520, note: 'Train pattern recognition with puzzles.' };
+const PRACTICE: LessonInteraction = { kind: 'embed', title: '♟️ Guided Practice', url: 'https://lichess.org/practice', height: 520, note: 'Guided checkmate & endgame positions.' };
+const PLAY: LessonInteraction = { kind: 'embed', title: '♟️ Play a Game', url: 'https://lichess.org/', height: 520, note: 'Play vs the computer or a friend.' };
+
+interface CK {
+  n: number; title: string; subtitle: string; section: number; pages: number; emoji: string;
+  objectives: string[]; teach: string[]; student: string[]; challenge: string; skills: string[];
+  practice: LessonInteraction; quiz: QuizQuestion[]; boards?: { fen: string; caption?: string }[];
+}
+
+function gallery(n: number, pages: number): LessonImage[] {
+  const a: LessonImage[] = [];
+  for (let i = 1; i <= pages; i++) a.push({ src: `/lessons/chess-${n}/p-${String(i).padStart(2, '0')}.png`, kind: 'photo', caption: `Page ${i}` });
+  return a;
+}
+
+function makeCK(c: CK): LessonDetail {
+  const sec = SECTIONS[c.section];
+  const sections: LessonSection[] = [
+    {
+      type: 'coach_prep', title: 'Instructor Guide — Before Class', emoji: '🧑‍🏫', isCoachOnly: true,
+      content: [
+        `ChessKid Lesson ${c.n}: ${c.title}. ${c.subtitle}`,
+        'Review the curriculum pages (shown below) first — they contain the diagrams, explanations, mini-games and worksheets for this lesson.',
+        'Materials: a chess set + a demonstration board (or screen); optional computers/tablets with lichess.org for live practice.',
+        'Designed for ~1 hour. Assign the worksheets in the lesson PDF (Resources) for independent practice.',
+      ],
+    },
+    {
+      type: 'coach_steps', title: 'How to Teach It', emoji: '🎓', isCoachOnly: true,
+      content: [...c.teach, 'Use the worksheets, mini-games and answer keys in the lesson PDF (Resources).'],
+    },
+    {
+      type: 'activity', title: 'The Lesson', emoji: '♟️',
+      content: ['Work through the lesson with your coach — follow the pages below and the board:', ...c.student],
+      studentContent: [`🎯 ${c.title}`, ...c.student.map(s => '• ' + s)],
+      images: gallery(c.n, c.pages),
+    },
+    {
+      type: 'challenge', title: 'Practice Challenge', emoji: '⭐',
+      content: [c.challenge],
+      studentContent: [`⭐ ${c.challenge}`],
+    },
+    {
+      type: 'assessment', title: 'Success Criteria', emoji: '✅',
+      content: [...c.objectives.map(o => 'Student can ' + o[0].toLowerCase() + o.slice(1)), 'Student completed the lesson and a practice activity.'],
+    },
+    {
+      type: 'coach_notes', title: 'Coach Notes (Private)', emoji: '📝', isCoachOnly: true,
+      content: [
+        `LESSON ${c.n} · ${sec.title}.`,
+        'The pages above are the official ChessKid lesson; printable worksheets, mini-games and answer keys are in the lesson PDF.',
+        'SOURCE: ChessKid.com Curriculum by IM Daniel Rensch (used as the academy\'s chess programme).',
+      ],
+    },
+  ];
+  return {
+    id: `chess-${c.n}`, slug: `chess-${c.n}`, title: c.title,
+    programId: 'chess', programSlug: 'chess', programTitle: 'Chess', programColor: '#92400E',
+    courseId: 'chess-1', courseTitle: 'Chess — The ChessKid Curriculum',
+    moduleId: `chess-s${c.section}`, moduleTitle: sec.title,
+    ageGroup: sec.age, level: sec.level, duration: '~60 minutes', difficulty: (c.section <= 1 ? 1 : c.section >= 5 ? 4 : c.section) as Difficulty,
+    skills: c.skills,
+    materials: [
+      { item: 'Chess set & board', quantity: '1 per pair' },
+      { item: 'Demonstration board or screen (instructor)', quantity: '1 per class' },
+      { item: 'Computer/tablet with lichess.org', quantity: '1 per pair', isOptional: true },
+    ],
+    objectives: c.objectives,
+    assessmentChecklist: c.objectives,
+    sections,
+    heroImage: `/lessons/chess-${c.n}/p-01.png`,
+    ...(c.boards ? { boards: c.boards } : {}),
+    quiz: c.quiz,
+    interactions: [c.practice],
+    resources: [
+      { id: `chess-${c.n}-r1`, title: `Lesson ${c.n} — Full Curriculum & Worksheets (PDF)`, type: 'pdf', audience: 'both', url: PDF(c.n), description: 'The official ChessKid lesson, worksheets & answer keys' },
+      LICHESS,
+    ],
+  };
+}
+
+const CONFIGS: CK[] = [
+  // ─── Section 1 ───
+  { n: 1, section: 1, emoji: '♟️', title: 'Meet the Players, Part 1 — King, Knight & Pawn', subtitle: 'The board, basic terms, and how the king, knight and pawn move.', pages: 9,
+    objectives: ['Set up the board and use basic terms', 'Move the king, knight and pawn correctly', 'Understand that the pawn captures diagonally'],
+    teach: ['Introduce the board, files/ranks and how to record squares.', 'Show the king (one square any way) and the knight (the "L" jump).', 'Show the pawn: forward 1 (or 2 from start), captures diagonally.', 'Play the mini-games "The Farmer and the Piggies" and "Pawn Wars".'],
+    student: ['Learn the board and the names of the squares.', 'Practise moving the king and the knight.', 'Play "Pawn Wars" to master the pawn.'],
+    challenge: 'Win a game of "Pawn Wars" (get a pawn to the other side) against a partner.', skills: ['Board', 'King & Knight', 'Pawn'],
+    practice: LEARN, boards: [{ fen: '8/8/8/3N4/8/8/8/8', caption: 'The knight (d5) jumps in an "L" — the only piece that can jump over others.' }],
+    quiz: [
+      { question: 'The knight moves in the shape of:', options: ['an "L"', 'a straight line', 'a diagonal', 'a circle'], answerIndex: 0 },
+      { question: 'A pawn captures:', options: ['one square diagonally forward', 'straight ahead', 'in an L', 'sideways'], answerIndex: 0 },
+      { question: 'The king moves:', options: ['one square in any direction', 'like a knight', 'only forward', 'two squares'], answerIndex: 0 },
+    ] },
+  { n: 2, section: 1, emoji: '♜', title: 'Meet the Players, Part 2 — Rook, Bishop & Queen', subtitle: 'The "line" pieces: rook, bishop and the powerful queen.', pages: 6,
+    objectives: ['Move the rook in straight lines', 'Move the bishop on diagonals (one colour)', 'Move the queen (rook + bishop combined)'],
+    teach: ['Show the rook sliding along ranks and files.', 'Show the bishop on diagonals — it never changes colour.', 'Show the queen combining both — the most powerful piece.', 'Stress: line pieces cannot jump over other pieces.'],
+    student: ['Practise the rook and bishop on an empty board.', 'Find every square a queen can reach.', 'Complete the "moving the rook/bishop/queen" worksheets.'],
+    challenge: 'Place a queen on d5 and list all the squares it attacks.', skills: ['Rook', 'Bishop', 'Queen'],
+    practice: LEARN, boards: [{ fen: '8/8/8/3Q4/8/8/8/8', caption: 'The queen (d5): straight lines AND diagonals — the most powerful piece.' }],
+    quiz: [
+      { question: 'The bishop moves:', options: ['diagonally', 'in straight lines', 'in an L', 'one square'], answerIndex: 0 },
+      { question: 'The queen moves like a:', options: ['rook and bishop combined', 'knight', 'pawn', 'king only'], answerIndex: 0 },
+      { question: 'A bishop that starts on a light square:', options: ['stays on light squares all game', 'can switch colours', 'can jump', 'moves straight'], answerIndex: 0 },
+    ] },
+  { n: 3, section: 1, emoji: '👑', title: 'The Aim of a Chess Game — Check, Checkmate & Stalemate', subtitle: 'How to win: check, escaping check, checkmate, and the stalemate draw.', pages: 12,
+    objectives: ['Recognise check and the 3 ways to escape it', 'Tell checkmate from stalemate', 'Know the goal is to checkmate the king'],
+    teach: ['Show a check; escape it 3 ways: move, block, or capture the attacker.', 'Show checkmate — check with no escape (the goal).', 'Show stalemate — no legal move but NOT in check = a draw.', 'Use worksheets: "Capture the Checker", "Blocking Check", "Is this Checkmate?".'],
+    student: ['Practise getting out of check three ways.', 'Decide if positions are checkmate or stalemate.', 'Complete the check/checkmate worksheets.'],
+    challenge: 'Set up a check, then change one piece to make it checkmate.', skills: ['Check', 'Checkmate', 'Stalemate'],
+    practice: PRACTICE, boards: [
+      { fen: 'kR6/8/K7/8/8/8/8/8', caption: 'Checkmate: the rook checks and the king covers every escape square.' },
+      { fen: 'k7/8/1Q6/8/8/8/8/7K', caption: 'Stalemate (Black to move): not in check, no legal move → a DRAW.' },
+    ],
+    quiz: [
+      { question: 'Checkmate is when the king is:', options: ['attacked and cannot escape', 'captured', 'in the corner', 'next to a pawn'], answerIndex: 0 },
+      { question: 'Which is NOT a way to escape check?', options: ['ignore it', 'move the king', 'block', 'capture the attacker'], answerIndex: 0 },
+      { question: 'Stalemate is a:', options: ['draw', 'win', 'loss', 'check'], answerIndex: 0 },
+    ] },
+  { n: 4, section: 1, emoji: '🎯', title: 'Basic Checkmates & Stalemate', subtitle: 'King + Queen vs King, the two-rook "Roller", and avoiding stalemate.', pages: 10,
+    objectives: ['Checkmate with King + Queen vs King', 'Checkmate with two rooks (the "Roller")', 'Avoid accidental stalemate'],
+    teach: ['Use the queen to shrink the king\'s box toward the edge — bring your king up to help.', 'Show the two-rook "Roller" (ladder) mate.', 'Warn about stalemate: always leave the king a move until it\'s mate.', 'Drill "checkmate or stalemate?" worksheets.'],
+    student: ['Mate a lone king with King + Queen without stalemating.', 'Mate with two rooks using the roller.', 'Spot stalemate traps.'],
+    challenge: 'Checkmate a lone king with King + Queen in under 10 moves, no stalemate.', skills: ['K+Q Mate', 'Two-Rook Mate', 'Technique'],
+    practice: PRACTICE, boards: [{ fen: '7k/6Q1/6K1/8/8/8/8/8', caption: 'King + Queen mate: the queen mates while the king defends it.' }],
+    quiz: [
+      { question: 'To mate with K+Q you push the king toward:', options: ['the edge of the board', 'the centre', 'your queen alone', 'a pawn'], answerIndex: 0 },
+      { question: 'The biggest danger mating with a queen is:', options: ['accidental stalemate', 'losing the queen', 'running out of board', 'promotion'], answerIndex: 0 },
+      { question: 'The two-rook mate is nicknamed the:', options: ['Roller (ladder)', 'Fork', 'Pin', 'Skewer'], answerIndex: 0 },
+    ] },
+  // ─── Section 2 ───
+  { n: 5, section: 2, emoji: '🏰', title: 'How to Win — Counting, Castling & En Passant', subtitle: 'Counting attackers/defenders, the special move (castling), and en passant.', pages: 14,
+    objectives: ['Count attackers vs defenders before capturing', 'Castle (and know the rules)', 'Perform an en passant capture'],
+    teach: ['Teach "counting": is a capture safe? Count attackers and defenders.', 'Show castling (king 2 toward a rook, rook hops over) and its rules.', 'Show en passant — the special pawn capture.', 'Use the "Is it Defended?", "Who\'s Hanging?" and castling worksheets.'],
+    student: ['Practise counting attackers/defenders to win material safely.', 'Castle king-side and queen-side.', 'Capture a pawn en passant.'],
+    challenge: 'In a few positions, decide whether a capture wins material by counting.', skills: ['Counting', 'Castling', 'En Passant'],
+    practice: PLAY, boards: [{ fen: 'r4rk1/8/8/8/8/8/8/R4RK1', caption: 'After castling (both sides): the king is tucked safely on g1/g8.' }],
+    quiz: [
+      { question: 'Before capturing you should:', options: ['count attackers vs defenders', 'always capture', 'castle first', 'move the queen'], answerIndex: 0 },
+      { question: 'Castling mainly:', options: ['keeps the king safe', 'wins a pawn', 'promotes', 'gives check'], answerIndex: 0 },
+      { question: 'En passant is a special capture by a:', options: ['pawn', 'rook', 'king', 'bishop'], answerIndex: 0 },
+    ] },
+  { n: 6, section: 2, emoji: '🧭', title: 'Phases of a Game, Planning & Your Opponent', subtitle: 'The three phases (opening/middlegame/endgame), simple planning, and reading your opponent.', pages: 12,
+    objectives: ['Name the three phases of a game', 'Make a simple plan', 'Ask "why did my opponent move there?"'],
+    teach: ['Explain the 3 phases: opening, middlegame, endgame.', 'Teach simple planning (improve a piece, make a threat, target a weakness).', 'Always ask what the opponent\'s last move threatens.', 'Use "Checks & Captures", "Attack the Queen", "Why did they go there?" worksheets.'],
+    student: ['Identify which phase a position is in.', 'After each opponent move, say what it threatens.', 'Make one simple plan in a game.'],
+    challenge: 'In a game, write down your opponent\'s threat after each of their moves for 5 moves.', skills: ['Phases', 'Planning', 'Opponent Awareness'],
+    practice: PLAY, boards: [{ fen: 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR', caption: 'The opening phase: both sides fight for the centre after 1.e4 e5.' }],
+    quiz: [
+      { question: 'The three phases of a game are:', options: ['opening, middlegame, endgame', 'start, stop, draw', 'check, mate, stalemate', 'fork, pin, skewer'], answerIndex: 0 },
+      { question: 'After your opponent moves, you should ask:', options: ['what does it threaten?', 'can I resign?', 'is it lunchtime?', 'what colour is it?'], answerIndex: 0 },
+      { question: 'A simple plan could be to:', options: ['improve a piece or target a weakness', 'move randomly', 'never castle', 'trade everything'], answerIndex: 0 },
+    ] },
+  { n: 7, section: 2, emoji: '⚡', title: 'The "Quick" Mates & Other Basic Checkmates', subtitle: 'Scholar\'s Mate, Fool\'s Mate and friends — and guarding f2/f7.', pages: 10,
+    objectives: ['Recognise the famous quick mates (Scholar\'s, Fool\'s…)', 'Defend the weak f2/f7 square', 'Spot common mating patterns'],
+    teach: ['Show Scholar\'s Mate (Qxf7#) and how to refute it.', 'Show Fool\'s Mate and other quick traps.', 'Teach guarding f2 (White) / f7 (Black) — the weakest squares.', 'Use "Famous Checkmates" and "Guarding f2 and f7" worksheets.'],
+    student: ['Set up and refute Scholar\'s Mate.', 'Learn to protect f7 in the opening.', 'Practise the famous mate patterns.'],
+    challenge: 'Defend against Scholar\'s Mate when a partner tries it on you.', skills: ['Quick Mates', "Scholar's Mate", 'f2/f7'],
+    practice: PRACTICE, boards: [{ fen: 'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR', caption: "Scholar's Mate: Qxf7#. The f7 square is Black's weak point — guard it!" }],
+    quiz: [
+      { question: "Scholar's Mate attacks which weak square?", options: ['f7', 'a1', 'd4', 'h8'], answerIndex: 0 },
+      { question: 'The best defence against quick mates is to:', options: ['develop and guard f7/f2', 'push the h-pawn', 'move the queen out early', 'ignore threats'], answerIndex: 0 },
+      { question: "Fool's Mate is the:", options: ['fastest possible checkmate', 'slowest mate', 'a draw', 'an endgame'], answerIndex: 0 },
+    ] },
+  { n: 8, section: 2, emoji: '🚀', title: 'Opening Principles', subtitle: 'Development, controlling the centre, connecting the rooks, and playing with a purpose.', pages: 9,
+    objectives: ['Develop minor pieces quickly toward the centre', 'Control the centre and castle early', 'Connect the rooks'],
+    teach: ['Develop knights and bishops early; don\'t move one piece twice.', 'Fight for the centre; castle to safety.', 'Connect the rooks (clear the back rank).', 'Use "Connect the Rooks" and "Counting Development" worksheets.'],
+    student: ['Play the opening following the principles.', 'Count how many pieces each side has developed.', 'Aim to connect your rooks.'],
+    challenge: 'Reach a position where you have castled and connected your rooks by move 12.', skills: ['Development', 'Centre', 'Castling'],
+    practice: PLAY, boards: [{ fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R', caption: 'Good opening play (Italian Game): centre pawn, knights & bishop out, ready to castle.' }],
+    quiz: [
+      { question: 'A key opening principle is to:', options: ['develop pieces and control the centre', 'attack with the queen first', 'move only pawns', 'leave the king in the centre'], answerIndex: 0 },
+      { question: 'You should usually castle:', options: ['early', 'never', 'only in the endgame', 'after losing the queen'], answerIndex: 0 },
+      { question: '"Connecting the rooks" means:', options: ['clearing the back rank between them', 'stacking them', 'trading them', 'promoting them'], answerIndex: 0 },
+    ] },
+  // ─── Section 3 ───
+  { n: 9, section: 3, emoji: '🍴', title: 'Tactics: Double Attack & The Fork', subtitle: 'Attacking two things at once — the most common way to win material.', pages: 7,
+    objectives: ['Recognise and play a fork', 'Create a double attack', 'Use the knight as a forking piece'],
+    teach: ['Define the double attack / fork: one move attacks two targets.', 'Show a knight fork hitting king + queen (a "royal fork").', 'Show queen and pawn forks too.', 'Drill "Which Is It" and "Knives & Forks" worksheets.'],
+    student: ['Find forks in puzzle positions.', 'Play a knight fork to win material.', 'Solve fork puzzles on Lichess.'],
+    challenge: 'Solve 10 fork puzzles and note the forking piece each time.', skills: ['Fork', 'Double Attack', 'Knight Tactics'],
+    practice: PUZZLES, boards: [{ fen: 'k3q3/2N5/8/8/8/8/8/4K3', caption: 'A royal fork: Nc7 attacks the king (check) AND the queen at once.' }],
+    quiz: [
+      { question: 'A fork is one piece attacking:', options: ['two targets at once', 'the king only', 'a pawn', 'nothing'], answerIndex: 0 },
+      { question: 'Which piece is famous for forking?', options: ['the knight', 'the pawn', 'the king', 'the rook'], answerIndex: 0 },
+      { question: 'A "royal fork" hits the:', options: ['king and queen', 'two pawns', 'two rooks', 'two bishops'], answerIndex: 0 },
+    ] },
+  { n: 10, section: 3, emoji: '📌', title: 'Tactics: Learning to Pin & Skewer', subtitle: 'Pinning a piece in place, breaking pins, and the skewer.', pages: 9,
+    objectives: ['Recognise and use a pin', 'Break a pin', 'Recognise and use a skewer'],
+    teach: ['Show a pin: the piece can\'t move (a more valuable one is behind it).', 'Show how to break a pin.', 'Show a skewer (the "reverse pin"): the valuable piece is in front.', 'Drill the "Pin \'em & Skewer \'em" worksheets.'],
+    student: ['Pin an enemy piece to its king or queen.', 'Win material with a skewer.', 'Solve pin & skewer puzzles.'],
+    challenge: 'Solve 10 pin/skewer puzzles and label each one.', skills: ['Pin', 'Skewer', 'Tactics'],
+    practice: PUZZLES, boards: [{ fen: '3q2k1/8/5n2/6B1/8/8/8/6K1', caption: 'A pin: the knight on f6 can\'t move — the queen is right behind it.' }],
+    quiz: [
+      { question: 'A pinned piece:', options: ['cannot move (something valuable is behind it)', 'can jump', 'is promoted', 'is the king'], answerIndex: 0 },
+      { question: 'A skewer is like a pin but:', options: ['the valuable piece is in front and must move', 'it uses a knight', 'it is a draw', 'it only checks'], answerIndex: 0 },
+      { question: 'Bishops, rooks and queens can pin because they:', options: ['attack along lines', 'jump', 'move one square', 'promote'], answerIndex: 0 },
+    ] },
+  { n: 11, section: 3, emoji: '💥', title: 'Tactics: Discovered Attacks & Double Checks', subtitle: 'Unveiling an attack from behind — including the powerful double check.', pages: 9,
+    objectives: ['Play a discovered attack', 'Play a discovered (and double) check', 'See why discoveries are so strong'],
+    teach: ['Show a discovered attack: move one piece to reveal another\'s attack.', 'Show a discovered check — the moving piece can grab material "for free".', 'Show a double check (only the king move escapes it).', 'Drill "Use Your Discovery" worksheets.'],
+    student: ['Find discovered attacks in puzzles.', 'Play a discovered check.', 'Solve discovery puzzles on Lichess.'],
+    challenge: 'Find a discovered check and a double check in puzzle positions.', skills: ['Discovered Attack', 'Double Check', 'Tactics'],
+    practice: PUZZLES,
+    quiz: [
+      { question: 'A discovered attack works by:', options: ['moving one piece to reveal another\'s attack', 'castling', 'promoting', 'trading'], answerIndex: 0 },
+      { question: 'A double check can only be met by:', options: ['moving the king', 'blocking', 'capturing', 'castling'], answerIndex: 0 },
+      { question: 'A discovered check is strong because the moving piece:', options: ['can do anything while the king must respond', 'is pinned', 'promotes', 'is lost'], answerIndex: 0 },
+    ] },
+  { n: 12, section: 3, emoji: '🎯', title: 'Tactics: Deflect, Destroy & Remove', subtitle: 'Removing or deflecting the defender to win.', pages: 7,
+    objectives: ['Remove a defender to win material', 'Deflect a defender away from its job', 'Combine tactics to win'],
+    teach: ['Show "removing the defender": capture/chase the piece guarding a target.', 'Show "deflection": force a defender to move away.', 'Combine with forks/pins for winning shots.', 'Drill "Using Tactics to Win" worksheets.'],
+    student: ['Spot the key defender in a position.', 'Remove or deflect it, then win the target.', 'Solve combination puzzles.'],
+    challenge: 'Solve 10 "remove the defender / deflection" puzzles.', skills: ['Remove the Defender', 'Deflection', 'Combinations'],
+    practice: PUZZLES,
+    quiz: [
+      { question: '"Removing the defender" means:', options: ['eliminating the piece guarding a target', 'castling', 'promoting', 'checking'], answerIndex: 0 },
+      { question: 'Deflection forces a defender to:', options: ['move away from its job', 'promote', 'castle', 'check'], answerIndex: 0 },
+      { question: 'These tactics usually win by:', options: ['making a key defender disappear', 'offering a draw', 'wasting time', 'moving the king'], answerIndex: 0 },
+    ] },
+  // ─── Section 4 ───
+  { n: 13, section: 4, emoji: '♖', title: 'Rook Mates, Zugzwang & King Play', subtitle: 'King + Rook vs King, zugzwang, and using your king actively.', pages: 9,
+    objectives: ['Checkmate with King + Rook vs King', 'Understand zugzwang', 'Use the king as an active piece in the endgame'],
+    teach: ['Show the K+R "box" method to mate a lone king.', 'Explain zugzwang (any move worsens your position).', 'Teach king activity — the king is a strong endgame piece.', 'Use the King Play practice mini-games.'],
+    student: ['Mate a lone king with King + Rook.', 'Find a zugzwang position.', 'Activate your king in an endgame.'],
+    challenge: 'Checkmate a lone king with King + Rook within 16 moves.', skills: ['K+R Mate', 'Zugzwang', 'King Activity'],
+    practice: PRACTICE, boards: [{ fen: 'kR6/8/K7/8/8/8/8/8', caption: 'King + Rook mate: the rook mates while the king guards the escape squares.' }],
+    quiz: [
+      { question: 'In the endgame the king should be:', options: ['active', 'hidden in the corner', 'traded', 'on the back rank'], answerIndex: 0 },
+      { question: 'Zugzwang means:', options: ['any move you make worsens your position', 'a quick mate', 'a draw offer', 'a fork'], answerIndex: 0 },
+      { question: 'To mate with K+R you drive the king to:', options: ['an edge', 'the centre', 'your rook', 'a pawn'], answerIndex: 0 },
+    ] },
+  { n: 14, section: 4, emoji: '🏁', title: 'Passed Pawns, Promoting & "Pawn Tactics"', subtitle: 'Passed pawns, the rule of the square, and under-promotion.', pages: 10,
+    objectives: ['Recognise a passed pawn and push it', 'Use the "rule of the square"', 'Know when to under-promote'],
+    teach: ['Define the passed pawn (no enemy pawns can stop it).', 'Teach the "rule of the square" to see if a king can catch a runner.', 'Show under-promotion (sometimes a knight, not a queen).', 'Use "Circle the Passed Pawns" and "Under or Promote" worksheets.'],
+    student: ['Find passed pawns in positions.', 'Use the square rule to decide if a pawn queens.', 'Promote a passed pawn.'],
+    challenge: 'In several positions, use the rule of the square to say if the pawn promotes.', skills: ['Passed Pawns', 'Rule of the Square', 'Promotion'],
+    practice: PRACTICE, boards: [{ fen: '4k3/8/8/3P4/8/8/8/4K3', caption: 'A passed pawn (d5): use the "rule of the square" to see if the king can catch it.' }],
+    quiz: [
+      { question: 'A passed pawn is one that:', options: ['no enemy pawn can stop from promoting', 'moved twice', 'is captured', 'is pinned'], answerIndex: 0 },
+      { question: 'The "rule of the square" tells you if:', options: ['a lone king can catch a passed pawn', 'you can castle', 'a fork works', 'it is a draw'], answerIndex: 0 },
+      { question: 'Under-promotion usually means promoting to a:', options: ['knight (instead of a queen)', 'king', 'pawn', 'second king'], answerIndex: 0 },
+    ] },
+  { n: 15, section: 4, emoji: '🤝', title: 'Opposition, Technique & Advanced King Play', subtitle: 'Direct, distant and irregular opposition in king-and-pawn endings.', pages: 13,
+    objectives: ['Use the (direct) opposition to make progress', 'Understand distant and irregular opposition', 'Win king-and-pawn endgames'],
+    teach: ['Show the opposition (kings facing, one square apart) and how it gains ground.', 'Show distant opposition (odd squares apart) and irregular opposition.', 'Apply it to promote a pawn.', 'Use the King-and-Pawn Endings worksheets.'],
+    student: ['Take and keep the opposition.', 'Promote a pawn using the opposition.', 'Practise K+P vs K from both sides.'],
+    challenge: 'Win a King + Pawn vs King position using the opposition.', skills: ['Opposition', 'King & Pawn', 'Technique'],
+    practice: PRACTICE, boards: [{ fen: '8/8/8/4k3/8/4K3/4P3/8', caption: 'Direct opposition: the kings face off one square apart — key to promoting.' }],
+    quiz: [
+      { question: 'The opposition is when the kings:', options: ['face each other with a square between', 'are next to each other', 'are in opposite corners', 'are both in check'], answerIndex: 0 },
+      { question: 'Holding the opposition helps you:', options: ['make progress / promote the pawn', 'lose faster', 'castle', 'fork'], answerIndex: 0 },
+      { question: 'Distant opposition is when the kings are an:', options: ['odd number of squares apart on a line', 'even number apart', 'L-shape apart', 'diagonal apart only'], answerIndex: 0 },
+    ] },
+  { n: 16, section: 4, emoji: '✨', title: 'Advanced Endgame Play & Winning Technique', subtitle: 'The principles of converting a win, and the "Magic Square" (Queen vs pawn).', pages: 9,
+    objectives: ['Apply the principles of winning technique', 'Convert a winning position cleanly', 'Use the "Magic Square" vs an advanced pawn'],
+    teach: ['Teach "win when winning": simplify, avoid counterplay, use your king.', 'Show the Queen vs advanced pawn "Magic Square" technique.', 'Drill the "Is the King Too Close?" worksheet.'],
+    student: ['Convert a winning material edge by simplifying.', 'Stop an advanced pawn with the queen technique.', 'Practise clean technique.'],
+    challenge: 'Convert a +Queen position to checkmate without giving counterplay.', skills: ['Technique', 'Queen vs Pawn', 'Converting'],
+    practice: PRACTICE,
+    quiz: [
+      { question: '"Win when winning" technique includes:', options: ['simplify and avoid counterplay', 'create chaos', 'give back material', 'ignore the king'], answerIndex: 0 },
+      { question: 'When ahead in material you should usually:', options: ['trade pieces (not pawns)', 'keep all pieces', 'sacrifice', 'stall'], answerIndex: 0 },
+      { question: 'The "Magic Square" technique helps a queen:', options: ['stop and win an advanced pawn', 'castle', 'fork two kings', 'promote'], answerIndex: 0 },
+    ] },
+  // ─── Section 5 ───
+  { n: 17, section: 5, emoji: '🧱', title: 'The Fundamentals of Positional Chess', subtitle: 'Doubled, isolated and backward pawns, and "outpost" squares.', pages: 11,
+    objectives: ['Identify doubled, isolated and backward pawns', 'Find and use outpost squares', 'Spot positional weaknesses'],
+    teach: ['Define doubled, isolated and backward pawns — usually weaknesses.', 'Show an outpost (a safe advanced square for a knight).', 'Teach spotting and targeting weaknesses.', 'Drill "Find the Weakness" worksheets.'],
+    student: ['Find each pawn weakness on the board.', 'Place a knight on an outpost.', 'Identify the weak square to target.'],
+    challenge: 'In a position, list every pawn weakness for both sides.', skills: ['Pawn Weaknesses', 'Outposts', 'Positional Play'],
+    practice: PLAY, boards: [{ fen: '8/8/8/8/3P4/3P4/8/8', caption: 'Doubled pawns (two on the same file) — usually a structural weakness.' }],
+    quiz: [
+      { question: 'Doubled pawns are two pawns of one colour on the:', options: ['same file', 'same square', 'same diagonal', 'back rank'], answerIndex: 0 },
+      { question: 'An outpost is:', options: ['a safe advanced square for a knight', 'a trapped king', 'a passed pawn', 'a back-rank mate'], answerIndex: 0 },
+      { question: 'An isolated pawn has:', options: ['no friendly pawns on neighbouring files', 'doubled friends', 'promoted', 'a defender'], answerIndex: 0 },
+    ] },
+  { n: 18, section: 5, emoji: '🧩', title: 'Playing with the "Little Guys"', subtitle: 'Pawn majorities & minorities, pawn structure, and using space.', pages: 11,
+    objectives: ['Use a pawn majority to create a passed pawn', 'Understand pawn structure and space', 'Play with pawns purposefully'],
+    teach: ['Explain pawn majorities/minorities and creating a passed pawn.', 'Teach reading pawn structure and using space.', 'Show advanced pawn play and building strength.', 'Drill "Playing with the Pawns" worksheets.'],
+    student: ['Turn a pawn majority into a passed pawn.', 'Use space to restrict the opponent.', 'Plan around the pawn structure.'],
+    challenge: 'From a majority, create and push a passed pawn.', skills: ['Pawn Majorities', 'Structure', 'Space'],
+    practice: PLAY, boards: [{ fen: '8/8/8/8/2PPP3/8/8/8', caption: 'A healthy pawn majority — push carefully to create a passed pawn.' }],
+    quiz: [
+      { question: 'A pawn majority can be used to:', options: ['create a passed pawn', 'castle', 'fork', 'check'], answerIndex: 0 },
+      { question: 'Having more space lets you:', options: ['restrict the opponent\'s pieces', 'lose faster', 'skip moves', 'promote instantly'], answerIndex: 0 },
+      { question: 'Pawn structure matters because pawns:', options: ['can\'t move backward, so weaknesses last', 'are the strongest', 'can jump', 'don\'t matter'], answerIndex: 0 },
+    ] },
+  { n: 19, section: 5, emoji: '♝', title: 'Bad Pieces & Other Advanced Piece Play', subtitle: '"Nominal vs absolute" piece power, the knight on the rim, and the bad bishop.', pages: 5,
+    objectives: ['Tell a good piece from a "bad" one', 'Avoid the rim knight and the bad bishop', 'Improve your worst piece'],
+    teach: ['Explain "nominal vs absolute" piece power — a piece is only as good as its activity.', 'Show "a knight on the rim is dim" and the "bad bishop" (blocked by its own pawns).', 'Teach the habit: improve your worst-placed piece.', 'Drill the advanced piece-play examples.'],
+    student: ['Identify a bad piece in a position.', 'Re-route a knight off the rim / free a bad bishop.', 'Improve your worst piece.'],
+    challenge: 'Find your worst-placed piece in a game and make a plan to improve it.', skills: ['Piece Activity', 'Bad Bishop', 'Knight on the Rim'],
+    practice: PLAY, boards: [{ fen: '8/8/8/7N/8/8/8/8', caption: '"A knight on the rim is dim" — an edge knight controls far fewer squares.' }],
+    quiz: [
+      { question: '"A knight on the rim is...":', options: ['dim (it controls fewer squares)', 'strong', 'safe', 'promoted'], answerIndex: 0 },
+      { question: 'A "bad bishop" is one that is:', options: ['blocked by its own pawns', 'on an outpost', 'pinned', 'about to promote'], answerIndex: 0 },
+      { question: 'A good habit each move is to:', options: ['improve your worst-placed piece', 'move the king', 'trade randomly', 'push the h-pawn'], answerIndex: 0 },
+    ] },
+  { n: 20, section: 5, emoji: '🏆', title: 'Playing "Tournament Level" Chess & Planning', subtitle: 'High-level plans, prophylaxis, and the draw rules (perpetual, 3-fold, 50-move).', pages: 7,
+    objectives: ['Form a high-level plan and think critically', 'Use prophylactic thinking (stop the opponent\'s idea)', 'Know perpetual check, three-fold repetition and the 50-move rule'],
+    teach: ['Teach finding plans and critical thinking in complex positions.', 'Introduce prophylaxis: ask "what does my opponent want?" and prevent it.', 'Cover the draw rules: perpetual check, three-fold repetition, 50-move rule.', 'Play full "tournament level" practice games and analyse them.'],
+    student: ['Make a plan and consider the opponent\'s idea before moving.', 'Recognise the three draw rules in a game.', 'Play and analyse a full game.'],
+    challenge: 'Play a full game applying prophylaxis, then analyse your two biggest mistakes.', skills: ['Planning', 'Prophylaxis', 'Draw Rules'],
+    practice: PLAY,
+    quiz: [
+      { question: 'Prophylactic thinking means:', options: ['preventing your opponent\'s plan', 'attacking only', 'playing fast', 'offering draws'], answerIndex: 0 },
+      { question: 'Threefold repetition (same position 3×) is a:', options: ['draw', 'win', 'loss', 'checkmate'], answerIndex: 0 },
+      { question: 'The 50-move rule gives a draw if no pawn move or capture happens in:', options: ['50 moves by each side', '5 moves', '500 moves', '15 minutes'], answerIndex: 0 },
+    ] },
+];
+
+export const CHESS_LESSONS: LessonDetail[] = CONFIGS.map(makeCK);
+
+const sum = (c: CK) => ({ id: `chess-${c.n}`, title: c.title, duration: '~60 min', difficulty: (c.section <= 1 ? 1 : c.section >= 5 ? 4 : c.section) as Difficulty, skills: c.skills.slice(0, 2), order: c.n });
+
 export const CHESS_COURSE: Course = {
-  id: P.courseId, slug: 'from-first-moves-to-tournament', title: P.courseTitle, programId: P.programId, programSlug: P.programSlug,
-  ageGroup: '6-7', level: 'Beginner',
-  description: 'A clear, professional chess course for all levels — easy to teach and easy to learn. Level I (Beginner): the board, every piece, special moves and a first full game. Level II (Intermediate): piece values, basic checkmates, tactics (forks/pins/skewers/discoveries), opening principles and king-and-pawn endgames. Level III (Advanced): pawn structure, positional play, opening repertoire, calculation, rook endgames and tournament play. Every lesson has instructor steps, student steps, a quiz, and an embedded Lichess board for live practice.',
+  id: 'chess-1', slug: 'chesskid-curriculum', title: 'Chess — The ChessKid Curriculum',
+  programId: 'chess', programSlug: 'chess', ageGroup: '8-9', level: 'Beginner',
+  description: 'The complete ChessKid.com curriculum (by IM Daniel Rensch) — a clear, professional, classroom-ready chess course from absolute beginner to tournament level, in 20 lessons across 5 sections. Each lesson shows the real curriculum pages (diagrams, mini-games & worksheets), an interactive board, a quiz, and a live Lichess practice board — so coaches can teach straight from the screen and students can self-study.',
   objectives: [
-    'Know all the rules: piece moves, check/checkmate, castling, en passant, promotion',
-    'Win material with tactics (forks, pins, skewers, discovered & double attacks)',
-    'Play sound openings and finish with basic checkmates and endgames',
-    'Understand pawn structure, positional play and calculation',
-    'Read/write notation, use a clock, and analyse your own games',
+    'Learn all the rules: piece moves, check/checkmate/stalemate, castling, en passant, promotion',
+    'Win material with tactics: forks, pins, skewers, discoveries, removing the defender',
+    'Play sound openings and the basic checkmates',
+    'Master key endgames: K+R/K+Q mates, passed pawns, the opposition, technique',
+    'Understand positional chess, piece activity, planning and tournament play',
   ],
-  duration: '18 lessons × 45–60 minutes', totalHours: 18, lessonCount: 18,
+  duration: '20 lessons × ~60 minutes', totalHours: 20, lessonCount: 20,
   prerequisites: [],
-  skills: ['Chess Rules', 'Tactics', 'Openings', 'Endgames', 'Strategy', 'Notation & Tournament Play'],
-  modules: [
-    { id: 'chess-m1', title: L1, order: 1, description: 'The board, all the pieces, special moves, check/checkmate, and a first full game.', lessons: C.filter(c => c.moduleId === 'chess-m1').map(kitSummary) },
-    { id: 'chess-m2', title: L2, order: 2, description: 'Piece values, basic checkmates, core tactics, opening principles, and king-and-pawn endgames.', lessons: C.filter(c => c.moduleId === 'chess-m2').map(kitSummary) },
-    { id: 'chess-m3', title: L3, order: 3, description: 'Pawn structure, positional play, opening repertoire, calculation, rook endgames, and tournament play.', lessons: C.filter(c => c.moduleId === 'chess-m3').map(kitSummary) },
-  ],
+  skills: ['Rules & Basics', 'Tactics', 'Openings', 'Endgames', 'Positional Play', 'Tournament Play'],
+  modules: [1, 2, 3, 4, 5].map(s => ({
+    id: `chess-s${s}`, title: SECTIONS[s].title, order: s,
+    description: ({ 1: 'The board, all the pieces, check/checkmate/stalemate, and basic checkmates.', 2: 'Counting, castling & en passant, the phases & planning, quick mates, and opening principles.', 3: 'The core tactics: forks, pins & skewers, discovered/double attacks, and removing the defender.', 4: 'Endgames: rook & queen mates, passed pawns, the opposition, and winning technique.', 5: 'Positional chess: pawn weaknesses, pawn play, piece activity, and tournament-level planning.' } as Record<number, string>)[s] ?? '',
+    lessons: CONFIGS.filter(c => c.section === s).map(sum),
+  })),
 };

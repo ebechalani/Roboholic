@@ -259,7 +259,7 @@ function MaterialsChecklist({ materials }: { materials: LessonDetail['materials'
 // A resource link is "live" only if it's a real http(s) URL that isn't one
 // of our not-yet-linked placeholders (marked with "roboholic-" or /uploads/).
 function isLiveResource(url: string): boolean {
-  return /^https?:\/\//.test(url) && !url.includes('roboholic-');
+  return (/^https?:\/\//.test(url) || url.startsWith('/lessons/')) && !url.includes('roboholic-');
 }
 
 // ─── Resources panel ──────────────────────────────────────────────

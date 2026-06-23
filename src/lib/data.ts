@@ -479,7 +479,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['6-7', '8-9', '10-12', '13-15'],
     levels: ['Beginner', 'Intermediate', 'Advanced'],
     courseCount: 1,
-    lessonCount: 18,
+    lessonCount: 20,
     tags: ['Strategy', 'Tactics', 'Endgames', 'Critical Thinking'],
   },
 ];
