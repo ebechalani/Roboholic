@@ -4,8 +4,9 @@ import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficul
 //  Chess — the official ChessKid.com Curriculum (IM Daniel Rensch),
 //  20 lessons in 5 sections. The real curriculum pages are rendered
 //  as each lesson's deck (so it's visual, not textual); on top we add
-//  a board diagram (FEN→SVG), a quiz, order-the-steps, and a live
-//  Lichess practice board. Designed to teach straight from the screen.
+//  a board diagram (FEN→SVG), a quiz, order-the-steps, a live Lichess
+//  practice board (embedded), and per-lesson "open this section" links
+//  for BOTH ChessKid.com and Lichess. Teach straight from the screen.
 // ════════════════════════════════════════════════════════════════
 
 const SECTIONS: Record<number, { title: string; level: 'Beginner' | 'Intermediate' | 'Advanced'; age: AgeGroupId }> = {
@@ -16,13 +17,71 @@ const SECTIONS: Record<number, { title: string; level: 'Beginner' | 'Intermediat
   5: { title: 'Section 5 · Positional Chess & Advanced Play', level: 'Advanced', age: '13-15' },
 };
 const PDF = (n: number) => `/lessons/ChessKid_Curriculum/Non_CCSS_Aligned_Curriculum/Lesson%20${n}.pdf`;
-const LICHESS = { id: 'lichess', title: 'Lichess — free play, puzzles & lessons', type: 'link' as const, audience: 'both' as const, url: 'https://lichess.org/learn', description: 'Free, no-account interactive chess practice' };
+
+// ─── "Practise online" links ─────────────────────────────────────
+// Each lesson points to BOTH sites and the exact section to open:
+//  • ChessKid.com — the matching part of the curriculum's own site
+//    (opens in a new tab; ChessKid needs a kid account & blocks embedding).
+//  • Lichess — free, no-account; also the board embedded inside the lesson.
+type SiteLink = { label: string; url: string; note: string };
+const CK_LESSONS = 'https://www.chesskid.com/learn/lessons';
+const CK_PUZZLES = 'https://www.chesskid.com/puzzles';
+const CK_PLAY = 'https://www.chesskid.com/play';
+const CK_VIDEOS = 'https://www.chesskid.com/learn/videos';
+const LI_LEARN = 'https://lichess.org/learn';
+const LI_PRACTICE = 'https://lichess.org/practice';
+const LI_PLAY = 'https://lichess.org/';
+const LI_PUZZLE = (theme: string) => `https://lichess.org/training/${theme}`;
 
 // Lichess practice embeds (click-to-load; open-in-new-tab fallback if framing is blocked).
 const LEARN: LessonInteraction = { kind: 'embed', title: '♟️ Practice (Lichess Learn)', url: 'https://lichess.org/learn', height: 520, note: 'Interactive board — move the pieces yourself.' };
 const PUZZLES: LessonInteraction = { kind: 'embed', title: '🧩 Tactics Puzzles', url: 'https://lichess.org/training', height: 520, note: 'Train pattern recognition with puzzles.' };
 const PRACTICE: LessonInteraction = { kind: 'embed', title: '♟️ Guided Practice', url: 'https://lichess.org/practice', height: 520, note: 'Guided checkmate & endgame positions.' };
 const PLAY: LessonInteraction = { kind: 'embed', title: '♟️ Play a Game', url: 'https://lichess.org/', height: 520, note: 'Play vs the computer or a friend.' };
+
+// Per-lesson "open this section" map for BOTH sites.
+const SITE_LINKS: Record<number, { ck: SiteLink; li: SiteLink }> = {
+  1:  { ck: { label: 'Learn → Lessons (Pawn & Knight)', url: CK_LESSONS, note: 'On ChessKid open Learn → Lessons and play the Pawn and Knight lessons to match this class.' },
+        li: { label: 'Learn (how the pieces move)', url: LI_LEARN, note: 'On Lichess open Learn and do the Pawn, Knight and King chapters.' } },
+  2:  { ck: { label: 'Learn → Lessons (Rook, Bishop & Queen)', url: CK_LESSONS, note: 'On ChessKid open Learn → Lessons and play the Rook, Bishop and Queen lessons.' },
+        li: { label: 'Learn (the line pieces)', url: LI_LEARN, note: 'On Lichess open Learn and do the Rook, Bishop and Queen chapters.' } },
+  3:  { ck: { label: 'Learn → Lessons (King & Checkmate)', url: CK_LESSONS, note: 'On ChessKid open Learn → Lessons (King) for check, checkmate and stalemate.' },
+        li: { label: 'Learn (check & checkmate)', url: LI_LEARN, note: 'On Lichess open Learn and do the Check, Checkmate and Stalemate chapters.' } },
+  4:  { ck: { label: 'Puzzles (checkmate)', url: CK_PUZZLES, note: 'On ChessKid open Puzzles and choose checkmate puzzles to drill the basic mates.' },
+        li: { label: 'Practice → Checkmates', url: LI_PRACTICE, note: 'On Lichess open Practice → Piece Checkmates for the K+Q and K+R mates.' } },
+  5:  { ck: { label: 'Learn → Lessons (special moves)', url: CK_LESSONS, note: 'On ChessKid open Learn → Lessons for castling and en passant.' },
+        li: { label: 'Learn (castling & en passant)', url: LI_LEARN, note: 'On Lichess open Learn and do the Castling, En passant and Capturing chapters.' } },
+  6:  { ck: { label: 'Learn → Videos (planning)', url: CK_VIDEOS, note: 'On ChessKid open Learn → Videos for the phases of a game and simple plans.' },
+        li: { label: 'Play a game', url: LI_PLAY, note: 'On Lichess play a full game and name the opening, middlegame and endgame as you go.' } },
+  7:  { ck: { label: 'Puzzles (mate in 1–2)', url: CK_PUZZLES, note: 'On ChessKid open Puzzles and pick mate-in-1 / mate-in-2 to spot the quick mates.' },
+        li: { label: 'Puzzles → Mate in 2', url: LI_PUZZLE('mateIn2'), note: 'On Lichess open Puzzles → Mate in 2 to drill quick mates (and to guard f2/f7).' } },
+  8:  { ck: { label: 'Learn → Lessons (openings)', url: CK_LESSONS, note: 'On ChessKid open Learn → Lessons for opening principles (develop, centre, castle).' },
+        li: { label: 'Puzzles → Opening', url: LI_PUZZLE('opening'), note: 'On Lichess open Puzzles → Opening to practise sound development.' } },
+  9:  { ck: { label: 'Puzzles → Fork / Double Attack', url: CK_PUZZLES, note: 'On ChessKid open Puzzles → Themes → Fork / Double Attack.' },
+        li: { label: 'Puzzles → Fork', url: LI_PUZZLE('fork'), note: 'On Lichess open Puzzles → Fork.' } },
+  10: { ck: { label: 'Puzzles → Pin & Skewer', url: CK_PUZZLES, note: 'On ChessKid open Puzzles → Themes → Pin and Skewer.' },
+        li: { label: 'Puzzles → Pin', url: LI_PUZZLE('pin'), note: 'On Lichess open Puzzles → Pin (then Skewer).' } },
+  11: { ck: { label: 'Puzzles → Discovered Attack', url: CK_PUZZLES, note: 'On ChessKid open Puzzles → Themes → Discovered Attack.' },
+        li: { label: 'Puzzles → Discovered Attack', url: LI_PUZZLE('discoveredAttack'), note: 'On Lichess open Puzzles → Discovered Attack (and Double Check).' } },
+  12: { ck: { label: 'Puzzles → Deflection', url: CK_PUZZLES, note: 'On ChessKid open Puzzles → Themes → Deflection / Remove the Defender.' },
+        li: { label: 'Puzzles → Deflection', url: LI_PUZZLE('deflection'), note: 'On Lichess open Puzzles → Deflection.' } },
+  13: { ck: { label: 'Play → vs Bot (practise the mate)', url: CK_PLAY, note: 'On ChessKid open Play → Play vs Bot and practise the King + Rook mate.' },
+        li: { label: 'Practice → Checkmates', url: LI_PRACTICE, note: 'On Lichess open Practice → Piece Checkmates for the K+R mate.' } },
+  14: { ck: { label: 'Puzzles → Promotion', url: CK_PUZZLES, note: 'On ChessKid open Puzzles → Themes → Promotion / Passed Pawn.' },
+        li: { label: 'Puzzles → Advanced Pawn', url: LI_PUZZLE('advancedPawn'), note: 'On Lichess open Puzzles → Advanced Pawn / Promotion.' } },
+  15: { ck: { label: 'Play → vs Bot (K+P endings)', url: CK_PLAY, note: 'On ChessKid open Play → Play vs Bot and practise king-and-pawn endings from both sides.' },
+        li: { label: 'Practice → Pawn endgames', url: LI_PRACTICE, note: 'On Lichess open Practice → Pawn Endgames (the opposition).' } },
+  16: { ck: { label: 'Play → vs Bot (technique)', url: CK_PLAY, note: 'On ChessKid open Play → Play vs Bot and convert a winning position cleanly.' },
+        li: { label: 'Practice → Endgames', url: LI_PRACTICE, note: 'On Lichess open Practice → endgame studies (Queen vs Pawn technique).' } },
+  17: { ck: { label: 'Learn → Videos (strategy)', url: CK_VIDEOS, note: 'On ChessKid open Learn → Videos for positional ideas (weak pawns, outposts).' },
+        li: { label: 'Play a game', url: LI_PLAY, note: 'On Lichess play a game and point out the pawn weaknesses you create or target.' } },
+  18: { ck: { label: 'Learn → Videos (pawn play)', url: CK_VIDEOS, note: 'On ChessKid open Learn → Videos on pawn structure and space.' },
+        li: { label: 'Play a game', url: LI_PLAY, note: 'On Lichess play a game and try to turn a pawn majority into a passed pawn.' } },
+  19: { ck: { label: 'Learn → Videos (piece play)', url: CK_VIDEOS, note: 'On ChessKid open Learn → Videos on good vs bad pieces.' },
+        li: { label: 'Play a game', url: LI_PLAY, note: 'On Lichess play a game and each move improve your worst-placed piece.' } },
+  20: { ck: { label: 'Play → Slow Chess (full game)', url: CK_PLAY, note: 'On ChessKid open Play → Play Slow Chess for a full tournament-style game.' },
+        li: { label: 'Play a game', url: LI_PLAY, note: 'On Lichess play a full game, then use the analysis board to review it.' } },
+};
 
 interface CK {
   n: number; title: string; subtitle: string; section: number; pages: number; emoji: string;
@@ -39,13 +98,15 @@ function gallery(n: number, pages: number): LessonImage[] {
 
 function makeCK(c: CK): LessonDetail {
   const sec = SECTIONS[c.section];
+  const links = SITE_LINKS[c.n];
   const sections: LessonSection[] = [
     {
       type: 'coach_prep', title: 'Instructor Guide — Before Class', emoji: '🧑‍🏫', isCoachOnly: true,
       content: [
         `ChessKid Lesson ${c.n}: ${c.title}. ${c.subtitle}`,
         'Review the curriculum pages (shown below) first — they contain the diagrams, explanations, mini-games and worksheets for this lesson.',
-        'Materials: a chess set + a demonstration board (or screen); optional computers/tablets with lichess.org for live practice.',
+        'Materials: a chess set + a demonstration board (or screen); optional computers/tablets for live practice on ChessKid.com or Lichess.',
+        `Online practice for this lesson — ChessKid: ${links.ck.label}; Lichess: ${links.li.label}. Both are linked under Resources.`,
         'Designed for ~1 hour. Assign the worksheets in the lesson PDF (Resources) for independent practice.',
       ],
     },
@@ -87,7 +148,7 @@ function makeCK(c: CK): LessonDetail {
     materials: [
       { item: 'Chess set & board', quantity: '1 per pair' },
       { item: 'Demonstration board or screen (instructor)', quantity: '1 per class' },
-      { item: 'Computer/tablet with lichess.org', quantity: '1 per pair', isOptional: true },
+      { item: 'Computer/tablet for ChessKid.com or Lichess', quantity: '1 per pair', isOptional: true },
     ],
     objectives: c.objectives,
     assessmentChecklist: c.objectives,
@@ -99,7 +160,8 @@ function makeCK(c: CK): LessonDetail {
     interactions: [c.practice],
     resources: [
       { id: `chess-${c.n}-r1`, title: `Lesson ${c.n} — Full Curriculum & Worksheets (PDF)`, type: 'pdf', audience: 'both', url: PDF(c.n), description: 'The official ChessKid lesson, worksheets & answer keys' },
-      LICHESS,
+      { id: `chess-${c.n}-ck`, title: `Practise on ChessKid.com — ${links.ck.label}`, type: 'link', audience: 'both', url: links.ck.url, description: `${links.ck.note} (opens ChessKid.com in a new tab — free account needed)` },
+      { id: `chess-${c.n}-li`, title: `Practise on Lichess — ${links.li.label}`, type: 'link', audience: 'both', url: links.li.url, description: `${links.li.note} (free, no account; this is also the board embedded above)` },
     ],
   };
 }
