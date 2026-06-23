@@ -159,11 +159,21 @@ export interface LessonDetail {
   heroImage?: string;          // illustrative image shown in the lesson header
   youtubeId?: string;          // if set, an embedded YouTube player is shown in the lesson header
   boards?: { fen: string; caption?: string }[];  // chess board diagrams (rendered from FEN) shown in an "On the Board" panel
+  walkthrough?: WalkStep[];    // step-by-step coach teaching guide (paired with the lesson's pages)
   quiz?: QuizQuestion[];       // optional interactive quiz shown in the Interactive Exercises panel
   /** Starter code for the in-lesson code playground. lang picks the runner. */
   playground?: { lang: 'html' | 'python'; starter: string };
   /** Extra interactive activities (fill-in, match, predict-output, embedded tools…). */
   interactions?: LessonInteraction[];
+}
+
+/** One step of a step-by-step coach teaching walkthrough. */
+export interface WalkStep {
+  page?: number;   // which lesson page image to show (p-0N.png); omit to show no image
+  title?: string;  // short step label
+  say: string;     // what the coach explains/shows
+  ask?: string;    // a question to ask the class
+  doThis?: string; // a hands-on action to do
 }
 
 /** An interactive multiple-choice / true-false question shown in a lesson. */

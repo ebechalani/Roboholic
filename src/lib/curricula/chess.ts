@@ -1,4 +1,4 @@
-import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficulty, AgeGroupId, LessonInteraction, QuizQuestion } from '@/types';
+import type { Course, LessonDetail, LessonSection, LessonImage, Module, Difficulty, AgeGroupId, LessonInteraction, QuizQuestion, WalkStep } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Chess — the official ChessKid.com Curriculum (IM Daniel Rensch),
@@ -28,6 +28,7 @@ interface CK {
   n: number; title: string; subtitle: string; section: number; pages: number; emoji: string;
   objectives: string[]; teach: string[]; student: string[]; challenge: string; skills: string[];
   practice: LessonInteraction; quiz: QuizQuestion[]; boards?: { fen: string; caption?: string }[];
+  walkthrough?: WalkStep[];
 }
 
 function gallery(n: number, pages: number): LessonImage[] {
@@ -93,6 +94,7 @@ function makeCK(c: CK): LessonDetail {
     sections,
     heroImage: `/lessons/chess-${c.n}/p-01.png`,
     ...(c.boards ? { boards: c.boards } : {}),
+    ...(c.walkthrough ? { walkthrough: c.walkthrough } : {}),
     quiz: c.quiz,
     interactions: [c.practice],
     resources: [
@@ -110,6 +112,16 @@ const CONFIGS: CK[] = [
     student: ['Learn the board and the names of the squares.', 'Practise moving the king and the knight.', 'Play "Pawn Wars" to master the pawn.'],
     challenge: 'Win a game of "Pawn Wars" (get a pawn to the other side) against a partner.', skills: ['Board', 'King & Knight', 'Pawn'],
     practice: LEARN, boards: [{ fen: '8/8/8/3N4/8/8/8/8', caption: 'The knight (d5) jumps in an "L" — the only piece that can jump over others.' }],
+    walkthrough: [
+      { page: 1, title: 'The King', say: 'The King is the leader of your army — the most important piece, but the slowest. He moves just ONE square at a time, in any direction.', ask: 'What happens if you lose your King?', doThis: 'Put a king in the middle of the demo board and have a volunteer move it to each of the 8 squares around it.' },
+      { page: 8, title: 'The Knight', say: 'The Knight moves in an "L": one–two, turn the corner. He is the ONLY piece that can jump over others, and he changes colour every hop.', ask: 'Which piece can jump over other pieces?', doThis: 'Place a knight on d4 and find all the squares it can reach (the stars). Remind them a knight only captures the square it LANDS on — not the pieces it jumps over.' },
+      { page: 2, title: 'The Pawn', say: 'The Pawn steps forward one square (or two on its very first move), but it CAPTURES one square diagonally forward. It can never move backward or sideways.', ask: 'Can a pawn capture the piece right in front of it?', doThis: 'Set up a pawn with an enemy piece diagonally in front and make the capture; then show that a piece directly ahead simply blocks the pawn.' },
+      { page: 2, title: 'Promotion', say: 'A brave pawn that marches all the way to the far side (rank 8 for White, rank 1 for Black) PROMOTES — it becomes a stronger piece, almost always a Queen.', ask: 'What piece do pawns usually become when they promote?', doThis: 'Race a pawn up an empty file and "queen" it.' },
+      { page: 4, title: 'Story: Old MacDonald', say: 'Tell the story: the pawns are piggies that escaped toward the barn (the far rank), and the King is Mr. MacDonald chasing them. Introduce each piece as a farm character to make it stick.', doThis: 'Read the story script aloud, gesturing to the demo board as each character appears.' },
+      { page: 3, title: 'Mini-game: Farmer & the Piggies', say: 'The goal: the piggies (pawns) try to reach the 8th rank; the farmer (the lone King) tries to catch them all.', doThis: 'Play Level 1 — your lone King vs 8 pawns — you play the King against the whole class. Let them discover that pawns on opposite sides beat the King.' },
+      { page: 6, title: 'Mini-game: Pawn Wars', say: 'Both players get 8 pawns. The first to promote (reach the other side) wins — but watch out for captures along the way!', doThis: 'Pairs play Pawn Wars, then swap colours and play again.' },
+      { page: 7, title: 'Practice each piece', say: 'Finish with the King, Knight and Pawn practice pages (the diagrams with stars).', doThis: 'Hand out or project the practice diagrams and have students trace every legal move for each piece.' },
+    ],
     quiz: [
       { question: 'The knight moves in the shape of:', options: ['an "L"', 'a straight line', 'a diagonal', 'a circle'], answerIndex: 0 },
       { question: 'A pawn captures:', options: ['one square diagonally forward', 'straight ahead', 'in an L', 'sideways'], answerIndex: 0 },
@@ -121,6 +133,12 @@ const CONFIGS: CK[] = [
     student: ['Practise the rook and bishop on an empty board.', 'Find every square a queen can reach.', 'Complete the "moving the rook/bishop/queen" worksheets.'],
     challenge: 'Place a queen on d5 and list all the squares it attacks.', skills: ['Rook', 'Bishop', 'Queen'],
     practice: LEARN, boards: [{ fen: '8/8/8/3Q4/8/8/8/8', caption: 'The queen (d5): straight lines AND diagonals — the most powerful piece.' }],
+    walkthrough: [
+      { page: 1, title: 'The Rook', say: 'The Rook — the "Tower of Power" — moves as far as it likes in straight lines: up, down, left or right. It cannot jump over pieces.', ask: 'How many squares can a rook on an empty board reach?', doThis: 'Put a rook on d4 and trace its cross (it always covers 14 squares on an empty board).' },
+      { page: 1, title: 'The Bishop', say: 'The Bishop moves as far as it likes along diagonals, and ALWAYS stays on its starting colour. Each side has one light-squared and one dark-squared bishop — they work best as a pair.', ask: 'Can a bishop ever land on a different colour square?', doThis: 'Place a bishop and trace its "X"; point out the colour never changes.' },
+      { page: 2, title: 'The Queen', say: 'The Queen is the most powerful piece: she moves like a Rook AND a Bishop — straight lines and diagonals, any distance. The only things she cannot do are jump, or move like a Knight.', ask: 'The queen combines which two pieces?', doThis: 'Place a queen on d4 and count every square she attacks.' },
+      { page: 4, title: 'Practice the line-pieces', say: 'Finish with the Rook, Bishop and Queen practice pages. Keep reminding students that line-pieces cannot jump over other pieces.', doThis: 'Students trace each piece\'s moves on the practice diagrams (pages 4–6).' },
+    ],
     quiz: [
       { question: 'The bishop moves:', options: ['diagonally', 'in straight lines', 'in an L', 'one square'], answerIndex: 0 },
       { question: 'The queen moves like a:', options: ['rook and bishop combined', 'knight', 'pawn', 'king only'], answerIndex: 0 },
@@ -135,6 +153,15 @@ const CONFIGS: CK[] = [
       { fen: 'kR6/8/K7/8/8/8/8/8', caption: 'Checkmate: the rook checks and the king covers every escape square.' },
       { fen: 'k7/8/1Q6/8/8/8/8/7K', caption: 'Stalemate (Black to move): not in check, no legal move → a DRAW.' },
     ],
+    walkthrough: [
+      { page: 1, title: 'What is "Check"?', say: '"Check" means the enemy King is under attack. (The word comes from the old Persian "Shah" — King!) When your King is in check you MUST get it out of danger right away.', ask: 'In the diagram, which piece is giving check?', doThis: 'Emphasise the big idea: you never actually capture the King — the goal is to trap it.' },
+      { page: 2, title: 'Three ways to escape check', say: 'There are exactly three ways out of check: 1) Capture the checking piece, 2) Block it by stepping a piece in the way, or 3) Run the King to a safe square.', ask: 'Can you name all three escapes?', doThis: 'Set up one check on the demo board and solve it all three different ways.' },
+      { page: 3, title: 'Checkmate — the goal!', say: 'Checkmate is a check with NO escape — the King cannot capture, block, or run. That is how you WIN the game.', ask: 'What turns an ordinary check into checkmate?', doThis: 'Build a simple check, then add one piece so it becomes checkmate.' },
+      { page: 3, title: 'Stalemate — a draw!', say: 'If the player to move has NO legal move but is NOT in check, it is stalemate — the game is a draw. Warn them: never stalemate a game you are winning!', ask: 'No legal move but not in check — is that a win or a draw?' },
+      { page: 5, title: 'Worksheet: Check the King', say: 'Students draw arrows showing every way the rook, knight, bishop and queen can check the black King.', doThis: 'Hand out worksheet page 1 (the answer key is on the last two pages of the PDF).' },
+      { page: 6, title: 'Worksheet: Capture / Block / Run', say: 'Work through "Capture the Checker", "Blocking Check" and "Running from Check" — one for each escape route.', doThis: 'Students solve pages 6–8, then check their answers against the key.' },
+      { page: 9, title: 'Worksheet: Is This Checkmate?', say: 'For each position the King is in check — students decide YES (checkmate) or NO (escape exists).', doThis: 'Students circle each answer, then review together using the answer key.' },
+    ],
     quiz: [
       { question: 'Checkmate is when the king is:', options: ['attacked and cannot escape', 'captured', 'in the corner', 'next to a pawn'], answerIndex: 0 },
       { question: 'Which is NOT a way to escape check?', options: ['ignore it', 'move the king', 'block', 'capture the attacker'], answerIndex: 0 },
@@ -146,6 +173,15 @@ const CONFIGS: CK[] = [
     student: ['Mate a lone king with King + Queen without stalemating.', 'Mate with two rooks using the roller.', 'Spot stalemate traps.'],
     challenge: 'Checkmate a lone king with King + Queen in under 10 moves, no stalemate.', skills: ['K+Q Mate', 'Two-Rook Mate', 'Technique'],
     practice: PRACTICE, boards: [{ fen: '7k/6Q1/6K1/8/8/8/8/8', caption: 'King + Queen mate: the queen mates while the king defends it.' }],
+    walkthrough: [
+      { page: 1, title: 'King + Queen: the "box"', say: 'Use the Queen to draw an invisible "box" around the lone King, keeping a knight\'s-jump away, and shrink it one square at a time to push the King to the edge.', ask: 'Which part of the board are we pushing the King toward?', doThis: 'From the diagram, play Qd3 and keep shrinking the box, move by move.' },
+      { page: 2, title: 'Bring your King & mate', say: 'Once the King is on the edge, STOP shrinking — or you may stalemate! March your own King up to protect the Queen, then deliver checkmate. Golden rule: the only check you give should be checkmate.', ask: 'Why shouldn\'t the Queen keep checking the King early?', doThis: 'Walk the white King up beside the enemy King and play the mating move.' },
+      { page: 3, title: 'Two-Rook "Roller" mate', say: 'Two rooks can mate a lone King with NO help from your King. Check with one rook; when the King steps toward it, jump the OTHER rook far across to the next rank ("rolling").', ask: 'Which rook should lead the attack?', doThis: 'Play the rolling checks, always leading with the rook furthest from the King.' },
+      { page: 4, title: 'Finish the Roller', say: 'Keep rolling the rooks, one rank at a time, until the King is trapped on the last rank — then deliver the final check. Never let the King catch a rook: jump it to the far side of the board.', doThis: 'Complete the two-rook mate from the diagram.' },
+      { page: 5, title: 'Stalemate — the trap to avoid', say: 'Review stalemate: no legal move and NOT in check = a draw. Show how taking the Queen "box" one step too far accidentally causes it.', ask: 'Is stalemate a win or a draw?' },
+      { page: 8, title: 'Worksheet: Checkmate or Stalemate?', say: 'For each position students decide: checkmate or stalemate? This cements the difference while it is fresh.', doThis: 'Students circle the answer on pages 8–9, then check the answer key (page 10).' },
+      { title: 'Practice the mates', say: 'The mates only stick with repetition.', doThis: 'Pair students up to practise King+Queen and the two-rook mate, alternating attacker and defender 3–5 times — on a board or at lichess.org/practice.' },
+    ],
     quiz: [
       { question: 'To mate with K+Q you push the king toward:', options: ['the edge of the board', 'the centre', 'your queen alone', 'a pawn'], answerIndex: 0 },
       { question: 'The biggest danger mating with a queen is:', options: ['accidental stalemate', 'losing the queen', 'running out of board', 'promotion'], answerIndex: 0 },
