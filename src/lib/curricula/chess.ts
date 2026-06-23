@@ -274,6 +274,13 @@ const CONFIGS: CK[] = [
     student: ['Find forks in puzzle positions.', 'Play a knight fork to win material.', 'Solve fork puzzles on Lichess.'],
     challenge: 'Solve 10 fork puzzles and note the forking piece each time.', skills: ['Fork', 'Double Attack', 'Knight Tactics'],
     practice: PUZZLES, boards: [{ fen: 'k3q3/2N5/8/8/8/8/8/4K3', caption: 'A royal fork: Nc7 attacks the king (check) AND the queen at once.' }],
+    walkthrough: [
+      { page: 1, title: 'Tactics win games', say: 'About 90% of chess is tactics! The first and most common one is the double attack — a single move that attacks two things at once.', ask: 'What does a "double attack" do?', doThis: 'Place a queen or rook so it attacks two loose enemy pieces in one move.' },
+      { page: 1, title: 'The Fork (knight & pawn)', say: 'When a knight or pawn makes a double attack in a "split" way, we call it a fork. A fork that hits the king AND the queen is a "royal fork".', ask: 'Which pieces are famous for "forking"?', doThis: 'Jump a knight to a square where it forks two enemy pieces.' },
+      { page: 2, title: 'Knives, Forks & Spoons', say: 'Three nicknames: "Killer Knives" = double attacks by rook/bishop/queen; "Fearsome Forks" = by knight/pawn; "Soft Spoons" = a double attack that does NOTHING (the target is defended or can be recaptured).', ask: 'Why is a "soft spoon" a useless double attack?' },
+      { page: 2, title: 'Aim at loose pieces', say: 'The best double attacks hit two undefended ("loose") pieces — so always scan the board for hanging pieces first.', ask: 'What makes a target good for a fork?' },
+      { page: 4, title: 'Worksheets', say: 'Practise spotting them with "Which Is It?" (knife/fork/spoon), "Knives & Forks", and the tricky set.', doThis: 'Students solve pages 4–6; check the key (page 7), then train forks at lichess.org/training.' },
+    ],
     quiz: [
       { question: 'A fork is one piece attacking:', options: ['two targets at once', 'the king only', 'a pawn', 'nothing'], answerIndex: 0 },
       { question: 'Which piece is famous for forking?', options: ['the knight', 'the pawn', 'the king', 'the rook'], answerIndex: 0 },
@@ -285,6 +292,14 @@ const CONFIGS: CK[] = [
     student: ['Pin an enemy piece to its king or queen.', 'Win material with a skewer.', 'Solve pin & skewer puzzles.'],
     challenge: 'Solve 10 pin/skewer puzzles and label each one.', skills: ['Pin', 'Skewer', 'Tactics'],
     practice: PUZZLES, boards: [{ fen: '3q2k1/8/5n2/6B1/8/8/8/6K1', caption: 'A pin: the knight on f6 can\'t move — the queen is right behind it.' }],
+    walkthrough: [
+      { page: 1, title: 'What is a pin?', say: 'A piece is "pinned" when it cannot move because a more valuable piece sits behind it on a line. Only line-pieces can pin: the queen, rook and bishop. An ABSOLUTE pin is to the king (it is illegal to move); a RELATIVE pin is to a valuable piece.', ask: 'Which three pieces can make a pin?', doThis: 'Set up a bishop pinning a knight to its king.' },
+      { page: 2, title: 'Win a pinned piece — gang up!', say: 'A pinned piece is stuck, so don\'t just trade it — attack it AGAIN with a pawn or another piece ("gang up") and win it for free.', ask: 'Instead of trading a pinned piece, what should you do?' },
+      { page: 3, title: 'Breaking the pin', say: 'A RELATIVELY pinned piece can sometimes move anyway — if it does something even bigger, like a discovered check. The famous Legal\'s Mate works exactly this way, so stay alert for a pin breaking.', ask: 'Can a relatively pinned piece ever move?' },
+      { page: 4, title: 'The Skewer (the anti-pin)', say: 'A skewer is a pin in reverse: the MORE valuable piece is in front and must move out of the way, so you capture the piece behind it. Like the pin, it is a line-piece tactic.', ask: 'In a skewer, which piece is in front — the valuable one or the cheap one?' },
+      { page: 5, title: 'Endgame skewers', say: 'Skewers decide many endgames — the "back-door" rook skewer, and promoting a pawn WITH CHECK to skewer the king and queen on a diagonal. You can even skewer a piece to an important square.', ask: 'How can promoting a pawn with check win the enemy queen?' },
+      { page: 7, title: 'Worksheets', say: '"Pin \'em & Skewer \'em": decide pin or skewer and find the move.', doThis: 'Students solve pages 7–8; key on page 9; then train these on lichess.org/training.' },
+    ],
     quiz: [
       { question: 'A pinned piece:', options: ['cannot move (something valuable is behind it)', 'can jump', 'is promoted', 'is the king'], answerIndex: 0 },
       { question: 'A skewer is like a pin but:', options: ['the valuable piece is in front and must move', 'it uses a knight', 'it is a draw', 'it only checks'], answerIndex: 0 },
@@ -296,6 +311,14 @@ const CONFIGS: CK[] = [
     student: ['Find discovered attacks in puzzles.', 'Play a discovered check.', 'Solve discovery puzzles on Lichess.'],
     challenge: 'Find a discovered check and a double check in puzzle positions.', skills: ['Discovered Attack', 'Double Check', 'Tactics'],
     practice: PUZZLES,
+    walkthrough: [
+      { page: 1, title: 'The discovered attack', say: 'Move ONE piece to uncover an attack from a teammate sitting behind it on a line. Because the moving piece is now free to do anything, a discovery is incredibly powerful — and a discovered CHECK is the strongest version.', ask: 'How does a discovered attack work?' },
+      { page: 2, title: 'A discovery is a double attack', say: 'A good discovery hits two things at once: the uncovered attack PLUS whatever the moving piece does. It works best when the uncovered target is undefended.', ask: 'Why is a discovered check so powerful?' },
+      { page: 3, title: 'The Windmill', say: 'The Windmill (Torre–Lasker, 1925) is a repeating discovered-check tactic: the rook checks, the king must move, the rook swings back and grabs material — then "rinse and repeat"!', ask: 'What makes the Windmill so devastating?' },
+      { page: 4, title: 'Double check', say: 'In a double check, the moving piece AND the uncovered piece BOTH give check at once. The only escape is to move the king — you cannot block or capture two checkers. The famous "Venus Fly Trap" smothered mate uses it. (In notation, double check is "++".)', ask: 'What is the only way to escape a double check?' },
+      { page: 5, title: 'Mating nets', say: 'Double checks force the enemy king onto bad squares, leading to a forced checkmate — like the knight-and-rook and bishop-and-rook mating nets.', ask: 'Why is the king almost helpless against a double check?' },
+      { page: 7, title: 'Worksheets', say: '"Use Your Discovery!" — find the winning discovery in each diagram.', doThis: 'Students solve pages 7–8; key on page 9; then train on lichess.org/training.' },
+    ],
     quiz: [
       { question: 'A discovered attack works by:', options: ['moving one piece to reveal another\'s attack', 'castling', 'promoting', 'trading'], answerIndex: 0 },
       { question: 'A double check can only be met by:', options: ['moving the king', 'blocking', 'capturing', 'castling'], answerIndex: 0 },
@@ -307,6 +330,13 @@ const CONFIGS: CK[] = [
     student: ['Spot the key defender in a position.', 'Remove or deflect it, then win the target.', 'Solve combination puzzles.'],
     challenge: 'Solve 10 "remove the defender / deflection" puzzles.', skills: ['Remove the Defender', 'Deflection', 'Combinations'],
     practice: PUZZLES,
+    walkthrough: [
+      { page: 1, title: 'Deflection', say: 'Deflection forces a defender AWAY from its job — usually with a check or capture — and then you win whatever it was guarding.', ask: 'What does a deflection do to a defender?' },
+      { page: 1, title: 'Decoy', say: 'A decoy lures an enemy piece ONTO a bad square where a tactic hits it — often with a sacrifice. Deflection pushes a piece away; a decoy pulls a piece onto a bad square.', ask: 'How is a decoy different from a deflection?' },
+      { page: 2, title: 'Destroying the defender', say: 'Sacrifice to blow open the squares around the enemy king — rip away the pawns or pieces shielding it — then deliver mate. Most effective when you have more attackers near the king than they have defenders.', ask: 'When is "destroying the defender" most effective?' },
+      { page: 3, title: 'Removing the guard', say: 'See your target first, then eliminate the piece guarding it — capture it or chase it away — so the target falls.', ask: 'Before grabbing a defended target, what can you do to its guard?' },
+      { page: 5, title: 'Worksheets', say: '"Using Tactics to Win!" — mixed deflection, decoy and removal-of-the-defender puzzles.', doThis: 'Students solve pages 5–6; key on page 7. Then keep training — "tactics, tactics and more tactics!" — on lichess.org/training.' },
+    ],
     quiz: [
       { question: '"Removing the defender" means:', options: ['eliminating the piece guarding a target', 'castling', 'promoting', 'checking'], answerIndex: 0 },
       { question: 'Deflection forces a defender to:', options: ['move away from its job', 'promote', 'castle', 'check'], answerIndex: 0 },
