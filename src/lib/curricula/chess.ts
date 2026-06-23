@@ -194,6 +194,16 @@ const CONFIGS: CK[] = [
     student: ['Practise counting attackers/defenders to win material safely.', 'Castle king-side and queen-side.', 'Capture a pawn en passant.'],
     challenge: 'In a few positions, decide whether a capture wins material by counting.', skills: ['Counting', 'Castling', 'En Passant'],
     practice: PLAY, boards: [{ fen: 'r4rk1/8/8/8/8/8/8/R4RK1', caption: 'After castling (both sides): the king is tucked safely on g1/g8.' }],
+    walkthrough: [
+      { page: 1, title: 'Counting attackers & defenders', say: 'To capture safely, count how many of your pieces attack a square versus how many defend it. When the captures come out even, that is just a "trade".', ask: 'Before you grab a piece, what two things should you count?', doThis: 'On the example, count the attackers and defenders of the d4 and c6 knights and decide if a capture is safe.' },
+      { page: 2, title: 'Hanging (free!) pieces', say: 'A piece with NO defender is "hanging" — you can take it for free. Train students to scan every move for hanging pieces, both theirs and their own.', ask: 'What does it mean when a piece is "hanging"?', doThis: 'Spot the undefended bishop on g5 in the example and take it for free.' },
+      { page: 2, title: 'Doggy-piles — count the VALUE', say: 'When many pieces attack and defend one square, imagine everyone capturing in a "doggy-pile" and add up the POINTS. Winning two pawns but losing a knight is more captures — but a bad trade.', ask: 'Is winning two pawns for a knight a good trade?' },
+      { page: 2, title: 'Trapped pieces', say: 'A piece that cannot move to safety is "trapped" — attack it and it cannot run away. Great targets to win material.', doThis: 'Show the b3-bishop being trapped by the pawns closing in around it.' },
+      { page: 4, title: 'Castling', say: 'Castling is the ONE move where you move two of your own pieces: the king goes two squares toward a rook, and the rook hops to the other side. It tucks the king to safety AND activates a rook in one move. Kingside = 0-0, queenside = 0-0-0.', ask: 'Which two pieces move when you castle?', doThis: 'Castle kingside, then set up and castle queenside on the demo board.' },
+      { page: 4, title: 'The 2 castling rules', say: 'You may NOT castle out of, through, or into check; and you may not castle if that king or rook has already moved.', ask: 'Can you castle while your king is in check?' },
+      { page: 12, title: 'En Passant (Super Pawns)', say: 'A special pawn capture: right after an enemy pawn jumps two squares and lands beside yours, you may capture it "in passing" as if it had moved only one — but ONLY on the very next move.', ask: 'When is your one and only chance to capture en passant?', doThis: 'Set up the diagram and play the en passant capture.' },
+      { page: 6, title: 'Worksheets', say: 'Plenty of practice: Castling Quiz, Is it Defended?, Doggy-Pile Quiz, Who\'s Hanging?, and Can You Capture En Passant?', doThis: 'Students work pages 6–10 and 13; check answers with the keys on pages 11 and 14.' },
+    ],
     quiz: [
       { question: 'Before capturing you should:', options: ['count attackers vs defenders', 'always capture', 'castle first', 'move the queen'], answerIndex: 0 },
       { question: 'Castling mainly:', options: ['keeps the king safe', 'wins a pawn', 'promotes', 'gives check'], answerIndex: 0 },
@@ -205,6 +215,15 @@ const CONFIGS: CK[] = [
     student: ['Identify which phase a position is in.', 'After each opponent move, say what it threatens.', 'Make one simple plan in a game.'],
     challenge: 'In a game, write down your opponent\'s threat after each of their moves for 5 moves.', skills: ['Phases', 'Planning', 'Opponent Awareness'],
     practice: PLAY, boards: [{ fen: 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR', caption: 'The opening phase: both sides fight for the centre after 1.e4 e5.' }],
+    walkthrough: [
+      { page: 1, title: 'The three phases', say: 'Every game has three stages. The Opening: develop your pieces, castle and connect the rooks. The Middlegame: the main battle. The Endgame: few pieces left.', ask: 'Can you name the three phases of a chess game?' },
+      { page: 2, title: 'Middlegame & Endgame', say: 'In the Middlegame you have all your pieces out and make plans of attack and defence. In the Endgame, with few pieces left, the game often becomes a race to promote a pawn.', ask: 'Which phase is the "main battle" of the game?' },
+      { page: 3, title: 'Think first: CHECKS', say: 'Before every move your #1 priority is to look at ALL your checks — a check might even be checkmate! Missing a check can mean missing a win.', ask: 'Why should you look at every possible check before moving?', doThis: 'In the example, find all the checks — one of them is checkmate.' },
+      { page: 4, title: 'Then CAPTURES, then QUEEN ATTACKS', say: 'Priority #2 is every capture (free material), and #3 is every way to attack the queen. "Checks, Captures, Queen attacks" — the Big Three to scan every single move.', ask: 'What are the "Big Three" forcing moves to check every turn?' },
+      { page: 5, title: 'Why did my opponent move THERE?', say: 'After your opponent moves, always ask what it threatens — look for THEIR checks, captures and queen attacks. Most games are lost by ignoring the opponent\'s threat.', ask: 'What is the one question to ask after your opponent moves?' },
+      { page: 6, title: 'Plans & weaknesses', say: 'If there are no checks, captures or queen attacks, make a plan: improve your worst piece, control the centre, or target a weakness.', ask: 'What should you think about when there are no forcing moves?' },
+      { page: 8, title: 'Worksheets', say: 'Build the habit with the Checks, Captures, Attack the Queen, and "Why Did They Go There?" worksheets.', doThis: 'Students work pages 8–11; check the answer key (page 12).' },
+    ],
     quiz: [
       { question: 'The three phases of a game are:', options: ['opening, middlegame, endgame', 'start, stop, draw', 'check, mate, stalemate', 'fork, pin, skewer'], answerIndex: 0 },
       { question: 'After your opponent moves, you should ask:', options: ['what does it threaten?', 'can I resign?', 'is it lunchtime?', 'what colour is it?'], answerIndex: 0 },
@@ -216,6 +235,14 @@ const CONFIGS: CK[] = [
     student: ['Set up and refute Scholar\'s Mate.', 'Learn to protect f7 in the opening.', 'Practise the famous mate patterns.'],
     challenge: 'Defend against Scholar\'s Mate when a partner tries it on you.', skills: ['Quick Mates', "Scholar's Mate", 'f2/f7'],
     practice: PRACTICE, boards: [{ fen: 'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR', caption: "Scholar's Mate: Qxf7#. The f7 square is Black's weak point — guard it!" }],
+    walkthrough: [
+      { page: 1, title: "Fool's Mate & quick mates", say: 'The fastest checkmate of all is Fool\'s Mate — just two moves! But it only happens if White plays the worst possible moves. These "quick mates" need the opponent\'s help (bad moves).', ask: 'Who is the only player that can lose in just two moves?' },
+      { page: 2, title: "Scholar's Mate", say: 'The famous four-move mate: 1.e4 e5 2.Bc4 and Qh5, both aiming at f7, then Qxf7#. It works only if Black ignores the threat to f7.', ask: 'Which square does Scholar\'s Mate attack?', doThis: 'Play out Scholar\'s Mate, then show how 3...g6 (or developing Nf6) defends it.' },
+      { page: 1, title: 'The weakest squares: f2 & f7', say: 'At the start, f7 (for Black) and f2 (for White) are guarded only by the king — that is why every quick mate aims there. Defend them!', ask: 'Why is the f7 square weak in the opening?', doThis: 'Develop the g8-knight to f6 to guard f7.' },
+      { page: 4, title: 'Back-rank mate', say: 'A king trapped on its back rank by its OWN pawns gets mated by a rook or queen sliding along the back row. Make a little "escape hole" (luft) by pushing a pawn to prevent it.', ask: 'What usually traps the king in a back-rank mate?' },
+      { page: 5, title: 'Smothered & Support mates', say: 'Smothered mate: a knight mates a king boxed in by its own pieces. Support mate: a queen mates right next to the king, protected by a friendly piece.', ask: 'Which piece delivers a smothered mate?' },
+      { page: 7, title: 'Worksheets', say: 'Memorise the famous patterns (Swallow\'s Tail, Arabian, Boden\'s, Legal\'s…) and practise guarding f2/f7.', doThis: 'Students solve the Famous Checkmates and Guarding f2/f7 worksheets (pages 7–9); check the key (page 10).' },
+    ],
     quiz: [
       { question: "Scholar's Mate attacks which weak square?", options: ['f7', 'a1', 'd4', 'h8'], answerIndex: 0 },
       { question: 'The best defence against quick mates is to:', options: ['develop and guard f7/f2', 'push the h-pawn', 'move the queen out early', 'ignore threats'], answerIndex: 0 },
@@ -227,6 +254,14 @@ const CONFIGS: CK[] = [
     student: ['Play the opening following the principles.', 'Count how many pieces each side has developed.', 'Aim to connect your rooks.'],
     challenge: 'Reach a position where you have castled and connected your rooks by move 12.', skills: ['Development', 'Centre', 'Castling'],
     practice: PLAY, boards: [{ fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R', caption: 'Good opening play (Italian Game): centre pawn, knights & bishop out, ready to castle.' }],
+    walkthrough: [
+      { page: 1, title: 'Develop, develop, develop!', say: 'The #1 opening rule: bring your pieces OFF their starting squares and into the game. A "lead in development" means you have more pieces in play than your opponent.', ask: 'What does it mean to "develop" a piece?', doThis: 'From the starting position, develop a knight and a bishop toward the centre.' },
+      { page: 2, title: "Don't move a piece twice / keep the queen home", say: 'Get ALL your minor pieces out before you move one a second time. And don\'t bring the queen out too early — "don\'t let Momma play with the kids" — she just gets chased and you lose time.', ask: 'Why is it risky to bring the queen out early?' },
+      { page: 3, title: 'Develop toward the CENTRE', say: 'Pieces are stronger in the centre. "A knight on the rim is grim": a knight in the centre controls about 8 squares, but a knight in the corner controls only 2.', ask: 'How many squares does a central knight control compared to a corner knight?', doThis: 'Compare a knight on e5 with a knight on a1.' },
+      { page: 4, title: 'Castle & connect the rooks', say: 'Get the king safe by castling, then connect your rooks (clear the back rank between them). That completes the opening — aim to do it by about move 10.', ask: 'Your opening is "done" once your rooks are what?', doThis: 'Reach a position where you have castled and your rooks are connected.' },
+      { page: 5, title: 'Develop with a PURPOSE', say: 'Every developing move should make a threat or defend one. In the Ruy Lopez, for example, each move attacks or defends something specific.', ask: 'What should every developing move try to do?' },
+      { page: 7, title: 'Worksheets', say: 'Practise with "Connect the Rooks" (count the moves) and "Counting Development" (who is further ahead?).', doThis: 'Students solve pages 7–8; check the answer key (page 9).' },
+    ],
     quiz: [
       { question: 'A key opening principle is to:', options: ['develop pieces and control the centre', 'attack with the queen first', 'move only pawns', 'leave the king in the centre'], answerIndex: 0 },
       { question: 'You should usually castle:', options: ['early', 'never', 'only in the endgame', 'after losing the queen'], answerIndex: 0 },
