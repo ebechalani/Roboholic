@@ -14,6 +14,7 @@ import {
 import { ALL_LESSONS } from '@/lib/curricula';
 import { DRIVE_LINKS } from '@/lib/curricula/drive-links';
 import InteractiveExercises from '@/components/lesson/InteractiveExercises';
+import ChessBoards from '@/components/lesson/ChessBoards';
 import type { LessonDetail, LessonSection, LessonSectionType, StepItem, TroubleshootItem, LessonImage } from '@/types';
 
 // ─── Section config ───────────────────────────────────────────────
@@ -605,6 +606,8 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
                     </p>
                   </div>
                 )}
+
+                {lesson.boards?.length ? <ChessBoards boards={lesson.boards} color={lesson.programColor} /> : null}
 
                 {lesson.sections.map((section) => (
                   <LessonSectionBlock

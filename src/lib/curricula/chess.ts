@@ -219,6 +219,38 @@ const C: KitLesson[] = [
     ], [PLAY]),
 ];
 
+// Board diagrams (FEN) per lesson — rendered as SVG in the "On the Board" panel.
+const BOARDS: Record<string, { fen: string; caption?: string }[]> = {
+  'chess-1': [{ fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR', caption: 'The starting position. Light square on the right; white queen on a light square.' }],
+  'chess-2': [
+    { fen: '8/8/8/3Q4/8/8/8/8', caption: 'The Queen (d5): moves in straight lines AND diagonals — the most powerful piece.' },
+    { fen: '8/8/8/8/2B5/8/8/8', caption: 'The Bishop (c4): only diagonals, so it stays on one colour all game.' },
+  ],
+  'chess-3': [
+    { fen: '8/8/8/3N4/8/8/8/8', caption: 'The Knight (d5): jumps in an "L" — and is the only piece that can jump over others.' },
+    { fen: '8/8/8/8/8/8/3P4/8', caption: 'The Pawn (d2): moves forward 1 (or 2 from its start) but captures one square diagonally.' },
+  ],
+  'chess-4': [
+    { fen: 'kR6/8/K7/8/8/8/8/8', caption: 'Checkmate: the rook checks the king, and the white king covers every escape square.' },
+    { fen: 'k7/8/1Q6/8/8/8/8/7K', caption: 'Stalemate (Black to move): the king is NOT in check but has no legal move — this is a DRAW.' },
+  ],
+  'chess-5': [
+    { fen: '8/P7/8/8/8/8/8/k6K', caption: 'Promotion: the a7 pawn steps to a8 and becomes a queen (or any piece).' },
+    { fen: 'r4rk1/8/8/8/8/8/8/R4RK1', caption: 'After king-side castling (both sides): king on g1/g8, rook on f1/f8 — the king is tucked away safely.' },
+  ],
+  'chess-6': [{ fen: 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR', caption: 'After 1.e4 e5 — both players stake a claim in the centre.' }],
+  'chess-8': [
+    { fen: '7k/6Q1/6K1/8/8/8/8/8', caption: 'King + Queen mate: the queen gives checkmate while the king defends it.' },
+    { fen: '6k1/5ppp/8/8/8/8/8/R5K1', caption: 'Back-rank mate: White plays Ra8# — the king is trapped by its own pawns.' },
+  ],
+  'chess-9': [{ fen: 'k3q3/2N5/8/8/8/8/8/4K3', caption: 'A knight fork: Nc7 attacks the king (check) AND the queen at the same time.' }],
+  'chess-11': [{ fen: 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R', caption: 'Good opening play: centre pawn, knights & bishop developed, ready to castle (Italian Game).' }],
+  'chess-12': [{ fen: '8/8/8/4k3/8/4K3/4P3/8', caption: 'King & pawn vs king: the kings face off in "opposition" — the key to promoting the pawn.' }],
+  'chess-13': [{ fen: '4k3/8/8/3P4/8/8/8/4K3', caption: 'A passed pawn (d5): no enemy pawn can stop it from promoting — a powerful long-term asset.' }],
+  'chess-17': [{ fen: '4k3/8/8/P7/8/8/8/R3K3', caption: 'A golden rook-endgame rule: put your rook BEHIND the passed pawn to support its march.' }],
+};
+C.forEach(c => { if (BOARDS[c.id]) c.boards = BOARDS[c.id]; });
+
 export const CHESS_LESSONS: LessonDetail[] = C.map(c => makeKitLesson(c, P));
 export const CHESS_COURSE: Course = {
   id: P.courseId, slug: 'from-first-moves-to-tournament', title: P.courseTitle, programId: P.programId, programSlug: P.programSlug,

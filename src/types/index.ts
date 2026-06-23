@@ -158,6 +158,7 @@ export interface LessonDetail {
   assessmentChecklist: string[];
   heroImage?: string;          // illustrative image shown in the lesson header
   youtubeId?: string;          // if set, an embedded YouTube player is shown in the lesson header
+  boards?: { fen: string; caption?: string }[];  // chess board diagrams (rendered from FEN) shown in an "On the Board" panel
   quiz?: QuizQuestion[];       // optional interactive quiz shown in the Interactive Exercises panel
   /** Starter code for the in-lesson code playground. lang picks the runner. */
   playground?: { lang: 'html' | 'python'; starter: string };

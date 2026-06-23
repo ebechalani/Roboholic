@@ -21,6 +21,7 @@ export interface KitLesson {
   quiz?: QuizQuestion[];
   playground?: { lang: 'html' | 'python'; starter: string };
   interactions?: LessonInteraction[];
+  boards?: { fen: string; caption?: string }[];
 }
 
 export function makeKitLesson(c: KitLesson, p: KitProgram): LessonDetail {
@@ -80,6 +81,7 @@ export function makeKitLesson(c: KitLesson, p: KitProgram): LessonDetail {
     ...(c.quiz ? { quiz: c.quiz } : {}),
     ...(c.playground ? { playground: c.playground } : {}),
     ...(c.interactions ? { interactions: c.interactions } : {}),
+    ...(c.boards ? { boards: c.boards } : {}),
     resources: c.resources,
   };
 }
