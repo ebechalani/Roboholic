@@ -482,6 +482,23 @@ export const PROGRAMS: Program[] = [
     lessonCount: 20,
     tags: ['Strategy', 'Tactics', 'Endgames', 'Critical Thinking'],
   },
+  {
+    id: 'cs-unplugged',
+    slug: 'cs-unplugged',
+    title: 'CS Unplugged',
+    shortTitle: 'Unplugged',
+    description: 'Computer science WITHOUT a computer — hands-on, screen-free activities (binary, pixels, error detection, robot programming, sorting & searching) from the free, Creative-Commons CS Unplugged project. Builds computational thinking; French resources where available.',
+    icon: '🧩',
+    color: '#4338CA',
+    bgColor: '#EEF2FF',
+    textColor: '#3730A3',
+    category: 'coding',
+    ageGroups: ['6-7', '8-9', '10-12', '13-15'],
+    levels: ['Beginner', 'Intermediate'],
+    courseCount: 1,
+    lessonCount: 7,
+    tags: ['Computational Thinking', 'Algorithms', 'Binary', 'Screen-Free'],
+  },
 ];
 
 // ─── Badges ──────────────────────────────────────────────────────
