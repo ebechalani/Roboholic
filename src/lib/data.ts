@@ -31,7 +31,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['6-7', '8-9'],
     levels: ['Beginner', 'Intermediate'],
     courseCount: 3,
-    lessonCount: 24,
+    lessonCount: 20,
     tags: ['LEGO', 'Building', 'Sensors', 'Motors'],
   },
   {
@@ -48,7 +48,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['4-5', '6-7'],
     levels: ['Beginner'],
     courseCount: 2,
-    lessonCount: 16,
+    lessonCount: 13,
     tags: ['Gears', 'Levers', 'Pulleys', 'Physics'],
   },
   {
@@ -64,7 +64,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['6-7', '8-9'],
     levels: ['Beginner', 'Intermediate'],
     courseCount: 2,
-    lessonCount: 18,
+    lessonCount: 24,
     tags: ['Makeblock', 'Block Coding', 'AI Basics', 'Sensors'],
   },
   {
@@ -80,7 +80,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['4-5', '6-7'],
     levels: ['Beginner'],
     courseCount: 1,
-    lessonCount: 10,
+    lessonCount: 1,
     tags: ['Screen-free', 'Sequences', 'Loops', 'Early Learning'],
   },
   {
@@ -96,7 +96,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['4-5', '6-7'],
     levels: ['Beginner'],
     courseCount: 2,
-    lessonCount: 16,
+    lessonCount: 20,
     tags: ['Visual Coding', 'Stories', 'Animation', 'iPad'],
   },
   {
@@ -131,7 +131,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['10-12', '13-15'],
     levels: ['Intermediate', 'Advanced'],
     courseCount: 3,
-    lessonCount: 30,
+    lessonCount: 49,
     tags: ['LEGO', 'Competition', 'Sensors', 'PID Control'],
   },
   {
@@ -164,7 +164,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['8-9', '10-12'],
     levels: ['Beginner', 'Intermediate'],
     courseCount: 3,
-    lessonCount: 24,
+    lessonCount: 91,
     tags: ['BBC', 'Sensors', 'Display', 'MakeCode'],
   },
   {
@@ -196,7 +196,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['10-12', '13-15'],
     levels: ['Intermediate', 'Advanced'],
     courseCount: 3,
-    lessonCount: 26,
+    lessonCount: 53,
     tags: ['Makeblock', 'Python', 'Sensors', 'Autonomous'],
   },
 
@@ -214,7 +214,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['13-15'],
     levels: ['Intermediate', 'Advanced'],
     courseCount: 3,
-    lessonCount: 28,
+    lessonCount: 52,
     tags: ['C++', 'Circuits', 'Sensors', 'IoT'],
   },
   {
@@ -296,7 +296,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['10-12', '13-15'],
     levels: ['Beginner', 'Intermediate'],
     courseCount: 2,
-    lessonCount: 16,
+    lessonCount: 3,
     tags: ['Tinkercad', 'Design', 'CAD', 'Engineering'],
   },
   {

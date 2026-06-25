@@ -159,6 +159,7 @@ function makeMbLesson(c: MbConfig): LessonDetail {
     resources: [
       { id: `mb-l${c.n}-r1`, title: `${c.title} — Lesson Plan (DOCX)`, type: 'pdf', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-microbit', description: 'Official micro:bit Foundation lesson plan', needsReview: true },
       { id: `mb-l${c.n}-r2`, title: `${c.title} — Completed Code (.hex)`, type: 'code', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-microbit', description: 'Drag onto the MICROBIT drive', needsReview: true },
+      { id: `mb-l${c.n}-r3`, title: 'micro:bit — Official Lessons & MakeCode editor', type: 'link', audience: 'both', url: 'https://microbit.org/teach/lessons/', description: 'Free official micro:bit lessons; code at makecode.microbit.org' },
     ],
   };
 }

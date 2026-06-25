@@ -154,6 +154,7 @@ function makeTcLesson(c: TcConfig): LessonDetail {
     ...(c.quiz ? { quiz: c.quiz } : {}),
     resources: [
       { id: `${slug}-r1`, title: `${c.title} — Workbook Chapter (PDF)`, type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-3d', description: 'Tinkercad chapter workbook', needsReview: true },
+      { id: `${slug}-r2`, title: 'Tinkercad — Free 3D Design & Official Lessons', type: 'link', audience: 'both', url: 'https://www.tinkercad.com/learn', description: 'Free browser-based 3D modelling + official lesson plans' },
     ],
   };
 }

@@ -548,6 +548,7 @@ export const SCRATCH_JR_LESSON_2: LessonDetail = {
     { id: 'sjl2-r1', title: 'Lesson 2 Worksheet — My Cast',        type: 'worksheet', audience: 'student', url: '/uploads/scratch-jr-l2-worksheet.pdf' },
     { id: 'sjl2-r2', title: 'Scratch Jr Character Library Guide',   type: 'pdf',       audience: 'coach',   url: '/uploads/scratch-jr-characters.pdf' },
     { id: 'sjl2-r3', title: 'Story Planning Sticky Note Template',  type: 'pdf',       audience: 'coach',   url: '/uploads/story-planning-template.pdf' },
+    { id: 'sjl2-r4', title: 'ScratchJr — Official Site (free activities & curricula)', type: 'link', audience: 'both', url: 'https://www.scratchjr.org', description: 'Free official ScratchJr activities and teacher curricula' },
   ],
 };
 

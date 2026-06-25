@@ -65,7 +65,7 @@ function makeLesson(c: PyLesson): LessonDetail {
     ? [{ id: 'python-bk1', title: 'Reference: "Getting Started with the micro:bit" (Donat)', type: 'pdf' as const, audience: 'coach' as const, url: 'https://drive.google.com/drive/folders/roboholic-python', description: 'Optional reference reading (copyrighted — coach only)', needsReview: true }]
     : c.book === 2
       ? [{ id: 'python-bk2', title: 'Reference: "MicroPython Programming with ESP32 and ESP8266" (Santos)', type: 'pdf' as const, audience: 'coach' as const, url: 'https://drive.google.com/drive/folders/roboholic-python', description: 'Optional reference reading (copyrighted — coach only)', needsReview: true }]
-      : [];
+      : [{ id: 'python-free', title: 'Official Python Tutorial (free)', type: 'link' as const, audience: 'both' as const, url: 'https://docs.python.org/3/tutorial/', description: 'The official free Python tutorial — python.org' }];
 
   return {
     id: `py-l${c.n}`, slug: `python-${c.n}`, title: c.title,

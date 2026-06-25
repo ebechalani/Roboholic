@@ -172,6 +172,7 @@ export const MTINY_LESSON: LessonDetail = {
   resources: [
     { id: `${SLUG}-r1`, title: 'mTiny Coding Activity — Sample Plan (PDF)', type: 'pdf', audience: 'both', url: 'https://drive.google.com/drive/folders/roboholic-mtiny', description: "mTiny's Weekend activity plan", needsReview: true },
     { id: `${SLUG}-r2`, title: 'mTiny — Developing Literacy & Numeracy (Guide)', type: 'pdf', audience: 'coach', url: 'https://drive.google.com/drive/folders/roboholic-mtiny', description: 'Background guide on tangible programming', needsReview: true },
+    { id: `${SLUG}-r3`, title: 'mTiny — A Beginner’s Guide (Makeblock, official)', type: 'link', audience: 'both', url: 'https://support.makeblock.com/hc/en-us/articles/12823234387479-A-Beginner-s-Guide-to-mTiny', description: 'Official Makeblock guide, lessons & activities for mTiny' },
   ],
 };
 
