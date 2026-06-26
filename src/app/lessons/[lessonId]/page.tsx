@@ -263,6 +263,14 @@ function isLiveResource(url: string): boolean {
   return (/^https?:\/\//.test(url) || url.startsWith('/lessons/')) && !url.includes('roboholic-');
 }
 
+// Turn a Google Drive "view" link into a direct-download link so the file
+// saves to disk instead of just opening the Drive viewer in a new tab.
+// (Requires the Drive file to be shared "anyone with the link".)
+function toDownloadHref(url: string): string {
+  const m = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
+  return m ? `https://drive.google.com/uc?export=download&id=${m[1]}` : url;
+}
+
 // ─── Resources panel ──────────────────────────────────────────────
 function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: LessonDetail['resources']; isCoachView: boolean; canDownload: boolean }) {
   const visible = isCoachView ? resources : resources.filter(r => r.audience !== 'coach');
@@ -282,6 +290,10 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
             // Prefer the exact Drive file link when we have one (mapped from the academy Drive).
             const url = DRIVE_LINKS[r.id] ?? r.url;
             const live = isLiveResource(url);
+            // Approved coaches / admins get a real one-click download of file resources
+            // (PDF/worksheet/code/slides) — Drive "view" links become direct downloads.
+            const dl = canDownload && live && r.type !== 'link' && r.type !== 'video';
+            const href = dl ? toDownloadHref(url) : url;
             return (
               <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-all hover:shadow-sm">
                 <ResourceIcon type={r.type} />
@@ -297,9 +309,8 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
                 <div className="flex items-center gap-2 shrink-0">
                   {r.size && <span className="text-xs text-gray-400">{r.size}</span>}
                   {live ? (
-                    <a href={url} target="_blank" rel="noopener noreferrer"
-                      {...(canDownload && r.type !== 'link' && r.type !== 'video' ? { download: '' } : {})}
-                      title={canDownload && r.type !== 'link' ? 'Download' : 'Open'}
+                    <a href={href} {...(dl ? { download: '' } : { target: '_blank' })} rel="noopener noreferrer"
+                      title={dl ? 'Download' : 'Open'}
                       className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
                       {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
                     </a>
