@@ -264,7 +264,7 @@ function isLiveResource(url: string): boolean {
 }
 
 // ─── Resources panel ──────────────────────────────────────────────
-function ResourcesPanel({ resources, isCoachView }: { resources: LessonDetail['resources']; isCoachView: boolean }) {
+function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: LessonDetail['resources']; isCoachView: boolean; canDownload: boolean }) {
   const visible = isCoachView ? resources : resources.filter(r => r.audience !== 'coach');
   return (
     <div className="bg-white rounded-2xl border-2 border-gray-100 p-6">
@@ -297,7 +297,9 @@ function ResourcesPanel({ resources, isCoachView }: { resources: LessonDetail['r
                 <div className="flex items-center gap-2 shrink-0">
                   {r.size && <span className="text-xs text-gray-400">{r.size}</span>}
                   {live ? (
-                    <a href={url} target="_blank" rel="noopener noreferrer" title="Open / download"
+                    <a href={url} target="_blank" rel="noopener noreferrer"
+                      {...(canDownload && r.type !== 'link' && r.type !== 'video' ? { download: '' } : {})}
+                      title={canDownload && r.type !== 'link' ? 'Download' : 'Open'}
                       className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
                       {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
                     </a>
@@ -367,7 +369,9 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
   const [activeTab, setActiveTab] = useState<'lesson' | 'resources' | 'assessment'>('lesson');
 
   // Students may only open lessons their coach assigned to their class.
-  const { role, profile, configured } = useAuth();
+  const { role, profile, configured, status } = useAuth();
+  // Approved coaches and admins may download lesson resource files.
+  const canDownload = role === 'admin' || (role === 'coach' && (status ?? 'approved') === 'approved');
   const [studentAccess, setStudentAccess] = useState<'checking' | 'ok' | 'denied'>('checking');
   useEffect(() => {
     if (!configured || role !== 'student') { setStudentAccess('ok'); return; }
@@ -627,7 +631,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
 
             {/* Resources tab */}
             {activeTab === 'resources' && (
-              <ResourcesPanel resources={lesson.resources} isCoachView={isCoachView} />
+              <ResourcesPanel resources={lesson.resources} isCoachView={isCoachView} canDownload={canDownload} />
             )}
 
             {/* Assessment tab */}

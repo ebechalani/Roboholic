@@ -15,15 +15,21 @@ import { useAuth } from '@/lib/auth/AuthProvider';
  * (login + coach approval + students only seeing assigned lessons).
  */
 export default function ContentGuard() {
-  const { profile, firebaseUser, configured, role } = useAuth();
+  const { profile, firebaseUser, configured, role, status } = useAuth();
   const label = profile?.email || firebaseUser?.email || profile?.full_name || 'RoboHolic user';
 
-  // Admins are always exempt; the academy director can also exempt specific
-  // trusted coaches (profile.watermarkExempt) from the admin panel.
+  // Admins are always fully exempt; the academy director can also fully exempt
+  // specific coaches (profile.watermarkExempt) from the admin panel.
   const exempt = role === 'admin' || profile?.watermarkExempt === true;
 
+  // Approved coaches are trusted teachers: they may download/copy the lesson
+  // resources (no right-click / copy lock-down), but still carry the faint
+  // identity watermark so any shared material stays traceable to them.
+  const approvedCoach = role === 'coach' && (status ?? 'approved') === 'approved';
+  const lockInput = !exempt && !approvedCoach;
+
   useEffect(() => {
-    if (!configured || exempt) return; // no lock-down in demo mode or for exempt users
+    if (!configured || !lockInput) return; // no lock-down in demo mode, for admins, or for approved coaches
     const block = (e: Event) => e.preventDefault();
     document.addEventListener('contextmenu', block);
     document.addEventListener('copy', block);
@@ -37,7 +43,7 @@ export default function ContentGuard() {
       document.removeEventListener('cut', block);
       document.body.style.userSelect = prev;
     };
-  }, [configured, exempt, label]);
+  }, [configured, lockInput, label]);
 
   if (!configured || exempt) return null;
 
