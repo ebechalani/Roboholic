@@ -97,6 +97,25 @@ export async function renameStudent(classId: string, uid: string, displayName: s
   await updateDoc(doc(db, 'classes', classId, 'students', uid), { displayName: displayName.trim() });
 }
 
+// ─── Per-student competency tracking & parent reports ────────────
+/** Replace the student's whole competency map (caller holds the full map). */
+export async function setStudentCompetencies(classId: string, uid: string, competencies: Record<string, string>): Promise<void> {
+  await setDoc(doc(db, 'classes', classId, 'students', uid), { competencies }, { merge: true });
+}
+
+/** Record that a parent report was generated now (resets "new since last report"). */
+export async function markReportSent(classId: string, uid: string, atISO: string): Promise<void> {
+  await updateDoc(doc(db, 'classes', classId, 'students', uid), { lastReportAt: atISO });
+}
+
+/** Save optional parent contact details on the roster entry. */
+export async function setParentContact(
+  classId: string, uid: string,
+  contact: { parentName?: string; parentPhone?: string; parentEmail?: string }
+): Promise<void> {
+  await updateDoc(doc(db, 'classes', classId, 'students', uid), contact);
+}
+
 /** Deletes a class and its whole roster. (Student auth accounts become
  *  unused — they can't reach anything without an assigned class.) */
 export async function deleteClass(classId: string): Promise<void> {

@@ -55,6 +55,14 @@ export interface ClassStudent {
   username: string;           // e.g. "sami42"
   pin: string;                // 4-digit login PIN (classroom-grade security)
   createdAt: string;
+  // Per-student competency tracking (a competency = a lesson skill).
+  // Key is `${lessonId}::${skill}`, value is the ISO date it was accomplished.
+  competencies?: Record<string, string>;
+  lastReportAt?: string;      // ISO of the last parent report generated for this student
+  // Optional parent contact, used to send the generated progress report.
+  parentName?: string;
+  parentPhone?: string;       // for the WhatsApp link
+  parentEmail?: string;       // for the mailto link
 }
 
 // ─── Curriculum taxonomy ─────────────────────────────────────────

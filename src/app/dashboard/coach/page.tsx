@@ -342,6 +342,14 @@ function CoachDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               {
+                icon: '📈',
+                title: 'Progress & Parent Reports',
+                text: 'Tick off each student\'s skills and send parents a progress message',
+                href: '/dashboard/coach/progress',
+                color: '#10B981',
+                bg: '#ECFDF5',
+              },
+              {
                 icon: '📥',
                 title: 'Upload Resource',
                 text: 'Add PDFs, worksheets, videos, and code files to the library',
