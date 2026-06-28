@@ -53,7 +53,7 @@ export interface ClassStudent {
   uid: string;
   displayName: string;
   username: string;           // e.g. "sami42"
-  pin: string;                // 4-digit login PIN (classroom-grade security)
+  pin?: string;               // legacy; logins now use class code + username only
   createdAt: string;
   // Per-student competency tracking (a competency = a lesson skill).
   // Key is `${lessonId}::${skill}`, value is the ISO date it was accomplished.

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Mail, Lock, Loader2, ArrowRight, AlertCircle, Eye, EyeOff,
-  GraduationCap, Star, Hash, User, KeyRound,
+  GraduationCap, Star, Hash, User,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { friendlyAuthError } from '@/lib/auth/errors';
@@ -106,7 +106,6 @@ function StudentForm() {
 
   const [code, setCode] = useState('');
   const [username, setUsername] = useState('');
-  const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -114,10 +113,11 @@ function StudentForm() {
     e.preventDefault();
     setError(''); setBusy(true);
     try {
-      await signIn(studentEmail(username.trim(), code), studentPassword(pin.trim(), code));
+      const u = username.trim();
+      await signIn(studentEmail(u, code), studentPassword(code, u));
       router.replace('/dashboard/student');
     } catch {
-      setError('Hmm, that didn\'t work. Check your class code, username, and PIN with your coach!');
+      setError('Hmm, that didn\'t work. Check your class code and username with your coach!');
     } finally {
       setBusy(false);
     }
@@ -151,16 +151,6 @@ function StudentForm() {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Secret PIN 🔑</label>
-        <div className="relative">
-          <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input required value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            placeholder="1234" inputMode="numeric" autoComplete="off"
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm tracking-[0.5em] font-black focus:outline-none focus:ring-2 focus:ring-orange-400/20 focus:border-orange-400" />
-        </div>
-      </div>
-
       <button type="submit" disabled={busy}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 disabled:opacity-60"
         style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}>
@@ -168,7 +158,7 @@ function StudentForm() {
       </button>
 
       <p className="text-center text-xs text-gray-400">
-        Your coach gives you your class code, username, and PIN.
+        Your coach gives you your class code and username.
       </p>
     </form>
   );
@@ -218,7 +208,7 @@ function LoginInner() {
           </Link>
 
           <h2 className="text-2xl font-black text-gray-900 mb-1">{tab === 'student' ? 'Student Log In' : 'Log In'}</h2>
-          <p className="text-gray-500 text-sm mb-6">{tab === 'student' ? 'Enter your class code, username, and PIN.' : 'Welcome back! Choose how you log in.'}</p>
+          <p className="text-gray-500 text-sm mb-6">{tab === 'student' ? 'Enter your class code and username.' : 'Welcome back! Choose how you log in.'}</p>
 
           {/* Tabs */}
           <div className="grid grid-cols-2 gap-2 mb-6">

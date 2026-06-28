@@ -49,8 +49,10 @@ export function studentEmail(username: string, code: string): string {
   return `${username.toLowerCase()}.${normalizeCode(code)}@students.roboholic.app`;
 }
 
-export function studentPassword(pin: string, code: string): string {
-  return `rh${pin}${normalizeCode(code)}`;
+// Deterministic from class code + username (no PIN), so login can rebuild it
+// from just the class code + username the coach hands out.
+export function studentPassword(code: string, username: string): string {
+  return `rh-${normalizeCode(code)}-${username.toLowerCase()}`;
 }
 
 // ─── Class CRUD (run as the signed-in coach) ─────────────────────
@@ -142,14 +144,13 @@ export async function addStudentToClass(
   const auth2 = getAuth(app2);
   const db2 = getFirestore(app2);
 
-  const pin = generatePin();
   let lastErr: unknown = null;
 
   // Retry a few times in case a generated username already exists.
   for (let attempt = 0; attempt < 4; attempt++) {
     const username = generateUsername(displayName);
     const email = studentEmail(username, cls.code);
-    const password = studentPassword(pin, cls.code);
+    const password = studentPassword(cls.code, username);
     try {
       const cred = await createUserWithEmailAndPassword(auth2, email, password);
       const uid = cred.user.uid;
@@ -168,9 +169,9 @@ export async function addStudentToClass(
       });
       await sdkSignOut(auth2);
 
-      // The coach (primary app) writes the roster entry with the PIN.
+      // The coach (primary app) writes the roster entry.
       const student: ClassStudent = {
-        uid, displayName: displayName.trim(), username, pin,
+        uid, displayName: displayName.trim(), username,
         createdAt: new Date().toISOString(),
       };
       await setDoc(doc(db, 'classes', cls.id, 'students', uid), student);

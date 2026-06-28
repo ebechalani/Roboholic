@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Loader2, Plus, Users, Hash, BookOpen, Printer, ChevronLeft,
-  KeyRound, Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil,
+  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
@@ -281,7 +281,7 @@ function ClassDetail({ cls, onBack, onUpdated }: {
               {busy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} Add Student
             </button>
             <p className="w-full text-xs text-gray-400">
-              A username + 4-digit PIN are generated automatically. Students log in with: class code + username + PIN.
+              A username is generated automatically. Students log in with: class code + username.
             </p>
           </form>
 
@@ -290,7 +290,7 @@ function ClassDetail({ cls, onBack, onUpdated }: {
               <CheckCircle className="text-green-500 shrink-0" size={22} />
               <div className="text-sm text-green-900">
                 <b>{lastAdded.displayName}</b> added! Login: code <b className="font-mono">{cls.code}</b> ·
-                username <b className="font-mono">{lastAdded.username}</b> · PIN <b className="font-mono">{lastAdded.pin}</b>
+                username <b className="font-mono">{lastAdded.username}</b>
               </div>
             </div>
           )}
@@ -323,7 +323,6 @@ function ClassDetail({ cls, onBack, onUpdated }: {
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-2 text-gray-600"><Hash size={13} className="text-gray-400" /> Class code: <b className="font-mono">{cls.code}</b></div>
                       <div className="flex items-center gap-2 text-gray-600"><Users size={13} className="text-gray-400" /> Username: <b className="font-mono">{s.username}</b></div>
-                      <div className="flex items-center gap-2 text-gray-600"><KeyRound size={13} className="text-gray-400" /> PIN: <b className="font-mono">{s.pin}</b></div>
                     </div>
                   </div>
                 ))}
