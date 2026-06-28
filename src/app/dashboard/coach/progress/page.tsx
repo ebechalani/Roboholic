@@ -51,7 +51,8 @@ function Progress() {
   const [loading, setLoading] = useState(true);
   const [comp, setComp] = useState<Record<string, string>>({});
   const [open, setOpen] = useState<Set<string>>(new Set());
-  const [report, setReport] = useState<{ text: string; subject: string; count: number } | null>(null);
+  const [report, setReport] = useState<{ text: string; subject: string; count: number; scope: 'new' | 'all' } | null>(null);
+  const [scope, setScope] = useState<'new' | 'all'>('new');
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState({ parentName: '', parentPhone: '', parentEmail: '' });
@@ -103,9 +104,9 @@ function Progress() {
 
   function buildReport() {
     if (!student) return;
-    const since = student.lastReportAt ?? '';
+    const since = scope === 'all' ? '' : (student.lastReportAt ?? '');
     const first = student.displayName.split(/\s+/)[0];
-    // Collect newly-accomplished competencies, grouped by program.
+    // Collect accomplished competencies (all, or only new since the last report), grouped by program.
     const groups: Record<string, string[]> = {};
     for (const p of tree) for (const l of p.lessons) for (const sk of l.skills) {
       const at = comp[KEY(l.id, sk)];
@@ -119,17 +120,23 @@ function Progress() {
     }
     const total = Object.values(groups).reduce((n, a) => n + a.length, 0);
     const today = new Date().toLocaleDateString();
+    const emptyText = scope === 'all'
+      ? `Hi! ${first} hasn't logged any mastered skills yet — we'll share progress soon. — Coach ${coachName}, RoboHolic Robotics Academy`
+      : `Hi! No new skills to report for ${first} since the last update — we'll share progress again soon. — Coach ${coachName}, RoboHolic Robotics Academy`;
+    const intro = scope === 'all'
+      ? `Here is everything ${first} has accomplished at camp so far (${total} skill${total === 1 ? '' : 's'}):`
+      : `Since our last update, ${first} has mastered ${total} new skill${total === 1 ? '' : 's'}:`;
     const text = total === 0
-      ? `Hi! No new skills to report for ${first} since the last update — we'll share progress again soon. — Coach ${coachName}, RoboHolic Robotics Academy`
+      ? emptyText
       : `🎉 RoboHolic Robotics Academy — progress update for ${student.displayName} (${today})
 
-Since our last update, ${first} has mastered ${total} new skill${total === 1 ? '' : 's'}:
+${intro}
 
 ${lines.join('\n').trim()}
 
 Well done, ${first}! 👏
 — Coach ${coachName}`;
-    setReport({ text, subject: `${student.displayName} — RoboHolic progress update`, count: total });
+    setReport({ text, subject: `${student.displayName} — RoboHolic progress update`, count: total, scope });
   }
 
   async function saveContact() {
@@ -219,15 +226,21 @@ Well done, ${first}! 👏
                           <input value={contact.parentEmail} onChange={e => setContact({ ...contact, parentEmail: e.target.value })} onBlur={saveContact} placeholder="Parent email" className="px-3 py-2 rounded-lg border border-gray-200 text-sm" />
                         </div>
 
-                        <button onClick={buildReport} className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
-                          <Send size={15} /> Generate parent message
-                        </button>
+                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                          <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold">
+                            <button onClick={() => setScope('new')} className={`px-3 py-2 ${scope === 'new' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>New since last</button>
+                            <button onClick={() => setScope('all')} className={`px-3 py-2 ${scope === 'all' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Full summary</button>
+                          </div>
+                          <button onClick={buildReport} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
+                            <Send size={15} /> Generate parent message
+                          </button>
+                        </div>
                       </div>
 
                       {/* Report panel */}
                       {report && (
                         <div className="bg-white rounded-2xl border-2 border-blue-100 p-5">
-                          <h3 className="font-bold text-gray-900 text-sm mb-2">Parent message {report.count > 0 ? `· ${report.count} new skill${report.count === 1 ? '' : 's'}` : '· nothing new'}</h3>
+                          <h3 className="font-bold text-gray-900 text-sm mb-2">Parent message {report.count > 0 ? `· ${report.count} ${report.scope === 'all' ? `skill${report.count === 1 ? '' : 's'} total` : `new skill${report.count === 1 ? '' : 's'}`}` : (report.scope === 'all' ? '· none yet' : '· nothing new')}</h3>
                           <textarea readOnly value={report.text} className="w-full h-44 text-sm rounded-xl border border-gray-200 p-3 bg-gray-50 text-gray-800" />
                           <div className="flex flex-wrap gap-2 mt-3">
                             <button onClick={() => { navigator.clipboard?.writeText(report.text); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200"><Copy size={14} /> {copied ? 'Copied!' : 'Copy'}</button>
