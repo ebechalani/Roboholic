@@ -2,14 +2,15 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  Loader2, Users, GraduationCap, ChevronDown, ChevronRight, Check,
-  MessageCircle, Mail, Copy, Send, Star, RefreshCw,
+  Loader2, Users, ChevronDown, ChevronRight, Check,
+  MessageCircle, Mail, Copy, Send, Star, RefreshCw, AlertCircle,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { auth } from '@/lib/firebase/client';
 import {
   getCoachClasses, getClassStudents,
   setStudentCompetencies, markReportSent, setParentContact,
@@ -18,6 +19,17 @@ import { ALL_LESSONS } from '@/lib/curricula';
 import type { ClassDoc, ClassStudent } from '@/types';
 
 const KEY = (lessonId: string, skill: string) => `${lessonId}::${skill}`;
+
+// Normalize a Lebanese/international phone for a wa.me link: strip non-digits,
+// drop a leading 00 or 0, and default the country code to 961 (Lebanon).
+function waNumber(phone: string): string {
+  let d = (phone || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.startsWith('961')) return d;
+  if (d.startsWith('0')) d = d.slice(1);
+  return '961' + d;
+}
 
 // Group a class's assigned lessons into program → lessons → skills (competencies).
 function competencyTree(lessonIds: string[]) {
@@ -56,6 +68,8 @@ function Progress() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState({ parentName: '', parentPhone: '', parentEmail: '' });
+  const [email, setEmail] = useState<{ state: 'idle' | 'sending' | 'sent' | 'error'; msg?: string }>({ state: 'idle' });
+  const [bulk, setBulk] = useState('');
 
   const cls = classes.find(c => c.id === classId);
   const student = students.find(s => s.uid === uid);
@@ -81,6 +95,7 @@ function Progress() {
     setComp(student?.competencies ?? {});
     setContact({ parentName: student?.parentName ?? '', parentPhone: student?.parentPhone ?? '', parentEmail: student?.parentEmail ?? '' });
     setReport(null);
+    setEmail({ state: 'idle' });
   }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function toggle(lessonId: string, skill: string) {
@@ -102,14 +117,12 @@ function Progress() {
     return Object.values(comp).filter(d => d > since).length;
   }, [comp, student?.lastReportAt]);
 
-  function buildReport() {
-    if (!student) return;
-    const since = scope === 'all' ? '' : (student.lastReportAt ?? '');
-    const first = student.displayName.split(/\s+/)[0];
-    // Collect accomplished competencies (all, or only new since the last report), grouped by program.
+  const composeReport = useCallback((s: ClassStudent, sc: 'new' | 'all', competencies: Record<string, string>) => {
+    const since = sc === 'all' ? '' : (s.lastReportAt ?? '');
+    const first = s.displayName.split(/\s+/)[0];
     const groups: Record<string, string[]> = {};
     for (const p of tree) for (const l of p.lessons) for (const sk of l.skills) {
-      const at = comp[KEY(l.id, sk)];
+      const at = competencies[KEY(l.id, sk)];
       if (at && at > since) (groups[p.program] ??= []).push(`${sk} — ${l.title}`);
     }
     const lines: string[] = [];
@@ -120,23 +133,65 @@ function Progress() {
     }
     const total = Object.values(groups).reduce((n, a) => n + a.length, 0);
     const today = new Date().toLocaleDateString();
-    const emptyText = scope === 'all'
+    const emptyText = sc === 'all'
       ? `Hi! ${first} hasn't logged any mastered skills yet — we'll share progress soon. — Coach ${coachName}, RoboHolic Robotics Academy`
       : `Hi! No new skills to report for ${first} since the last update — we'll share progress again soon. — Coach ${coachName}, RoboHolic Robotics Academy`;
-    const intro = scope === 'all'
+    const intro = sc === 'all'
       ? `Here is everything ${first} has accomplished at camp so far (${total} skill${total === 1 ? '' : 's'}):`
       : `Since our last update, ${first} has mastered ${total} new skill${total === 1 ? '' : 's'}:`;
-    const text = total === 0
-      ? emptyText
-      : `🎉 RoboHolic Robotics Academy — progress update for ${student.displayName} (${today})
+    const text = total === 0 ? emptyText
+      : `🎉 RoboHolic Robotics Academy — progress update for ${s.displayName} (${today})\n\n${intro}\n\n${lines.join('\n').trim()}\n\nWell done, ${first}! 👏\n— Coach ${coachName}`;
+    return { text, subject: `${s.displayName} — RoboHolic progress update`, count: total };
+  }, [tree, coachName]);
 
-${intro}
+  function buildReport() {
+    if (!student) return;
+    setEmail({ state: 'idle' });
+    setReport({ ...composeReport(student, scope, comp), scope });
+  }
 
-${lines.join('\n').trim()}
+  // Send one report by email through the serverless Resend route.
+  async function sendEmailTo(to: string, subject: string, text: string) {
+    const token = await auth?.currentUser?.getIdToken?.();
+    const res = await fetch('/api/send-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ to, subject, text }),
+    });
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Could not send the email.'); }
+  }
 
-Well done, ${first}! 👏
-— Coach ${coachName}`;
-    setReport({ text, subject: `${student.displayName} — RoboHolic progress update`, count: total, scope });
+  async function emailSelected() {
+    if (!student || !report) return;
+    if (!contact.parentEmail) { setEmail({ state: 'error', msg: 'Add a parent email above first.' }); return; }
+    setEmail({ state: 'sending' });
+    try {
+      await sendEmailTo(contact.parentEmail, report.subject, report.text);
+      const now = new Date().toISOString();
+      await markReportSent(classId, student.uid, now);
+      setStudents(prev => prev.map(s => s.uid === student.uid ? { ...s, lastReportAt: now } : s));
+      setEmail({ state: 'sent' });
+    } catch (e) {
+      setEmail({ state: 'error', msg: e instanceof Error ? e.message : 'Send failed.' });
+    }
+  }
+
+  // End-of-day: email every parent whose child has new competencies.
+  async function emailTodayAll() {
+    setBulk('Sending…');
+    let sent = 0, skipped = 0, failed = 0;
+    for (const s of students) {
+      const r = composeReport(s, 'new', s.competencies ?? {});
+      if (r.count === 0 || !s.parentEmail) { skipped++; continue; }
+      try {
+        await sendEmailTo(s.parentEmail, r.subject, r.text);
+        const now = new Date().toISOString();
+        await markReportSent(classId, s.uid, now);
+        setStudents(prev => prev.map(x => x.uid === s.uid ? { ...x, lastReportAt: now } : x));
+        sent++;
+      } catch { failed++; }
+    }
+    setBulk(`Done — emailed ${sent}, skipped ${skipped}${failed ? `, failed ${failed}` : ''}.`);
   }
 
   async function saveContact() {
@@ -153,8 +208,7 @@ Well done, ${first}! 👏
     setReport(null);
   }
 
-  const waHref = report ? `https://wa.me/${contact.parentPhone.replace(/\D/g, '')}?text=${encodeURIComponent(report.text)}` : '#';
-  const mailHref = report ? `mailto:${contact.parentEmail}?subject=${encodeURIComponent(report.subject)}&body=${encodeURIComponent(report.text)}` : '#';
+  const waHref = report ? `https://wa.me/${waNumber(contact.parentPhone)}?text=${encodeURIComponent(report.text)}` : '#';
 
   return (
     <>
@@ -181,6 +235,11 @@ Well done, ${first}! 👏
                 </select>
                 <button onClick={() => classId && loadRoster(classId)} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
                 {saving && <span className="text-xs text-gray-400 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span>}
+                <button onClick={emailTodayAll} title="Email every parent whose child has new skills since their last report"
+                  className="sm:ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+                  <Mail size={14} /> Email today&apos;s reports
+                </button>
+                {bulk && <span className="text-xs text-gray-600 w-full">{bulk}</span>}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -245,10 +304,12 @@ Well done, ${first}! 👏
                           <div className="flex flex-wrap gap-2 mt-3">
                             <button onClick={() => { navigator.clipboard?.writeText(report.text); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200"><Copy size={14} /> {copied ? 'Copied!' : 'Copy'}</button>
                             <a href={waHref} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-white" style={{ background: '#25D366' }}><MessageCircle size={14} /> WhatsApp</a>
-                            <a href={mailHref} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-white" style={{ background: '#EA4335' }}><Mail size={14} /> Email</a>
+                            <button onClick={emailSelected} disabled={email.state === 'sending'} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: '#EA4335' }}><Mail size={14} /> {email.state === 'sending' ? 'Sending…' : email.state === 'sent' ? 'Emailed ✓' : 'Email'}</button>
                             <button onClick={markSent} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-green-700 bg-green-50 border border-green-100 hover:bg-green-100 ml-auto"><Check size={14} /> Mark as sent</button>
                           </div>
-                          <p className="text-[11px] text-gray-400 mt-2">“Mark as sent” records today so the next message only includes what comes after it.</p>
+                          {email.state === 'error' && <p className="text-xs text-red-600 mt-2 flex items-center gap-1"><AlertCircle size={12} /> {email.msg}</p>}
+                          {email.state === 'sent' && <p className="text-xs text-green-600 mt-2">Emailed to {contact.parentEmail}. Marked as sent.</p>}
+                          <p className="text-[11px] text-gray-400 mt-2">WhatsApp opens pre-filled (one tap to send). Email sends directly. “Mark as sent” resets so the next message only includes new skills.</p>
                         </div>
                       )}
 
