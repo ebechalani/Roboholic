@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
-import { Loader2, RefreshCw, Users, GraduationCap, BookOpen, ChevronDown, ChevronRight, KeyRound, ArrowRightLeft } from 'lucide-react';
+import { Loader2, RefreshCw, Users, GraduationCap, BookOpen, ChevronDown, ChevronRight, KeyRound, ArrowRightLeft, MessageCircle, Copy } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
@@ -22,6 +22,14 @@ export default function AdminOversightPage() {
 }
 
 type ClassRow = ClassDoc & { studentCount: number; students: ClassStudent[] };
+
+const welcomeUrl = (classId: string, uid: string) => `${typeof window !== 'undefined' ? window.location.origin : ''}/welcome?c=${classId}&s=${uid}`;
+const waNum = (phone?: string) => { let d = (phone || '').replace(/\D/g, ''); if (!d) return ''; if (d.startsWith('00')) d = d.slice(2); if (d.startsWith('961')) return d; if (d.startsWith('0')) d = d.slice(1); return '961' + d; };
+function confirmMessage(parentName: string | undefined, childName: string, url: string) {
+  const first = (childName || '').split(/\s+/)[0] || 'your child';
+  const hi = parentName ? `Hello ${parentName}!` : 'Hello!';
+  return `${hi} 👋\n\nThis is RoboHolic Robotics Academy — we're delighted to confirm ${first}'s place at our Summer Camp 2026.\n\nPlease open ${first}'s personal page to confirm the date of birth and see all the details (first day, login, payment):\n${url}\n\nSee you on Wednesday 1 July at 8:30 AM! 🤖`;
+}
 
 // Group a class's assigned lesson ids by their program, with titles.
 function byProgram(ids: string[]) {
@@ -97,7 +105,7 @@ function Oversight() {
         <SectionHeader
           badge="🔎 Coach Oversight"
           title="What each coach is giving"
-          subtitle="Every class, its assigned lessons and students. Expand a class to move a student to another class."
+          subtitle="Every class, its assigned lessons and students. Expand a class to send each parent their confirmation link, copy it, or move a student."
         />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -178,6 +186,16 @@ function Oversight() {
                               {c.students.map(s => (
                                 <div key={s.uid} className="flex items-center gap-2 flex-wrap">
                                   <span className="text-sm text-gray-700 flex-1 min-w-[120px]">{s.displayName} <span className="text-gray-400 font-mono text-xs">@{s.username}</span></span>
+                                  {s.parentPhone ? (
+                                    <a target="_blank" rel="noreferrer"
+                                      href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(confirmMessage(s.parentName, s.displayName, welcomeUrl(c.id, s.uid)))}`}
+                                      title={`Send ${s.parentName || 'parent'} the confirmation`}
+                                      className="text-xs font-bold px-2.5 py-1.5 rounded-lg text-white inline-flex items-center gap-1" style={{ background: '#25D366' }}>
+                                      <MessageCircle size={12} /> Send
+                                    </a>
+                                  ) : <span className="text-[11px] text-gray-300">no phone</span>}
+                                  <button onClick={() => navigator.clipboard?.writeText(welcomeUrl(c.id, s.uid))} title="Copy the parent link"
+                                    className="text-xs font-semibold px-2 py-1.5 rounded-lg text-gray-600 bg-gray-100 hover:bg-gray-200 inline-flex items-center gap-1"><Copy size={12} /> Link</button>
                                   <select value={target[s.uid] || ''} onChange={e => setTarget({ ...target, [s.uid]: e.target.value })}
                                     className="text-xs rounded-lg border border-gray-200 px-2 py-1.5 bg-white">
                                     <option value="">Move to…</option>
