@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
   Loader2, Plus, Users, Hash, BookOpen, Printer, ChevronLeft,
-  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays, GripVertical,
+  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays, GripVertical, Search,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
@@ -19,6 +19,7 @@ import type { ClassDoc, ClassStudent, AgeGroupId } from '@/types';
 
 // Which age groups each program serves (from the program cards).
 const PROG_AGES: Record<string, AgeGroupId[]> = Object.fromEntries(PROGRAMS.map(p => [p.slug, p.ageGroups]));
+const PROG_COLOR: Record<string, string> = Object.fromEntries(PROGRAMS.map(p => [p.slug, p.color]));
 const AGE_IDS: AgeGroupId[] = ['4-5', '6-7', '8-9', '10-12', '13-15'];
 // Guess a class's age group from its name (e.g. "Camp · Ages 8–9 (Mariebelle)").
 function ageFromName(name: string): AgeGroupId | 'all' {
@@ -453,15 +454,17 @@ function LessonPicker({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassD
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [age, setAge] = useState<AgeGroupId | 'all'>(ageFromName(cls.name));
+  const [q, setQ] = useState('');
 
-  function toggle(id: string) {
+  function setMany(idList: string[], on: boolean) {
     setSaved(false);
     setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
+      const n = new Set(prev);
+      for (const id of idList) { if (on) n.add(id); else n.delete(id); }
+      return n;
     });
   }
+  const toggle = (id: string) => setMany([id], !selected.has(id));
 
   async function save() {
     setBusy(true); setSaved(false);
@@ -470,57 +473,87 @@ function LessonPicker({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassD
       await setAssignedLessons(cls.id, ids);
       onUpdated({ ...cls, lessonIds: ids });
       setSaved(true);
-    } finally {
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
   }
 
+  const query = q.trim().toLowerCase();
   const courses = ALL_COURSES.filter(c => age === 'all' || (PROG_AGES[c.programSlug] ?? []).includes(age));
 
   return (
     <div className="space-y-4 print:hidden">
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 p-4 sticky top-2 z-10">
-        <div className="flex items-center gap-3 flex-wrap">
-          <p className="text-sm text-gray-600"><b className="text-gray-900">{selected.size}</b> selected</p>
-          <label className="text-sm text-gray-600 flex items-center gap-2">Age group
-            <select value={age} onChange={e => setAge(e.target.value as AgeGroupId | 'all')}
-              className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm bg-white">
-              <option value="all">All ages</option>
-              {AGE_IDS.map(a => <option key={a} value={a}>Ages {a}</option>)}
-            </select>
-          </label>
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-2 z-10 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="text-sm text-gray-600"><b className="text-gray-900">{selected.size}</b> selected</p>
+            <label className="text-sm text-gray-600 flex items-center gap-2">Age group
+              <select value={age} onChange={e => setAge(e.target.value as AgeGroupId | 'all')}
+                className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm bg-white">
+                <option value="all">All ages</option>
+                {AGE_IDS.map(a => <option key={a} value={a}>Ages {a}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="flex items-center gap-3">
+            {saved && <span className="text-green-600 text-xs font-semibold">✓ Saved</span>}
+            <button onClick={() => void save()} disabled={busy}
+              className="px-5 py-2.5 rounded-xl font-bold text-white text-sm disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+              {busy ? 'Saving…' : 'Save'}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {saved && <span className="text-green-600 text-xs font-semibold">✓ Saved</span>}
-          <button onClick={() => void save()} disabled={busy}
-            className="px-5 py-2.5 rounded-xl font-bold text-white text-sm disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
-            {busy ? 'Saving…' : 'Save'}
-          </button>
+        <div className="relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search a program, section or lesson…"
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
         </div>
       </div>
 
       {courses.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-6 text-sm text-gray-400">No programs for this age group.</div>
       ) : courses.map(course => {
-        const lessons = course.modules.flatMap(m => m.lessons).filter(l => ALL_LESSONS[l.id]);
-        if (lessons.length === 0) return null;
-        const picked = lessons.filter(l => selected.has(l.id)).length;
+        const courseMatch = course.title.toLowerCase().includes(query);
+        const modules = course.modules.map(m => ({
+          id: m.id, title: m.title,
+          lessons: m.lessons.filter(l => ALL_LESSONS[l.id] && (!query || courseMatch || m.title.toLowerCase().includes(query) || l.title.toLowerCase().includes(query))),
+        })).filter(m => m.lessons.length);
+        if (!modules.length) return null;
+        const all = modules.flatMap(m => m.lessons);
+        const picked = all.filter(l => selected.has(l.id)).length;
+        const color = PROG_COLOR[course.programSlug] || '#6B7280';
         return (
-          <details key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <summary className="px-5 py-4 cursor-pointer select-none flex items-center justify-between font-bold text-gray-900 text-sm">
-              <span>{course.title}</span>
-              <span className="badge-pill bg-gray-100 text-gray-500 text-xs">{picked}/{lessons.length} assigned</span>
+          <details key={course.id} open={!!query} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <summary className="px-5 py-4 cursor-pointer select-none flex items-center gap-3 font-bold text-gray-900 text-sm">
+              <span className="w-3 h-3 rounded-full shrink-0" style={{ background: color }} />
+              <span className="flex-1 truncate">{course.title}</span>
+              <span className="badge-pill bg-gray-100 text-gray-500 text-xs shrink-0">{picked}/{all.length}</span>
+              <button onClick={e => { e.preventDefault(); setMany(all.map(l => l.id), picked < all.length); }}
+                className="text-xs font-semibold text-blue-600 hover:underline shrink-0">{picked < all.length ? 'Add all' : 'Clear'}</button>
             </summary>
-            <div className="px-5 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {lessons.map(l => (
-                <label key={l.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors ${selected.has(l.id) ? 'border-green-300 bg-green-50 text-green-900' : 'border-gray-100 text-gray-600 hover:bg-gray-50'}`}>
-                  <input type="checkbox" checked={selected.has(l.id)} onChange={() => toggle(l.id)} className="accent-green-600" />
-                  <span className="flex-1">{l.title}</span>
-                  <Link href={`/lessons/${l.id}`} target="_blank" onClick={e => e.stopPropagation()}
-                    className="text-blue-500 text-xs hover:underline shrink-0">view</Link>
-                </label>
-              ))}
+            <div className="px-5 pb-4 space-y-4">
+              {modules.map(m => {
+                const mPicked = m.lessons.filter(l => selected.has(l.id)).length;
+                return (
+                  <div key={m.id}>
+                    <div className="flex items-center gap-2 mb-2 pt-1">
+                      <span className="text-xs font-bold uppercase tracking-wide text-gray-500">{m.title}</span>
+                      <span className="badge-pill bg-gray-100 text-gray-400 text-[10px]">{mPicked}/{m.lessons.length}</span>
+                      <button onClick={() => setMany(m.lessons.map(l => l.id), mPicked < m.lessons.length)}
+                        className="text-[11px] font-semibold text-blue-600 hover:underline ml-auto shrink-0">{mPicked < m.lessons.length ? 'Add section' : 'Clear'}</button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {m.lessons.map(l => (
+                        <label key={l.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors ${selected.has(l.id) ? 'border-green-300 bg-green-50 text-green-900' : 'border-gray-100 text-gray-600 hover:bg-gray-50'}`}>
+                          <input type="checkbox" checked={selected.has(l.id)} onChange={() => toggle(l.id)} className="accent-green-600" />
+                          <span className="flex-1 truncate">{l.title}</span>
+                          <Link href={`/lessons/${l.id}`} target="_blank" onClick={e => e.stopPropagation()}
+                            className="text-blue-500 text-xs hover:underline shrink-0">view</Link>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </details>
         );
