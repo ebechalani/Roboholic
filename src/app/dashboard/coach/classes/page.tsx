@@ -374,6 +374,12 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
     const n = [...ids]; const [m] = n.splice(from, 1); n.splice(to, 0, m); void persist(n);
   }
   function removeAt(i: number) { void persist(ids.filter((_, k) => k !== i)); }
+  function moveToDay(i: number, day: number) {
+    const rest = ids.filter((_, k) => k !== i);
+    const pos = Math.min((day - 1) * perDay, rest.length);
+    rest.splice(pos, 0, ids[i]);
+    void persist(rest);
+  }
 
   const days: string[][] = [];
   for (let i = 0; i < ids.length; i += perDay) days.push(ids.slice(i, i + perDay));
@@ -382,7 +388,7 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3 bg-white rounded-2xl border border-gray-100 p-4 print:hidden">
         <p className="text-sm text-gray-600">
-          <b className="text-gray-900">{ids.length}</b> lessons · <b className="text-gray-900">{days.length}</b> days. <b>Drag</b> a lesson by the <GripVertical size={12} className="inline -mt-0.5 text-gray-400" /> handle to set its day; add more in <b>Edit Assigned</b>.
+          <b className="text-gray-900">{ids.length}</b> lessons · <b className="text-gray-900">{days.length}</b> days. <b>Drag</b> by the <GripVertical size={12} className="inline -mt-0.5 text-gray-400" /> handle — or use each lesson’s <b>Day</b> dropdown — to set its day; add more in <b>Edit Assigned</b>.
           {busy && <span className="text-gray-400"> · saving…</span>}
         </p>
         <label className="text-sm text-gray-600 flex items-center gap-2">Lessons per day
@@ -425,6 +431,10 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
                       </>
                     ) : <div className="text-sm text-gray-400">Unknown lesson ({id})</div>}
                   </div>
+                  <select value={di + 1} onChange={e => moveToDay(idx, Number(e.target.value))} disabled={busy}
+                    title="Move to day" className="text-xs rounded-lg border border-gray-200 px-1.5 py-1 bg-white shrink-0">
+                    {Array.from({ length: days.length }, (_, k) => <option key={k} value={k + 1}>Day {k + 1}</option>)}
+                  </select>
                   <button onClick={() => removeAt(idx)} disabled={busy} title="Remove from plan"
                     className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 shrink-0"><Trash2 size={14} /></button>
                 </div>
