@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
   Loader2, Plus, Users, Hash, BookOpen, Printer, ChevronLeft,
-  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays, ArrowUp, ArrowDown,
+  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays, GripVertical,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
@@ -353,11 +353,13 @@ function ClassDetail({ cls, onBack, onUpdated }: {
   );
 }
 
-// ─── Lesson Plan (editable day-by-day: reorder into days, remove) ──
+// ─── Lesson Plan (drag-and-drop day-by-day builder) ───────────────
 function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc) => void }) {
   const [perDay, setPerDay] = useState(2);
   const [ids, setIds] = useState<string[]>(cls.lessonIds ?? []);
   const [busy, setBusy] = useState(false);
+  const dragFrom = useRef<number | null>(null);
+  const [over, setOver] = useState<number | null>(null);
   useEffect(() => { setIds(cls.lessonIds ?? []); }, [cls.id]);
 
   async function persist(next: string[]) {
@@ -365,9 +367,11 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
     try { await setAssignedLessons(cls.id, next); onUpdated({ ...cls, lessonIds: next }); }
     finally { setBusy(false); }
   }
-  function move(i: number, dir: -1 | 1) {
-    const j = i + dir; if (j < 0 || j >= ids.length) return;
-    const n = [...ids]; [n[i], n[j]] = [n[j], n[i]]; void persist(n);
+  function drop(to: number) {
+    const from = dragFrom.current;
+    dragFrom.current = null; setOver(null);
+    if (from == null || from === to) return;
+    const n = [...ids]; const [m] = n.splice(from, 1); n.splice(to, 0, m); void persist(n);
   }
   function removeAt(i: number) { void persist(ids.filter((_, k) => k !== i)); }
 
@@ -378,7 +382,7 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3 bg-white rounded-2xl border border-gray-100 p-4 print:hidden">
         <p className="text-sm text-gray-600">
-          <b className="text-gray-900">{ids.length}</b> lessons · <b className="text-gray-900">{days.length}</b> days. Use ↑↓ to set which day a lesson lands on; add more in <b>Edit Assigned</b>.
+          <b className="text-gray-900">{ids.length}</b> lessons · <b className="text-gray-900">{days.length}</b> days. <b>Drag</b> a lesson by the <GripVertical size={12} className="inline -mt-0.5 text-gray-400" /> handle to set its day; add more in <b>Edit Assigned</b>.
           {busy && <span className="text-gray-400"> · saving…</span>}
         </p>
         <label className="text-sm text-gray-600 flex items-center gap-2">Lessons per day
@@ -404,21 +408,25 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
               const idx = di * perDay + li;
               const l = ALL_LESSONS[id];
               return (
-                <div key={id} className="flex items-center gap-3 px-5 py-3">
+                <div key={id} draggable
+                  onDragStart={() => { dragFrom.current = idx; }}
+                  onDragEnter={() => setOver(idx)}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={() => drop(idx)}
+                  onDragEnd={() => { dragFrom.current = null; setOver(null); }}
+                  className={`flex items-center gap-3 px-4 py-3 ${over === idx ? 'bg-blue-50 ring-2 ring-blue-300 ring-inset' : ''}`}>
+                  <GripVertical size={16} className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing shrink-0" />
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: l?.programColor || '#9CA3AF' }} />
                   <div className="flex-1 min-w-0">
                     {l ? (
                       <>
-                        <Link href={`/lessons/${l.id}`} target="_blank" className="block text-sm font-semibold text-gray-900 hover:underline truncate">{l.title}</Link>
+                        <Link href={`/lessons/${l.id}`} target="_blank" draggable={false} className="block text-sm font-semibold text-gray-900 hover:underline truncate">{l.title}</Link>
                         <div className="text-xs text-gray-400 truncate">{l.programTitle}{l.moduleTitle ? ' · ' + l.moduleTitle : ''}</div>
                       </>
                     ) : <div className="text-sm text-gray-400">Unknown lesson ({id})</div>}
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => move(idx, -1)} disabled={idx === 0 || busy} title="Move earlier" className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30"><ArrowUp size={14} /></button>
-                    <button onClick={() => move(idx, 1)} disabled={idx === ids.length - 1 || busy} title="Move later" className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30"><ArrowDown size={14} /></button>
-                    <button onClick={() => removeAt(idx)} disabled={busy} title="Remove from plan" className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30"><Trash2 size={14} /></button>
-                  </div>
+                  <button onClick={() => removeAt(idx)} disabled={busy} title="Remove from plan"
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 shrink-0"><Trash2 size={14} /></button>
                 </div>
               );
             })}
