@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Loader2, Plus, Users, Hash, BookOpen, Printer, ChevronLeft,
-  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil,
+  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
@@ -166,7 +166,7 @@ function ClassDetail({ cls, onBack, onUpdated }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [lastAdded, setLastAdded] = useState<ClassStudent | null>(null);
-  const [tab, setTab] = useState<'students' | 'lessons'>('students');
+  const [tab, setTab] = useState<'plan' | 'students' | 'lessons'>('plan');
 
   const loadStudents = useCallback(async () => {
     setLoading(true);
@@ -249,14 +249,18 @@ function ClassDetail({ cls, onBack, onUpdated }: {
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-2 gap-2 print:hidden">
+      <div className="grid grid-cols-3 gap-2 print:hidden">
+        <button onClick={() => setTab('plan')}
+          className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold ${tab === 'plan' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}>
+          <CalendarDays size={15} /> Lesson Plan
+        </button>
         <button onClick={() => setTab('students')}
           className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold ${tab === 'students' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}>
           <Users size={15} /> Students
         </button>
         <button onClick={() => setTab('lessons')}
           className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold ${tab === 'lessons' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}>
-          <BookOpen size={15} /> Assigned Lessons
+          <BookOpen size={15} /> Edit Assigned
         </button>
       </div>
 
@@ -330,9 +334,61 @@ function ClassDetail({ cls, onBack, onUpdated }: {
             )}
           </div>
         </>
-      ) : (
+      ) : tab === 'lessons' ? (
         <LessonPicker cls={cls} onUpdated={onUpdated} />
+      ) : (
+        <LessonPlan cls={cls} />
       )}
+    </div>
+  );
+}
+
+// ─── Lesson Plan (clear day-by-day view of the assigned lessons) ──
+function LessonPlan({ cls }: { cls: ClassDoc }) {
+  const [perDay, setPerDay] = useState(2);
+  const lessons = (cls.lessonIds ?? []).map(id => ALL_LESSONS[id]).filter(Boolean);
+  const days: (typeof lessons)[] = [];
+  for (let i = 0; i < lessons.length; i += perDay) days.push(lessons.slice(i, i + perDay));
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3 bg-white rounded-2xl border border-gray-100 p-4 print:hidden">
+        <p className="text-sm text-gray-600">
+          <b className="text-gray-900">{lessons.length}</b> lessons · <b className="text-gray-900">{days.length}</b> teaching days — in the order they’re taught.
+        </p>
+        <label className="text-sm text-gray-600 flex items-center gap-2">Lessons per day
+          <select value={perDay} onChange={e => setPerDay(Number(e.target.value))}
+            className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm bg-white">
+            {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </label>
+      </div>
+
+      {lessons.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-sm text-gray-400">
+          No lessons assigned yet — open “Edit Assigned” to choose lessons for this class.
+        </div>
+      ) : days.map((day, di) => (
+        <div key={di} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="px-5 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+            <span className="w-7 h-7 rounded-lg bg-blue-600 text-white text-xs font-black flex items-center justify-center">{di + 1}</span>
+            <span className="font-bold text-gray-900 text-sm">Day {di + 1}</span>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {day.map(l => (
+              <Link key={l.id} href={`/lessons/${l.id}`} target="_blank"
+                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: l.programColor }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-gray-900 truncate">{l.title}</div>
+                  <div className="text-xs text-gray-400 truncate">{l.programTitle}{l.moduleTitle ? ' · ' + l.moduleTitle : ''}</div>
+                </div>
+                <span className="text-blue-500 text-xs shrink-0">open →</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
