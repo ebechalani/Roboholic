@@ -1,4 +1,5 @@
 import type { Course, LessonDetail, LessonSection, Difficulty, AgeGroupId, Resource, QuizQuestion, LessonInteraction } from '@/types';
+import { VEX_VR_ACTIVITY_LESSONS, VEX_VR_ACTIVITY_MODULES } from './vex-vr-activities';
 
 // ════════════════════════════════════════════════════════════════
 //  VEX VR — "Code a Virtual Robot with VEXcode VR" (free, no hardware)
@@ -214,14 +215,14 @@ const CONFIGS: VX[] = [
   },
 ];
 
-export const VEX_VR_LESSONS: LessonDetail[] = CONFIGS.map(makeVX);
+export const VEX_VR_LESSONS: LessonDetail[] = [...CONFIGS.map(makeVX), ...VEX_VR_ACTIVITY_LESSONS];
 
 const sum = (c: VX) => ({ id: c.id, title: c.title, duration: '45–60 min', difficulty: c.difficulty, skills: c.skills.slice(0, 2), order: c.order });
 
 export const VEX_VR_COURSE: Course = {
   id: 'vex-vr-cs1', slug: 'vexcode-vr-cs-level-1', title: 'Code a Virtual Robot with VEXcode VR',
   programId: 'vex-vr', programSlug: 'vex-vr', ageGroup: '10-12', level: 'Beginner',
-  description: 'Learn to code with a virtual robot using VEX\'s FREE VEXcode VR (vr.vex.com) — no robot, no kit, no cost. Following VEX\'s free CS Level 1 (Blocks) course: Level I builds driving and loops (and pen-drawing); Level II adds the distance and location sensors and grid coordinates; Level III covers color decisions (if/else), moving disks with loops, designing algorithms, and a Coral Reef Cleanup capstone. Blocks throughout, with a Python view for older students.',
+  description: 'Learn to code with a virtual robot using VEX\'s FREE VEXcode VR (vr.vex.com) — no robot, no kit, no cost. Following VEX\'s free CS Level 1 (Blocks) course: Level I builds driving and loops (and pen-drawing); Level II adds the distance and location sensors and grid coordinates; Level III covers color decisions (if/else), moving disks with loops, designing algorithms, and a Coral Reef Cleanup capstone. Blocks throughout, with a Python view for older students. PLUS all ~92 free VEX VR Activities — standalone one-page coding challenges grouped by Level (1–5), from beginner drives to algorithms with sensors, variables and lists.',
   objectives: [
     'Run and build projects in VEXcode VR (Blocks, with optional Python)',
     'Drive and turn the robot and use loops to repeat and draw',
@@ -229,11 +230,12 @@ export const VEX_VR_COURSE: Course = {
     'Make decisions with the color sensor and if/else conditionals',
     'Combine loops, sensors and conditionals into algorithms and a capstone project',
   ],
-  duration: '10 lessons × 45–60 minutes', totalHours: 10, lessonCount: 10,
+  duration: '10-lesson course + 92 free activities', totalHours: 80, lessonCount: 102,
   prerequisites: [], skills: ['Block Coding', 'Loops', 'Sensors', 'Conditionals', 'Algorithms', 'Python (intro)'],
   modules: [
     { id: 'vxv-m1', title: L1, order: 1, description: 'Get started in VEXcode VR, drive and turn the robot, and use loops to repeat moves and draw shapes.', lessons: CONFIGS.filter(c => c.moduleId === 'vxv-m1').map(sum) },
     { id: 'vxv-m2', title: L2, order: 2, description: 'Solve mazes, then use the distance and location sensors and grid coordinates to navigate.', lessons: CONFIGS.filter(c => c.moduleId === 'vxv-m2').map(sum) },
     { id: 'vxv-m3', title: L3, order: 3, description: 'Make decisions with the color sensor, move disks with loops, develop algorithms, and finish with the Coral Reef Cleanup capstone.', lessons: CONFIGS.filter(c => c.moduleId === 'vxv-m3').map(sum) },
+    ...VEX_VR_ACTIVITY_MODULES,
   ],
 };

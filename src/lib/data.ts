@@ -288,7 +288,7 @@ export const PROGRAMS: Program[] = [
     slug: 'vex-vr',
     title: 'VEX VR',
     shortTitle: 'VEXcode VR',
-    description: 'Code a virtual robot in the browser with VEXcode VR — free, no kit needed. Driving, loops, sensors, colour decisions and algorithms, following VEX\'s free CS Level 1 course, finishing with a Coral Reef Cleanup capstone.',
+    description: 'Code a virtual robot in the browser with VEXcode VR — free, no kit needed. The CS Level 1 course (driving, loops, sensors, colour decisions, algorithms, Coral Reef capstone) PLUS all ~92 free VEX VR Activities — standalone challenges across Levels 1–5.',
     icon: '🤖',
     color: '#DC2626',
     bgColor: '#FEF2F2',
@@ -297,7 +297,7 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['8-9', '10-12', '13-15'],
     levels: ['Beginner', 'Intermediate', 'Advanced'],
     courseCount: 1,
-    lessonCount: 10,
+    lessonCount: 102,
     tags: ['VEXcode VR', 'Block Coding', 'Sensors', 'Free / No Hardware'],
   },
   {
