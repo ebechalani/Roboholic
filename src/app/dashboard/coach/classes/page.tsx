@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Loader2, Plus, Users, Hash, BookOpen, Printer, ChevronLeft,
-  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays,
+  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays, ArrowUp, ArrowDown,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
@@ -14,7 +14,17 @@ import {
   setAssignedLessons, removeStudentFromRoster, renameStudent, deleteClass,
 } from '@/lib/classes';
 import { ALL_COURSES, ALL_LESSONS } from '@/lib/curricula';
-import type { ClassDoc, ClassStudent } from '@/types';
+import { PROGRAMS } from '@/lib/data';
+import type { ClassDoc, ClassStudent, AgeGroupId } from '@/types';
+
+// Which age groups each program serves (from the program cards).
+const PROG_AGES: Record<string, AgeGroupId[]> = Object.fromEntries(PROGRAMS.map(p => [p.slug, p.ageGroups]));
+const AGE_IDS: AgeGroupId[] = ['4-5', '6-7', '8-9', '10-12', '13-15'];
+// Guess a class's age group from its name (e.g. "Camp · Ages 8–9 (Mariebelle)").
+function ageFromName(name: string): AgeGroupId | 'all' {
+  const n = (name || '').replace(/[–—]/g, '-');
+  return AGE_IDS.find(a => n.includes(a)) ?? 'all';
+}
 
 export default function CoachClassesPage() {
   return (
@@ -337,24 +347,39 @@ function ClassDetail({ cls, onBack, onUpdated }: {
       ) : tab === 'lessons' ? (
         <LessonPicker cls={cls} onUpdated={onUpdated} />
       ) : (
-        <LessonPlan cls={cls} />
+        <LessonPlan cls={cls} onUpdated={onUpdated} />
       )}
     </div>
   );
 }
 
-// ─── Lesson Plan (clear day-by-day view of the assigned lessons) ──
-function LessonPlan({ cls }: { cls: ClassDoc }) {
+// ─── Lesson Plan (editable day-by-day: reorder into days, remove) ──
+function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc) => void }) {
   const [perDay, setPerDay] = useState(2);
-  const lessons = (cls.lessonIds ?? []).map(id => ALL_LESSONS[id]).filter(Boolean);
-  const days: (typeof lessons)[] = [];
-  for (let i = 0; i < lessons.length; i += perDay) days.push(lessons.slice(i, i + perDay));
+  const [ids, setIds] = useState<string[]>(cls.lessonIds ?? []);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { setIds(cls.lessonIds ?? []); }, [cls.id]);
+
+  async function persist(next: string[]) {
+    setIds(next); setBusy(true);
+    try { await setAssignedLessons(cls.id, next); onUpdated({ ...cls, lessonIds: next }); }
+    finally { setBusy(false); }
+  }
+  function move(i: number, dir: -1 | 1) {
+    const j = i + dir; if (j < 0 || j >= ids.length) return;
+    const n = [...ids]; [n[i], n[j]] = [n[j], n[i]]; void persist(n);
+  }
+  function removeAt(i: number) { void persist(ids.filter((_, k) => k !== i)); }
+
+  const days: string[][] = [];
+  for (let i = 0; i < ids.length; i += perDay) days.push(ids.slice(i, i + perDay));
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3 bg-white rounded-2xl border border-gray-100 p-4 print:hidden">
         <p className="text-sm text-gray-600">
-          <b className="text-gray-900">{lessons.length}</b> lessons · <b className="text-gray-900">{days.length}</b> teaching days — in the order they’re taught.
+          <b className="text-gray-900">{ids.length}</b> lessons · <b className="text-gray-900">{days.length}</b> days. Use ↑↓ to set which day a lesson lands on; add more in <b>Edit Assigned</b>.
+          {busy && <span className="text-gray-400"> · saving…</span>}
         </p>
         <label className="text-sm text-gray-600 flex items-center gap-2">Lessons per day
           <select value={perDay} onChange={e => setPerDay(Number(e.target.value))}
@@ -364,9 +389,9 @@ function LessonPlan({ cls }: { cls: ClassDoc }) {
         </label>
       </div>
 
-      {lessons.length === 0 ? (
+      {ids.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-sm text-gray-400">
-          No lessons assigned yet — open “Edit Assigned” to choose lessons for this class.
+          No lessons yet — open <b>Edit Assigned</b> to pick age-appropriate lessons for this class.
         </div>
       ) : days.map((day, di) => (
         <div key={di} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -375,17 +400,28 @@ function LessonPlan({ cls }: { cls: ClassDoc }) {
             <span className="font-bold text-gray-900 text-sm">Day {di + 1}</span>
           </div>
           <div className="divide-y divide-gray-50">
-            {day.map(l => (
-              <Link key={l.id} href={`/lessons/${l.id}`} target="_blank"
-                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: l.programColor }} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-900 truncate">{l.title}</div>
-                  <div className="text-xs text-gray-400 truncate">{l.programTitle}{l.moduleTitle ? ' · ' + l.moduleTitle : ''}</div>
+            {day.map((id, li) => {
+              const idx = di * perDay + li;
+              const l = ALL_LESSONS[id];
+              return (
+                <div key={id} className="flex items-center gap-3 px-5 py-3">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: l?.programColor || '#9CA3AF' }} />
+                  <div className="flex-1 min-w-0">
+                    {l ? (
+                      <>
+                        <Link href={`/lessons/${l.id}`} target="_blank" className="block text-sm font-semibold text-gray-900 hover:underline truncate">{l.title}</Link>
+                        <div className="text-xs text-gray-400 truncate">{l.programTitle}{l.moduleTitle ? ' · ' + l.moduleTitle : ''}</div>
+                      </>
+                    ) : <div className="text-sm text-gray-400">Unknown lesson ({id})</div>}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => move(idx, -1)} disabled={idx === 0 || busy} title="Move earlier" className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30"><ArrowUp size={14} /></button>
+                    <button onClick={() => move(idx, 1)} disabled={idx === ids.length - 1 || busy} title="Move later" className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30"><ArrowDown size={14} /></button>
+                    <button onClick={() => removeAt(idx)} disabled={busy} title="Remove from plan" className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30"><Trash2 size={14} /></button>
+                  </div>
                 </div>
-                <span className="text-blue-500 text-xs shrink-0">open →</span>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}
@@ -398,6 +434,7 @@ function LessonPicker({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassD
   const [selected, setSelected] = useState<Set<string>>(new Set(cls.lessonIds ?? []));
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [age, setAge] = useState<AgeGroupId | 'all'>(ageFromName(cls.name));
 
   function toggle(id: string) {
     setSaved(false);
@@ -420,21 +457,34 @@ function LessonPicker({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassD
     }
   }
 
+  const courses = ALL_COURSES.filter(c => age === 'all' || (PROG_AGES[c.programSlug] ?? []).includes(age));
+
   return (
     <div className="space-y-4 print:hidden">
-      <div className="flex items-center justify-between bg-white rounded-2xl border border-gray-100 p-4 sticky top-2 z-10">
-        <p className="text-sm text-gray-600"><b className="text-gray-900">{selected.size}</b> lessons selected</p>
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 p-4 sticky top-2 z-10">
+        <div className="flex items-center gap-3 flex-wrap">
+          <p className="text-sm text-gray-600"><b className="text-gray-900">{selected.size}</b> selected</p>
+          <label className="text-sm text-gray-600 flex items-center gap-2">Age group
+            <select value={age} onChange={e => setAge(e.target.value as AgeGroupId | 'all')}
+              className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm bg-white">
+              <option value="all">All ages</option>
+              {AGE_IDS.map(a => <option key={a} value={a}>Ages {a}</option>)}
+            </select>
+          </label>
+        </div>
         <div className="flex items-center gap-3">
           {saved && <span className="text-green-600 text-xs font-semibold">✓ Saved</span>}
           <button onClick={() => void save()} disabled={busy}
             className="px-5 py-2.5 rounded-xl font-bold text-white text-sm disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
-            {busy ? 'Saving…' : 'Save Assignments'}
+            {busy ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>
 
-      {ALL_COURSES.map(course => {
+      {courses.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 text-sm text-gray-400">No programs for this age group.</div>
+      ) : courses.map(course => {
         const lessons = course.modules.flatMap(m => m.lessons).filter(l => ALL_LESSONS[l.id]);
         if (lessons.length === 0) return null;
         const picked = lessons.filter(l => selected.has(l.id)).length;
