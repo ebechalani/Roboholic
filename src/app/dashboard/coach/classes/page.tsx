@@ -1,25 +1,24 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Loader2, Plus, Users, Hash, BookOpen, Printer, ChevronLeft,
-  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays, GripVertical, Search,
+  Trash2, CheckCircle, AlertCircle, GraduationCap, Pencil, CalendarDays,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import {
   createClass, getCoachClasses, getClassStudents, addStudentToClass,
-  setAssignedLessons, removeStudentFromRoster, renameStudent, deleteClass,
+  setClassPlan, removeStudentFromRoster, renameStudent, deleteClass,
 } from '@/lib/classes';
 import { ALL_COURSES, ALL_LESSONS } from '@/lib/curricula';
 import { PROGRAMS } from '@/lib/data';
-import type { ClassDoc, ClassStudent, AgeGroupId } from '@/types';
+import type { ClassDoc, ClassStudent, AgeGroupId, Course } from '@/types';
 
 // Which age groups each program serves (from the program cards).
 const PROG_AGES: Record<string, AgeGroupId[]> = Object.fromEntries(PROGRAMS.map(p => [p.slug, p.ageGroups]));
-const PROG_COLOR: Record<string, string> = Object.fromEntries(PROGRAMS.map(p => [p.slug, p.color]));
 const AGE_IDS: AgeGroupId[] = ['4-5', '6-7', '8-9', '10-12', '13-15'];
 // Guess a class's age group from its name (e.g. "Camp · Ages 8–9 (Mariebelle)").
 function ageFromName(name: string): AgeGroupId | 'all' {
@@ -177,7 +176,7 @@ function ClassDetail({ cls, onBack, onUpdated }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [lastAdded, setLastAdded] = useState<ClassStudent | null>(null);
-  const [tab, setTab] = useState<'plan' | 'students' | 'lessons'>('plan');
+  const [tab, setTab] = useState<'plan' | 'students'>('plan');
 
   const loadStudents = useCallback(async () => {
     setLoading(true);
@@ -260,7 +259,7 @@ function ClassDetail({ cls, onBack, onUpdated }: {
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-3 gap-2 print:hidden">
+      <div className="grid grid-cols-2 gap-2 print:hidden">
         <button onClick={() => setTab('plan')}
           className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold ${tab === 'plan' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}>
           <CalendarDays size={15} /> Lesson Plan
@@ -268,10 +267,6 @@ function ClassDetail({ cls, onBack, onUpdated }: {
         <button onClick={() => setTab('students')}
           className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold ${tab === 'students' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}>
           <Users size={15} /> Students
-        </button>
-        <button onClick={() => setTab('lessons')}
-          className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-bold ${tab === 'lessons' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}>
-          <BookOpen size={15} /> Edit Assigned
         </button>
       </div>
 
@@ -345,8 +340,6 @@ function ClassDetail({ cls, onBack, onUpdated }: {
             )}
           </div>
         </>
-      ) : tab === 'lessons' ? (
-        <LessonPicker cls={cls} onUpdated={onUpdated} />
       ) : (
         <LessonPlan cls={cls} onUpdated={onUpdated} />
       )}
@@ -354,210 +347,123 @@ function ClassDetail({ cls, onBack, onUpdated }: {
   );
 }
 
-// ─── Lesson Plan (drag-and-drop day-by-day builder) ───────────────
+// ─── Lesson Plan (day builder: per day, pick a theme then a lesson) ──
 function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc) => void }) {
-  const [perDay, setPerDay] = useState(2);
-  const [ids, setIds] = useState<string[]>(cls.lessonIds ?? []);
+  const initial = (): string[][] => {
+    if (cls.plan && cls.plan.length) return cls.plan.map(d => [...d]);
+    const ids = cls.lessonIds ?? [];
+    if (!ids.length) return [[]];
+    const out: string[][] = [];
+    for (let i = 0; i < ids.length; i += 2) out.push(ids.slice(i, i + 2));
+    return out;
+  };
+  const [plan, setPlan] = useState<string[][]>(initial);
+  const [age, setAge] = useState<AgeGroupId | 'all'>(ageFromName(cls.name));
   const [busy, setBusy] = useState(false);
-  const dragFrom = useRef<number | null>(null);
-  const [over, setOver] = useState<number | null>(null);
-  useEffect(() => { setIds(cls.lessonIds ?? []); }, [cls.id]);
+  useEffect(() => { setPlan(initial()); }, [cls.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function persist(next: string[]) {
-    setIds(next); setBusy(true);
-    try { await setAssignedLessons(cls.id, next); onUpdated({ ...cls, lessonIds: next }); }
+  const themes = ALL_COURSES.filter(c => age === 'all' || (PROG_AGES[c.programSlug] ?? []).includes(age));
+
+  async function persist(next: string[][]) {
+    setPlan(next); setBusy(true);
+    try { await setClassPlan(cls.id, next); onUpdated({ ...cls, plan: next, lessonIds: next.flat() }); }
     finally { setBusy(false); }
   }
-  function drop(to: number) {
-    const from = dragFrom.current;
-    dragFrom.current = null; setOver(null);
-    if (from == null || from === to) return;
-    const n = [...ids]; const [m] = n.splice(from, 1); n.splice(to, 0, m); void persist(n);
-  }
-  function removeAt(i: number) { void persist(ids.filter((_, k) => k !== i)); }
-  function moveToDay(i: number, day: number) {
-    const rest = ids.filter((_, k) => k !== i);
-    const pos = Math.min((day - 1) * perDay, rest.length);
-    rest.splice(pos, 0, ids[i]);
-    void persist(rest);
-  }
+  const addToDay = (di: number, id: string) => {
+    if (plan.flat().includes(id)) return;
+    void persist(plan.map((d, i) => (i === di ? [...d, id] : d)));
+  };
+  const removeFromDay = (di: number, li: number) =>
+    void persist(plan.map((d, i) => (i === di ? d.filter((_, k) => k !== li) : d)));
+  const moveToDay = (fromDi: number, li: number, toDi: number) => {
+    if (fromDi === toDi) return;
+    const id = plan[fromDi][li];
+    const next = plan.map((d, i) => (i === fromDi ? d.filter((_, k) => k !== li) : d));
+    next[toDi] = [...next[toDi], id];
+    void persist(next);
+  };
+  const addDay = () => void persist([...plan, []]);
+  const removeDay = (di: number) => void persist(plan.length <= 1 ? [[]] : plan.filter((_, i) => i !== di));
 
-  const days: string[][] = [];
-  for (let i = 0; i < ids.length; i += perDay) days.push(ids.slice(i, i + perDay));
+  const total = plan.reduce((n, d) => n + d.length, 0);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3 bg-white rounded-2xl border border-gray-100 p-4 print:hidden">
-        <p className="text-sm text-gray-600">
-          <b className="text-gray-900">{ids.length}</b> lessons · <b className="text-gray-900">{days.length}</b> days. <b>Drag</b> by the <GripVertical size={12} className="inline -mt-0.5 text-gray-400" /> handle — or use each lesson’s <b>Day</b> dropdown — to set its day; add more in <b>Edit Assigned</b>.
-          {busy && <span className="text-gray-400"> · saving…</span>}
-        </p>
-        <label className="text-sm text-gray-600 flex items-center gap-2">Lessons per day
-          <select value={perDay} onChange={e => setPerDay(Number(e.target.value))}
-            className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm bg-white">
-            {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
+      <div className="flex items-center justify-between flex-wrap gap-3 bg-white rounded-2xl border border-gray-100 p-4">
+        <p className="text-sm text-gray-600"><b className="text-gray-900">{plan.length}</b> days · <b className="text-gray-900">{total}</b> lessons. For each day, choose a <b>theme</b> then a <b>lesson</b> to add it.{busy && <span className="text-gray-400"> · saving…</span>}</p>
+        <label className="text-sm text-gray-600 flex items-center gap-2">Themes for ages
+          <select value={age} onChange={e => setAge(e.target.value as AgeGroupId | 'all')} className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm bg-white">
+            <option value="all">All</option>
+            {AGE_IDS.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
         </label>
       </div>
 
-      {ids.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-sm text-gray-400">
-          No lessons yet — open <b>Edit Assigned</b> to pick age-appropriate lessons for this class.
-        </div>
-      ) : days.map((day, di) => (
+      {plan.map((day, di) => (
         <div key={di} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-5 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
             <span className="w-7 h-7 rounded-lg bg-blue-600 text-white text-xs font-black flex items-center justify-center">{di + 1}</span>
-            <span className="font-bold text-gray-900 text-sm">Day {di + 1}</span>
+            <span className="font-bold text-gray-900 text-sm flex-1">Day {di + 1}</span>
+            <button onClick={() => removeDay(di)} title="Remove this day" className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"><Trash2 size={14} /></button>
           </div>
           <div className="divide-y divide-gray-50">
-            {day.map((id, li) => {
-              const idx = di * perDay + li;
+            {day.length === 0 ? (
+              <div className="px-5 py-3 text-xs text-gray-400">No lessons yet — pick a theme and a lesson below.</div>
+            ) : day.map((id, li) => {
               const l = ALL_LESSONS[id];
               return (
-                <div key={id} draggable
-                  onDragStart={() => { dragFrom.current = idx; }}
-                  onDragEnter={() => setOver(idx)}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={() => drop(idx)}
-                  onDragEnd={() => { dragFrom.current = null; setOver(null); }}
-                  className={`flex items-center gap-3 px-4 py-3 ${over === idx ? 'bg-blue-50 ring-2 ring-blue-300 ring-inset' : ''}`}>
-                  <GripVertical size={16} className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing shrink-0" />
+                <div key={id} className="flex items-center gap-3 px-5 py-3">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: l?.programColor || '#9CA3AF' }} />
                   <div className="flex-1 min-w-0">
-                    {l ? (
-                      <>
-                        <Link href={`/lessons/${l.id}`} target="_blank" draggable={false} className="block text-sm font-semibold text-gray-900 hover:underline truncate">{l.title}</Link>
-                        <div className="text-xs text-gray-400 truncate">{l.programTitle}{l.moduleTitle ? ' · ' + l.moduleTitle : ''}</div>
-                      </>
-                    ) : <div className="text-sm text-gray-400">Unknown lesson ({id})</div>}
+                    {l ? (<>
+                      <Link href={`/lessons/${l.id}`} target="_blank" className="block text-sm font-semibold text-gray-900 hover:underline truncate">{l.title}</Link>
+                      <div className="text-xs text-gray-400 truncate">{l.programTitle}{l.moduleTitle ? ' · ' + l.moduleTitle : ''}</div>
+                    </>) : <div className="text-sm text-gray-400">Unknown lesson</div>}
                   </div>
-                  <select value={di + 1} onChange={e => moveToDay(idx, Number(e.target.value))} disabled={busy}
-                    title="Move to day" className="text-xs rounded-lg border border-gray-200 px-1.5 py-1 bg-white shrink-0">
-                    {Array.from({ length: days.length }, (_, k) => <option key={k} value={k + 1}>Day {k + 1}</option>)}
+                  <select value={di + 1} onChange={e => moveToDay(di, li, Number(e.target.value) - 1)} title="Move to day"
+                    className="text-xs rounded-lg border border-gray-200 px-1.5 py-1 bg-white shrink-0">
+                    {plan.map((_, k) => <option key={k} value={k + 1}>Day {k + 1}</option>)}
                   </select>
-                  <button onClick={() => removeAt(idx)} disabled={busy} title="Remove from plan"
-                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 shrink-0"><Trash2 size={14} /></button>
+                  <button onClick={() => removeFromDay(di, li)} title="Remove" className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 shrink-0"><Trash2 size={14} /></button>
                 </div>
               );
             })}
           </div>
+          <DayAdder themes={themes} onAdd={id => addToDay(di, id)} />
         </div>
       ))}
+
+      <button onClick={addDay} className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-gray-200 text-sm font-bold text-gray-500 hover:border-blue-300 hover:text-blue-600">
+        <Plus size={16} /> Add another day
+      </button>
     </div>
   );
 }
 
-// ─── Lesson assignment ───────────────────────────────────────────
-function LessonPicker({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc) => void }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set(cls.lessonIds ?? []));
-  const [busy, setBusy] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [age, setAge] = useState<AgeGroupId | 'all'>(ageFromName(cls.name));
-  const [q, setQ] = useState('');
-
-  function setMany(idList: string[], on: boolean) {
-    setSaved(false);
-    setSelected(prev => {
-      const n = new Set(prev);
-      for (const id of idList) { if (on) n.add(id); else n.delete(id); }
-      return n;
-    });
-  }
-  const toggle = (id: string) => setMany([id], !selected.has(id));
-
-  async function save() {
-    setBusy(true); setSaved(false);
-    try {
-      const ids = Array.from(selected);
-      await setAssignedLessons(cls.id, ids);
-      onUpdated({ ...cls, lessonIds: ids });
-      setSaved(true);
-    } finally { setBusy(false); }
-  }
-
-  const query = q.trim().toLowerCase();
-  const courses = ALL_COURSES.filter(c => age === 'all' || (PROG_AGES[c.programSlug] ?? []).includes(age));
-
+// ─── Day adder: choose a theme (program), then a lesson, then Add ──
+function DayAdder({ themes, onAdd }: { themes: Course[]; onAdd: (id: string) => void }) {
+  const [theme, setTheme] = useState('');
+  const [lesson, setLesson] = useState('');
+  const course = themes.find(c => c.id === theme);
   return (
-    <div className="space-y-4 print:hidden">
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-2 z-10 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <p className="text-sm text-gray-600"><b className="text-gray-900">{selected.size}</b> selected</p>
-            <label className="text-sm text-gray-600 flex items-center gap-2">Age group
-              <select value={age} onChange={e => setAge(e.target.value as AgeGroupId | 'all')}
-                className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm bg-white">
-                <option value="all">All ages</option>
-                {AGE_IDS.map(a => <option key={a} value={a}>Ages {a}</option>)}
-              </select>
-            </label>
-          </div>
-          <div className="flex items-center gap-3">
-            {saved && <span className="text-green-600 text-xs font-semibold">✓ Saved</span>}
-            <button onClick={() => void save()} disabled={busy}
-              className="px-5 py-2.5 rounded-xl font-bold text-white text-sm disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
-              {busy ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        </div>
-        <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search a program, section or lesson…"
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
-        </div>
-      </div>
-
-      {courses.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 text-sm text-gray-400">No programs for this age group.</div>
-      ) : courses.map(course => {
-        const courseMatch = course.title.toLowerCase().includes(query);
-        const modules = course.modules.map(m => ({
-          id: m.id, title: m.title,
-          lessons: m.lessons.filter(l => ALL_LESSONS[l.id] && (!query || courseMatch || m.title.toLowerCase().includes(query) || l.title.toLowerCase().includes(query))),
-        })).filter(m => m.lessons.length);
-        if (!modules.length) return null;
-        const all = modules.flatMap(m => m.lessons);
-        const picked = all.filter(l => selected.has(l.id)).length;
-        const color = PROG_COLOR[course.programSlug] || '#6B7280';
-        return (
-          <details key={course.id} open={!!query} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <summary className="px-5 py-4 cursor-pointer select-none flex items-center gap-3 font-bold text-gray-900 text-sm">
-              <span className="w-3 h-3 rounded-full shrink-0" style={{ background: color }} />
-              <span className="flex-1 truncate">{course.title}</span>
-              <span className="badge-pill bg-gray-100 text-gray-500 text-xs shrink-0">{picked}/{all.length}</span>
-              <button onClick={e => { e.preventDefault(); setMany(all.map(l => l.id), picked < all.length); }}
-                className="text-xs font-semibold text-blue-600 hover:underline shrink-0">{picked < all.length ? 'Add all' : 'Clear'}</button>
-            </summary>
-            <div className="px-5 pb-4 space-y-4">
-              {modules.map(m => {
-                const mPicked = m.lessons.filter(l => selected.has(l.id)).length;
-                return (
-                  <div key={m.id}>
-                    <div className="flex items-center gap-2 mb-2 pt-1">
-                      <span className="text-xs font-bold uppercase tracking-wide text-gray-500">{m.title}</span>
-                      <span className="badge-pill bg-gray-100 text-gray-400 text-[10px]">{mPicked}/{m.lessons.length}</span>
-                      <button onClick={() => setMany(m.lessons.map(l => l.id), mPicked < m.lessons.length)}
-                        className="text-[11px] font-semibold text-blue-600 hover:underline ml-auto shrink-0">{mPicked < m.lessons.length ? 'Add section' : 'Clear'}</button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {m.lessons.map(l => (
-                        <label key={l.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors ${selected.has(l.id) ? 'border-green-300 bg-green-50 text-green-900' : 'border-gray-100 text-gray-600 hover:bg-gray-50'}`}>
-                          <input type="checkbox" checked={selected.has(l.id)} onChange={() => toggle(l.id)} className="accent-green-600" />
-                          <span className="flex-1 truncate">{l.title}</span>
-                          <Link href={`/lessons/${l.id}`} target="_blank" onClick={e => e.stopPropagation()}
-                            className="text-blue-500 text-xs hover:underline shrink-0">view</Link>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </details>
-        );
-      })}
+    <div className="flex flex-wrap items-center gap-2 px-5 py-3 bg-gray-50 border-t border-gray-100">
+      <span className="text-xs font-bold text-gray-500 shrink-0">Add:</span>
+      <select value={theme} onChange={e => { setTheme(e.target.value); setLesson(''); }}
+        className="flex-1 min-w-[150px] text-sm rounded-lg border border-gray-200 px-2 py-1.5 bg-white">
+        <option value="">1. Choose a theme…</option>
+        {themes.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+      </select>
+      <select value={lesson} onChange={e => setLesson(e.target.value)} disabled={!course}
+        className="flex-1 min-w-[150px] text-sm rounded-lg border border-gray-200 px-2 py-1.5 bg-white disabled:opacity-50">
+        <option value="">{course ? '2. Choose a lesson…' : 'Pick a theme first'}</option>
+        {course?.modules.map(m => {
+          const ls = m.lessons.filter(l => ALL_LESSONS[l.id]);
+          if (!ls.length) return null;
+          return <optgroup key={m.id} label={m.title}>{ls.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}</optgroup>;
+        })}
+      </select>
+      <button disabled={!lesson} onClick={() => { onAdd(lesson); setLesson(''); }}
+        className="px-4 py-1.5 rounded-lg text-sm font-bold text-white disabled:opacity-40 shrink-0" style={{ background: '#2563EB' }}>Add</button>
     </div>
   );
 }

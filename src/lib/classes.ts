@@ -86,6 +86,11 @@ export async function setAssignedLessons(classId: string, lessonIds: string[]): 
   await updateDoc(doc(db, 'classes', classId), { lessonIds });
 }
 
+/** Save the day-by-day plan; keeps lessonIds in sync (= plan flattened) for access. */
+export async function setClassPlan(classId: string, plan: string[][]): Promise<void> {
+  await updateDoc(doc(db, 'classes', classId), { plan, lessonIds: plan.flat() });
+}
+
 export async function getClassStudents(classId: string): Promise<ClassStudent[]> {
   const snap = await getDocs(query(collection(db, 'classes', classId, 'students'), orderBy('createdAt')));
   return snap.docs.map(d => d.data() as ClassStudent);

@@ -44,7 +44,8 @@ export interface ClassDoc {
   coachId: string;
   coachName?: string;
   code: string;               // e.g. "RH-K7M2P" — students use this to log in
-  lessonIds: string[];        // assigned lesson ids
+  lessonIds: string[];        // assigned lesson ids (= plan flattened, for access)
+  plan?: string[][];          // the day-by-day plan: one array of lesson ids per day
   createdAt: string;
 }
 
