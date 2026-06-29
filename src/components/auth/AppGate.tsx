@@ -7,8 +7,9 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 import TermsGate from '@/components/auth/TermsGate';
 import { TERMS_VERSION } from '@/lib/legal';
 
-// Pages anyone may see without an account.
-const PUBLIC_PATHS = ['/', '/login', '/register'];
+// Pages anyone may see without an account. The homepage is NOT public — it
+// lists the whole program catalogue, so it's behind login like everything else.
+const PUBLIC_PATHS = ['/login', '/register'];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname);
@@ -19,6 +20,7 @@ function isPublic(pathname: string): boolean {
 // per-lesson check). They cannot browse the catalogue, coach, or admin areas —
 // this keeps the curriculum from being browsable/copied by students.
 function studentBlocked(pathname: string): boolean {
+  if (pathname === '/') return true;          // the homepage lists the catalogue
   if (pathname === '/lessons') return true;
   if (pathname.startsWith('/dashboard/coach') || pathname.startsWith('/dashboard/admin')) return true;
   return /^\/(curriculum|projects|competitions|resources|admin)(\/|$)/.test(pathname);
@@ -27,7 +29,7 @@ function studentBlocked(pathname: string): boolean {
 /**
  * Global access gate:
  *  - Demo mode (no Firebase keys): everything stays open.
- *  - Signed out: only the homepage, /login, and /register are visible.
+ *  - Signed out: only /login and /register are visible (homepage is gated).
  *  - Coach with status 'pending' / 'rejected': sees a waiting screen
  *    instead of the app until the admin approves them.
  */
