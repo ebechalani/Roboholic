@@ -64,6 +64,9 @@ export interface ClassStudent {
   parentName?: string;
   parentPhone?: string;       // for the WhatsApp link
   parentEmail?: string;       // for the mailto link
+  // Parent confirmation page (/welcome):
+  dob?: string;               // child's date of birth, entered by the parent
+  confirmedAt?: string;       // ISO when the parent confirmed registration
 }
 
 // ─── Curriculum taxonomy ─────────────────────────────────────────

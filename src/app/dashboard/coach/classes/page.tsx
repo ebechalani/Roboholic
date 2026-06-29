@@ -20,6 +20,9 @@ import type { ClassDoc, ClassStudent, AgeGroupId, Course } from '@/types';
 // Which age groups each program serves (from the program cards).
 const PROG_AGES: Record<string, AgeGroupId[]> = Object.fromEntries(PROGRAMS.map(p => [p.slug, p.ageGroups]));
 const AGE_IDS: AgeGroupId[] = ['4-5', '6-7', '8-9', '10-12', '13-15'];
+// Per-parent confirmation link + Lebanese WhatsApp number normaliser.
+const welcomeUrl = (classId: string, uid: string) => `${typeof window !== 'undefined' ? window.location.origin : ''}/welcome?c=${classId}&s=${uid}`;
+const waNum = (phone?: string) => { let d = (phone || '').replace(/\D/g, ''); if (!d) return ''; if (d.startsWith('00')) d = d.slice(2); if (d.startsWith('961')) return d; if (d.startsWith('0')) d = d.slice(1); return '961' + d; };
 // Guess a class's age group from its name (e.g. "Camp · Ages 8–9 (Mariebelle)").
 function ageFromName(name: string): AgeGroupId | 'all' {
   const n = (name || '').replace(/[–—]/g, '-');
@@ -333,6 +336,16 @@ function ClassDetail({ cls, onBack, onUpdated }: {
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-2 text-gray-600"><Hash size={13} className="text-gray-400" /> Class code: <b className="font-mono">{cls.code}</b></div>
                       <div className="flex items-center gap-2 text-gray-600"><Users size={13} className="text-gray-400" /> Username: <b className="font-mono">{s.username}</b></div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 pt-2 mt-2 border-t border-gray-100 print:hidden">
+                      <span className="text-xs text-gray-400">Parent link:</span>
+                      <button onClick={() => { void navigator.clipboard?.writeText(welcomeUrl(cls.id, s.uid)); }}
+                        className="text-xs font-semibold text-blue-600 hover:underline">Copy</button>
+                      {s.parentPhone && (
+                        <a target="_blank" rel="noreferrer"
+                          href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(`RoboHolic Summer Camp 2026 — please confirm ${s.displayName}'s registration here: ${welcomeUrl(cls.id, s.uid)}`)}`}
+                          className="text-xs font-semibold text-green-600 hover:underline">WhatsApp</a>
+                      )}
                     </div>
                   </div>
                 ))}

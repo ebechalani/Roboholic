@@ -12,7 +12,8 @@ import { TERMS_VERSION } from '@/lib/legal';
 const PUBLIC_PATHS = ['/login', '/register'];
 
 function isPublic(pathname: string): boolean {
-  return PUBLIC_PATHS.includes(pathname);
+  // /welcome is the per-parent registration-confirmation page (capability link).
+  return PUBLIC_PATHS.includes(pathname) || pathname === '/welcome';
 }
 
 // Students may ONLY see their own dashboard, their student pages, and the
