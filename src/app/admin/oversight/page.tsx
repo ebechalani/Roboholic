@@ -24,6 +24,14 @@ export default function AdminOversightPage() {
 type ClassRow = ClassDoc & { studentCount: number; students: ClassStudent[] };
 
 const welcomeUrl = (classId: string, uid: string) => `${typeof window !== 'undefined' ? window.location.origin : ''}/welcome?c=${classId}&s=${uid}`;
+function ageFromDob(dob?: string): number | null {
+  if (!dob) return null;
+  const d = new Date(dob); if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  let a = now.getFullYear() - d.getFullYear();
+  if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) a--;
+  return a;
+}
 const waNum = (phone?: string) => { let d = (phone || '').replace(/\D/g, ''); if (!d) return ''; if (d.startsWith('00')) d = d.slice(2); if (d.startsWith('961')) return d; if (d.startsWith('0')) d = d.slice(1); return '961' + d; };
 function confirmMessage(parentName: string | undefined, childName: string, url: string) {
   const first = (childName || '').split(/\s+/)[0] || 'your child';
@@ -191,6 +199,7 @@ function Oversight() {
                                   {s.confirmedAt
                                     ? <span className="badge-pill bg-green-50 text-green-700 text-[10px] shrink-0 inline-flex items-center gap-1"><CheckCircle size={10} /> Confirmed</span>
                                     : <span className="badge-pill bg-amber-50 text-amber-700 text-[10px] shrink-0">Awaiting</span>}
+                                  {s.dob && <span className="badge-pill bg-gray-100 text-gray-500 text-[10px] shrink-0">DOB {s.dob}{ageFromDob(s.dob) != null ? ` · ${ageFromDob(s.dob)}y` : ''}</span>}
                                   {s.parentPhone ? (
                                     <a target="_blank" rel="noreferrer"
                                       href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(confirmMessage(s.parentName, s.displayName, welcomeUrl(c.id, s.uid)))}`}
