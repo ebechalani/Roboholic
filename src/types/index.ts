@@ -56,9 +56,11 @@ export interface ClassStudent {
   username: string;           // e.g. "sami42"
   pin?: string;               // legacy; logins now use class code + username only
   createdAt: string;
-  // Per-student competency tracking (a competency = a lesson skill).
-  // Key is `${lessonId}::${skill}`, value is the ISO date it was accomplished.
-  competencies?: Record<string, string>;
+  // Per-student progress. The coach ticks LESSONS the student completed;
+  // ICT competencies are derived automatically (see mapSkillsToIct).
+  // lessonsDone: key = lessonId, value = ISO date the lesson was completed.
+  lessonsDone?: Record<string, string>;
+  competencies?: Record<string, string>;   // legacy (direct competency ticks); no longer written
   lastReportAt?: string;      // ISO of the last parent report generated for this student
   // Optional parent contact, used to send the generated progress report.
   parentName?: string;

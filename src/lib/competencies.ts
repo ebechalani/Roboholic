@@ -60,3 +60,37 @@ export const ICT_STRANDS: IctStrand[] = [
 export const ICT_BY_ID: Record<string, { label: string; strand: string }> = Object.fromEntries(
   ICT_STRANDS.flatMap(s => s.items.map(i => [i.id, { label: i.label, strand: s.title }])),
 );
+
+// Map a lesson's skill tags (and title) to the ICT competencies it demonstrates,
+// so ticking a lesson auto-credits the right competencies — the coach never picks them.
+const RULES: [RegExp, string][] = [
+  [/loop|repeat/i, 'prog-loops'],
+  [/condition|else|decision|boolean|\bif\b/i, 'prog-conditionals'],
+  [/variable/i, 'prog-variables'],
+  [/function|event|broadcast|method/i, 'prog-events'],
+  [/debug|fix|error/i, 'prog-debug'],
+  [/sequenc|order|instruction|block coding|\bcode|coding|program|scratch/i, 'prog-sequence'],
+  [/algorithm/i, 'ct-algorithm'],
+  [/pattern/i, 'ct-patterns'],
+  [/abstract/i, 'ct-abstract'],
+  [/decompos|problem|computational|logic/i, 'ct-decompose'],
+  [/sensor|detect|distance|gyro|ultrasonic|\beye\b|gps|input/i, 'robo-sensors'],
+  [/motor|drive|drivetrain|movement|\bmove|turn|steer|servo/i, 'robo-motors'],
+  [/build|construct|assembl|gear|lever|pulley|lego|brick|mechan|structure/i, 'robo-build'],
+  [/robot|autonom|navigat|maze|mission|line follow/i, 'robo-task'],
+  [/\bdata\b|measure|record|collect/i, 'data-collect'],
+  [/coordinate|grid|graph|chart|table|number|count|\bmath/i, 'data-interpret'],
+  [/draw|\bpen\b|\bart|animat|design|3d|game|story|paint|spiral|pixel|creativ|model/i, 'design-create'],
+  [/iterat|optimis|optimiz|improve|refine|redesign/i, 'design-iterate'],
+  [/collaborat|share|team|partner/i, 'citizen-collab'],
+  [/safe|responsib|citizen|ethic|privacy/i, 'citizen-safe'],
+  [/present|explain|communicat/i, 'citizen-present'],
+];
+
+export function mapSkillsToIct(skills: string[], title = ''): string[] {
+  const text = `${skills.join(' ')} ${title}`;
+  const out = new Set<string>();
+  for (const [re, id] of RULES) if (re.test(text)) out.add(id);
+  if (out.size === 0) out.add('prog-sequence'); // every lesson at least follows a sequence of steps
+  return Array.from(out).slice(0, 6);
+}

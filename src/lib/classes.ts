@@ -112,10 +112,10 @@ export async function renameStudent(classId: string, uid: string, displayName: s
   await updateDoc(doc(db, 'classes', classId, 'students', uid), { displayName: displayName.trim() });
 }
 
-// ─── Per-student competency tracking & parent reports ────────────
-/** Replace the student's whole competency map (caller holds the full map). */
-export async function setStudentCompetencies(classId: string, uid: string, competencies: Record<string, string>): Promise<void> {
-  await setDoc(doc(db, 'classes', classId, 'students', uid), { competencies }, { merge: true });
+// ─── Per-student progress & parent reports ───────────────────────
+/** Replace the student's completed-lessons map (lessonId → ISO date). */
+export async function setStudentLessonsDone(classId: string, uid: string, lessonsDone: Record<string, string>): Promise<void> {
+  await setDoc(doc(db, 'classes', classId, 'students', uid), { lessonsDone }, { merge: true });
 }
 
 /** Record that a parent report was generated now (resets "new since last report"). */
