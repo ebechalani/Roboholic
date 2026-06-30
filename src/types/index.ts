@@ -69,6 +69,21 @@ export interface ClassStudent {
   // Parent confirmation page (/welcome):
   dob?: string;               // child's date of birth, entered by the parent
   confirmedAt?: string;       // ISO when the parent confirmed registration
+  // Which weekdays the child attends (1=Mon … 5=Fri). The admin sets this;
+  // a student only appears in the coach's roll call on their days.
+  // Unset / empty = attends every camp day (Mon–Fri).
+  attendDays?: number[];
+}
+
+// ─── Attendance / roll call ─────────────────────────────────────
+export type AttendanceStatus = 'present' | 'absent' | 'late';
+
+/** One day's roll call (Firestore: classes/{id}/attendance/{YYYY-MM-DD}). */
+export interface AttendanceDoc {
+  date: string;                               // YYYY-MM-DD
+  marks: Record<string, AttendanceStatus>;    // student uid → status
+  takenBy?: string;                           // coach/admin uid who took it
+  takenAt?: string;                           // ISO of the last change
 }
 
 // ─── Curriculum taxonomy ─────────────────────────────────────────

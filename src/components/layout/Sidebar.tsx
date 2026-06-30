@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, BookOpen, FolderOpen, Package, Trophy,
   Users, Settings, LogOut, ChevronRight, Star, BarChart2,
-  Upload, Cpu, Home, Shield,
+  Upload, Cpu, Home, Shield, ClipboardCheck,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
 
@@ -21,6 +21,7 @@ interface NavItem {
 const COACH_NAV: NavItem[] = [
   { label: 'Dashboard',      href: '/dashboard/coach',         icon: <LayoutDashboard size={18} /> },
   { label: 'My Classes',     href: '/dashboard/coach/classes', icon: <Users size={18} /> },
+  { label: 'Attendance',     href: '/dashboard/coach/attendance', icon: <ClipboardCheck size={18} /> },
   { label: 'Competencies',   href: '/dashboard/coach/progress', icon: <BarChart2 size={18} /> },
   { label: 'Curriculum Map', href: '/curriculum',              icon: <Cpu size={18} /> },
   { label: 'Lessons',        href: '/lessons',                 icon: <BookOpen size={18} /> },

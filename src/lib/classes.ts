@@ -19,7 +19,7 @@ import {
   updateDoc, query, where, orderBy, deleteDoc,
 } from 'firebase/firestore';
 import { db, firebaseConfig } from '@/lib/firebase/client';
-import type { ClassDoc, ClassStudent } from '@/types';
+import type { ClassDoc, ClassStudent, AttendanceDoc, AttendanceStatus } from '@/types';
 
 // Unambiguous characters (no 0/O, 1/I/L) — kid-proof class codes.
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -129,6 +129,24 @@ export async function setParentContact(
   contact: { parentName?: string; parentPhone?: string; parentEmail?: string }
 ): Promise<void> {
   await updateDoc(doc(db, 'classes', classId, 'students', uid), contact);
+}
+
+// ─── Attendance / roll call ──────────────────────────────────────
+/** Set which weekdays (1=Mon…5=Fri) a student attends. Admin-controlled. */
+export async function setStudentAttendDays(classId: string, uid: string, attendDays: number[]): Promise<void> {
+  await setDoc(doc(db, 'classes', classId, 'students', uid), { attendDays }, { merge: true });
+}
+
+/** Read one day's roll call (or null if not taken yet). */
+export async function getAttendance(classId: string, date: string): Promise<AttendanceDoc | null> {
+  const snap = await getDoc(doc(db, 'classes', classId, 'attendance', date));
+  return snap.exists() ? (snap.data() as AttendanceDoc) : null;
+}
+
+/** Save one day's roll call (whole marks map; merges date/takenBy/takenAt). */
+export async function setAttendance(classId: string, date: string, marks: Record<string, AttendanceStatus>, takenBy?: string): Promise<void> {
+  await setDoc(doc(db, 'classes', classId, 'attendance', date),
+    { date, marks, takenBy: takenBy ?? '', takenAt: new Date().toISOString() }, { merge: true });
 }
 
 /** Deletes a class and its whole roster. (Student auth accounts become

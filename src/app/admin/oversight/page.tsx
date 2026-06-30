@@ -3,15 +3,20 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
-import { Loader2, RefreshCw, Users, GraduationCap, BookOpen, ChevronDown, ChevronRight, KeyRound, ArrowRightLeft, MessageCircle, Copy, CheckCircle } from 'lucide-react';
+import { Loader2, RefreshCw, Users, GraduationCap, BookOpen, ChevronDown, ChevronRight, KeyRound, ArrowRightLeft, MessageCircle, Copy, CheckCircle, CalendarDays } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { db, auth } from '@/lib/firebase/client';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { setStudentAttendDays } from '@/lib/classes';
 import { ALL_LESSONS } from '@/lib/curricula';
 import type { ClassDoc, ClassStudent } from '@/types';
+
+const WEEKDAYS = [{ n: 1, l: 'Mon' }, { n: 2, l: 'Tue' }, { n: 3, l: 'Wed' }, { n: 4, l: 'Thu' }, { n: 5, l: 'Fri' }];
+/** A student's attendance weekdays (default = every camp day Mon–Fri). */
+function daysOf(s: ClassStudent): number[] { return s.attendDays && s.attendDays.length ? s.attendDays : [1, 2, 3, 4, 5]; }
 
 export default function AdminOversightPage() {
   return (
@@ -59,6 +64,15 @@ function Oversight() {
   const [target, setTarget] = useState<Record<string, string>>({});
   const [moveBusy, setMoveBusy] = useState<string | null>(null);
   const [moveMsg, setMoveMsg] = useState('');
+
+  // Set which weekdays a student attends → controls who shows in the coach's roll call.
+  async function toggleDay(classId: string, s: ClassStudent, n: number) {
+    const cur = new Set(daysOf(s));
+    if (cur.has(n)) cur.delete(n); else cur.add(n);
+    const days = WEEKDAYS.map(w => w.n).filter(x => cur.has(x));
+    setRows(prev => prev.map(r => r.id === classId ? { ...r, students: r.students.map(x => x.uid === s.uid ? { ...x, attendDays: days } : x) } : r));
+    try { await setStudentAttendDays(classId, s.uid, days); } catch { /* optimistic */ }
+  }
 
   async function moveStudent(studentUid: string, fromClassId: string, toClassId: string) {
     setMoveBusy(studentUid); setMoveMsg('');
@@ -194,31 +208,45 @@ function Oversight() {
                           ) : (
                             <div className="space-y-1.5">
                               {c.students.map(s => (
-                                <div key={s.uid} className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-sm text-gray-700 flex-1 min-w-[120px]">{s.displayName} <span className="text-gray-400 font-mono text-xs">@{s.username}</span></span>
-                                  {s.confirmedAt
-                                    ? <span className="badge-pill bg-green-50 text-green-700 text-[10px] shrink-0 inline-flex items-center gap-1"><CheckCircle size={10} /> Confirmed</span>
-                                    : <span className="badge-pill bg-amber-50 text-amber-700 text-[10px] shrink-0">Awaiting</span>}
-                                  {s.dob && <span className="badge-pill bg-gray-100 text-gray-500 text-[10px] shrink-0">DOB {s.dob}{ageFromDob(s.dob) != null ? ` · ${ageFromDob(s.dob)}y` : ''}</span>}
-                                  {s.parentPhone ? (
-                                    <a target="_blank" rel="noreferrer"
-                                      href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(confirmMessage(s.parentName, s.displayName, welcomeUrl(c.id, s.uid)))}`}
-                                      title={`Send ${s.parentName || 'parent'} the confirmation`}
-                                      className="text-xs font-bold px-2.5 py-1.5 rounded-lg text-white inline-flex items-center gap-1" style={{ background: '#25D366' }}>
-                                      <MessageCircle size={12} /> Send
-                                    </a>
-                                  ) : <span className="text-[11px] text-gray-300">no phone</span>}
-                                  <button onClick={() => navigator.clipboard?.writeText(welcomeUrl(c.id, s.uid))} title="Copy the parent link"
-                                    className="text-xs font-semibold px-2 py-1.5 rounded-lg text-gray-600 bg-gray-100 hover:bg-gray-200 inline-flex items-center gap-1"><Copy size={12} /> Link</button>
-                                  <select value={target[s.uid] || ''} onChange={e => setTarget({ ...target, [s.uid]: e.target.value })}
-                                    className="text-xs rounded-lg border border-gray-200 px-2 py-1.5 bg-white">
-                                    <option value="">Move to…</option>
-                                    {rows.filter(r => r.id !== c.id).map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                  </select>
-                                  <button disabled={!target[s.uid] || moveBusy === s.uid} onClick={() => moveStudent(s.uid, c.id, target[s.uid])}
-                                    className="text-xs font-bold px-3 py-1.5 rounded-lg text-white disabled:opacity-40 inline-flex items-center gap-1" style={{ background: '#7C3AED' }}>
-                                    {moveBusy === s.uid ? '…' : <><ArrowRightLeft size={12} /> Move</>}
-                                  </button>
+                                <div key={s.uid} className="rounded-lg border border-gray-100 p-2 space-y-1.5">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm text-gray-700 flex-1 min-w-[120px]">{s.displayName} <span className="text-gray-400 font-mono text-xs">@{s.username}</span></span>
+                                    {s.confirmedAt
+                                      ? <span className="badge-pill bg-green-50 text-green-700 text-[10px] shrink-0 inline-flex items-center gap-1"><CheckCircle size={10} /> Confirmed</span>
+                                      : <span className="badge-pill bg-amber-50 text-amber-700 text-[10px] shrink-0">Awaiting</span>}
+                                    {s.dob && <span className="badge-pill bg-gray-100 text-gray-500 text-[10px] shrink-0">DOB {s.dob}{ageFromDob(s.dob) != null ? ` · ${ageFromDob(s.dob)}y` : ''}</span>}
+                                    {s.parentPhone ? (
+                                      <a target="_blank" rel="noreferrer"
+                                        href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(confirmMessage(s.parentName, s.displayName, welcomeUrl(c.id, s.uid)))}`}
+                                        title={`Send ${s.parentName || 'parent'} the confirmation`}
+                                        className="text-xs font-bold px-2.5 py-1.5 rounded-lg text-white inline-flex items-center gap-1" style={{ background: '#25D366' }}>
+                                        <MessageCircle size={12} /> Send
+                                      </a>
+                                    ) : <span className="text-[11px] text-gray-300">no phone</span>}
+                                    <button onClick={() => navigator.clipboard?.writeText(welcomeUrl(c.id, s.uid))} title="Copy the parent link"
+                                      className="text-xs font-semibold px-2 py-1.5 rounded-lg text-gray-600 bg-gray-100 hover:bg-gray-200 inline-flex items-center gap-1"><Copy size={12} /> Link</button>
+                                    <select value={target[s.uid] || ''} onChange={e => setTarget({ ...target, [s.uid]: e.target.value })}
+                                      className="text-xs rounded-lg border border-gray-200 px-2 py-1.5 bg-white">
+                                      <option value="">Move to…</option>
+                                      {rows.filter(r => r.id !== c.id).map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                    </select>
+                                    <button disabled={!target[s.uid] || moveBusy === s.uid} onClick={() => moveStudent(s.uid, c.id, target[s.uid])}
+                                      className="text-xs font-bold px-3 py-1.5 rounded-lg text-white disabled:opacity-40 inline-flex items-center gap-1" style={{ background: '#7C3AED' }}>
+                                      {moveBusy === s.uid ? '…' : <><ArrowRightLeft size={12} /> Move</>}
+                                    </button>
+                                  </div>
+                                  {/* Attendance days — which days this child shows in the coach's roll call */}
+                                  <div className="flex items-center gap-1 flex-wrap pl-0.5">
+                                    <span className="text-[10px] text-gray-400 mr-1 inline-flex items-center gap-1"><CalendarDays size={11} /> Attends:</span>
+                                    {WEEKDAYS.map(w => {
+                                      const on = daysOf(s).includes(w.n);
+                                      return (
+                                        <button key={w.n} onClick={() => toggleDay(c.id, s, w.n)} title={on ? `Attends ${w.l} — click to remove` : `Add ${w.l}`}
+                                          className={`text-[10px] font-bold px-2 py-1 rounded-md transition-colors ${on ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}>{w.l}</button>
+                                      );
+                                    })}
+                                    <span className="text-[10px] text-gray-300 ml-1">{daysOf(s).length === 5 ? 'full week' : `${daysOf(s).length} days/wk`}</span>
+                                  </div>
                                 </div>
                               ))}
                             </div>

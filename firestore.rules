@@ -117,6 +117,12 @@ service cloud.firestore {
         allow write: if isAdmin()
                     || (isCoach() && get(/databases/$(database)/documents/classes/$(classId)).data.coachId == request.auth.uid);
       }
+
+      // Daily attendance / roll call: coach of this class + admin only.
+      match /attendance/{date} {
+        allow read, write: if isAdmin()
+                    || (isCoach() && get(/databases/$(database)/documents/classes/$(classId)).data.coachId == request.auth.uid);
+      }
     }
 
     // ── Class groups ─────────────────────────────────────────
