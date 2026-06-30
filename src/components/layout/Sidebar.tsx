@@ -21,12 +21,12 @@ interface NavItem {
 const COACH_NAV: NavItem[] = [
   { label: 'Dashboard',      href: '/dashboard/coach',         icon: <LayoutDashboard size={18} /> },
   { label: 'My Classes',     href: '/dashboard/coach/classes', icon: <Users size={18} /> },
+  { label: 'Competencies',   href: '/dashboard/coach/progress', icon: <BarChart2 size={18} /> },
   { label: 'Curriculum Map', href: '/curriculum',              icon: <Cpu size={18} /> },
   { label: 'Lessons',        href: '/lessons',                 icon: <BookOpen size={18} /> },
   { label: 'Projects',       href: '/projects',                icon: <FolderOpen size={18} /> },
   { label: 'Resources',      href: '/resources',               icon: <Package size={18} /> },
   { label: 'Competitions',   href: '/competitions',            icon: <Trophy size={18} /> },
-  { label: 'Progress',       href: '/dashboard/coach#progress', icon: <BarChart2 size={18} /> },
 ];
 
 const STUDENT_NAV: NavItem[] = [

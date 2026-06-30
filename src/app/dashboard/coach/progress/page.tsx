@@ -15,10 +15,8 @@ import {
   getCoachClasses, getAllClasses, getClassStudents,
   setStudentCompetencies, markReportSent, setParentContact,
 } from '@/lib/classes';
-import { ALL_LESSONS } from '@/lib/curricula';
+import { ICT_STRANDS } from '@/lib/competencies';
 import type { ClassDoc, ClassStudent } from '@/types';
-
-const KEY = (lessonId: string, skill: string) => `${lessonId}::${skill}`;
 
 // Normalize a Lebanese/international phone for a wa.me link: strip non-digits,
 // drop a leading 00 or 0, and default the country code to 961 (Lebanon).
@@ -29,19 +27,6 @@ function waNumber(phone: string): string {
   if (d.startsWith('961')) return d;
   if (d.startsWith('0')) d = d.slice(1);
   return '961' + d;
-}
-
-// Group a class's assigned lessons into program → lessons → skills (competencies).
-function competencyTree(lessonIds: string[]) {
-  const progs: { program: string; color: string; lessons: { id: string; title: string; skills: string[] }[] }[] = [];
-  const idx: Record<string, number> = {};
-  for (const id of lessonIds) {
-    const l = ALL_LESSONS[id];
-    if (!l || !l.skills?.length) continue;
-    if (idx[l.programTitle] == null) { idx[l.programTitle] = progs.length; progs.push({ program: l.programTitle, color: l.programColor, lessons: [] }); }
-    progs[idx[l.programTitle]].lessons.push({ id, title: l.title, skills: l.skills });
-  }
-  return progs;
 }
 
 export default function CoachProgressPage() {
@@ -72,9 +57,7 @@ function Progress() {
   const [email, setEmail] = useState<{ state: 'idle' | 'sending' | 'sent' | 'error'; msg?: string }>({ state: 'idle' });
   const [bulk, setBulk] = useState('');
 
-  const cls = classes.find(c => c.id === classId);
   const student = students.find(s => s.uid === uid);
-  const tree = useMemo(() => competencyTree(cls?.lessonIds ?? []), [cls?.lessonIds]);
 
   useEffect(() => {
     if (!profile?.uid) return;
@@ -100,11 +83,10 @@ function Progress() {
     setEmail({ state: 'idle' });
   }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function toggle(lessonId: string, skill: string) {
+  async function toggle(id: string) {
     if (!student) return;
-    const k = KEY(lessonId, skill);
     const next = { ...comp };
-    if (next[k]) delete next[k]; else next[k] = new Date().toISOString();
+    if (next[id]) delete next[id]; else next[id] = new Date().toISOString();
     setComp(next);
     setSaving(true);
     try {
@@ -123,28 +105,28 @@ function Progress() {
     const since = sc === 'all' ? '' : (s.lastReportAt ?? '');
     const first = s.displayName.split(/\s+/)[0];
     const groups: Record<string, string[]> = {};
-    for (const p of tree) for (const l of p.lessons) for (const sk of l.skills) {
-      const at = competencies[KEY(l.id, sk)];
-      if (at && at > since) (groups[p.program] ??= []).push(`${sk} — ${l.title}`);
+    for (const strand of ICT_STRANDS) for (const item of strand.items) {
+      const at = competencies[item.id];
+      if (at && at > since) (groups[strand.title] ??= []).push(item.label);
     }
     const lines: string[] = [];
-    for (const [program, items] of Object.entries(groups)) {
-      lines.push(`*${program}*`);
+    for (const [strand, items] of Object.entries(groups)) {
+      lines.push(`*${strand}*`);
       for (const it of items) lines.push(`• ${it}`);
       lines.push('');
     }
     const total = Object.values(groups).reduce((n, a) => n + a.length, 0);
     const today = new Date().toLocaleDateString();
     const emptyText = sc === 'all'
-      ? `Hi! ${first} hasn't logged any mastered skills yet — we'll share progress soon. — Coach ${coachName}, RoboHolic Robotics Academy`
-      : `Hi! No new skills to report for ${first} since the last update — we'll share progress again soon. — Coach ${coachName}, RoboHolic Robotics Academy`;
+      ? `Hi! We haven't logged any competencies for ${first} yet — we'll share progress soon. — Coach ${coachName}, RoboHolic Robotics Academy`
+      : `Hi! No new competencies to report for ${first} since the last update — we'll share progress again soon. — Coach ${coachName}, RoboHolic Robotics Academy`;
     const intro = sc === 'all'
-      ? `Here is everything ${first} has accomplished at camp so far (${total} skill${total === 1 ? '' : 's'}):`
-      : `Since our last update, ${first} has mastered ${total} new skill${total === 1 ? '' : 's'}:`;
+      ? `Here are all the ICT competencies ${first} has demonstrated so far (${total}):`
+      : `Since our last update, ${first} has demonstrated ${total} new ICT competenc${total === 1 ? 'y' : 'ies'}:`;
     const text = total === 0 ? emptyText
       : `🎉 RoboHolic Robotics Academy — progress update for ${s.displayName} (${today})\n\n${intro}\n\n${lines.join('\n').trim()}\n\nWell done, ${first}! 👏\n— Coach ${coachName}`;
     return { text, subject: `${s.displayName} — RoboHolic progress update`, count: total };
-  }, [tree, coachName]);
+  }, [coachName]);
 
   function buildReport() {
     if (!student) return;
@@ -218,7 +200,7 @@ function Progress() {
       <main className="min-h-screen" style={{ background: '#F8FAFF' }}>
         <SectionHeader badge="📈 Progress & Parent Reports"
           title="Track competencies & message parents"
-          subtitle="Coaches tick the skills a student masters. The director reviews, edits and sends the parent message." />
+          subtitle="Coaches tick the ICT competencies a student demonstrates. The director reviews, edits and sends the parent message." />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {loading ? (
@@ -321,41 +303,33 @@ function Progress() {
                         </div>
                       )}
 
-                      {/* Competency checklist */}
+                      {/* ICT competency checklist */}
                       <div className="space-y-3">
-                        {tree.length === 0 ? (
-                          <div className="bg-white rounded-2xl border border-gray-100 p-6 text-sm text-gray-400">This class has no skill-based lessons assigned yet.</div>
-                        ) : tree.map(p => {
-                          const isOpen = open.has(p.program);
-                          const total = p.lessons.reduce((n, l) => n + l.skills.length, 0);
-                          const got = p.lessons.reduce((n, l) => n + l.skills.filter(sk => comp[KEY(l.id, sk)]).length, 0);
+                        <p className="text-xs text-gray-400 px-1">Tick each ICT competency as {student.displayName.split(/\s+/)[0]} demonstrates it.</p>
+                        {ICT_STRANDS.map(strand => {
+                          const isOpen = open.has(strand.id);
+                          const total = strand.items.length;
+                          const got = strand.items.filter(it => comp[it.id]).length;
                           return (
-                            <div key={p.program} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                              <button onClick={() => setOpen(o => { const n = new Set(o); n.has(p.program) ? n.delete(p.program) : n.add(p.program); return n; })}
+                            <div key={strand.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                              <button onClick={() => setOpen(o => { const n = new Set(o); n.has(strand.id) ? n.delete(strand.id) : n.add(strand.id); return n; })}
                                 className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-gray-50">
-                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: p.color }} />
-                                <span className="font-bold text-gray-900 text-sm flex-1">{p.program}</span>
+                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: strand.color }} />
+                                <span className="font-bold text-gray-900 text-sm flex-1">{strand.title}</span>
                                 <span className="badge-pill bg-gray-100 text-gray-500 text-xs">{got}/{total}</span>
                                 {isOpen ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
                               </button>
                               {isOpen && (
-                                <div className="px-5 pb-4 space-y-4">
-                                  {p.lessons.map(l => (
-                                    <div key={l.id}>
-                                      <div className="text-xs font-semibold text-gray-500 mb-1.5">{l.title}</div>
-                                      <div className="flex flex-wrap gap-2">
-                                        {l.skills.map(sk => {
-                                          const on = !!comp[KEY(l.id, sk)];
-                                          return (
-                                            <button key={sk} onClick={() => toggle(l.id, sk)}
-                                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${on ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'}`}>
-                                              {on ? <Check size={12} /> : <span className="w-3 h-3 rounded-full border border-gray-300 inline-block" />} {sk}
-                                            </button>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  ))}
+                                <div className="px-5 pb-4 flex flex-wrap gap-2">
+                                  {strand.items.map(it => {
+                                    const on = !!comp[it.id];
+                                    return (
+                                      <button key={it.id} onClick={() => toggle(it.id)}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${on ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                                        {on ? <Check size={12} /> : <span className="w-3 h-3 rounded-full border border-gray-300 inline-block" />} {it.label}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
