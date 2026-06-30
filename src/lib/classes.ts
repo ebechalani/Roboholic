@@ -77,6 +77,14 @@ export async function getCoachClasses(coachId: string): Promise<ClassDoc[]> {
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 }
 
+/** All classes (admin only — used so the director can review/send every class). */
+export async function getAllClasses(): Promise<ClassDoc[]> {
+  const snap = await getDocs(collection(db, 'classes'));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as Omit<ClassDoc, 'id'>) }))
+    .sort((a, b) => (a.coachName || '').localeCompare(b.coachName || '') || (a.name || '').localeCompare(b.name || ''));
+}
+
 export async function getClass(classId: string): Promise<ClassDoc | null> {
   const snap = await getDoc(doc(db, 'classes', classId));
   return snap.exists() ? ({ id: snap.id, ...(snap.data() as Omit<ClassDoc, 'id'>) }) : null;

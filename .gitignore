@@ -47,3 +47,9 @@ serviceAccountKey.json
 *-firebase-adminsdk-*.json
 .firebase/
 firebase-debug.log
+
+# camp seed scripts — hold coach passwords + parent PII, keep LOCAL only
+scripts/seed-camp-coaches.mjs
+scripts/seed-camp-students.mjs
+scripts/fix-student-passwords.mjs
+scripts/camp-lessons.json

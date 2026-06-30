@@ -12,7 +12,7 @@ import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { auth } from '@/lib/firebase/client';
 import {
-  getCoachClasses, getClassStudents,
+  getCoachClasses, getAllClasses, getClassStudents,
   setStudentCompetencies, markReportSent, setParentContact,
 } from '@/lib/classes';
 import { ALL_LESSONS } from '@/lib/curricula';
@@ -53,7 +53,8 @@ export default function CoachProgressPage() {
 }
 
 function Progress() {
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
+  const isAdmin = role === 'admin';
   const coachName = profile?.full_name || 'Coach';
 
   const [classes, setClasses] = useState<ClassDoc[]>([]);
@@ -77,11 +78,12 @@ function Progress() {
 
   useEffect(() => {
     if (!profile?.uid) return;
-    getCoachClasses(profile.uid).then(cs => {
+    const p = isAdmin ? getAllClasses() : getCoachClasses(profile.uid);
+    p.then(cs => {
       setClasses(cs);
       if (cs[0]) setClassId(cs[0].id);
     }).finally(() => setLoading(false));
-  }, [profile?.uid]);
+  }, [profile?.uid, isAdmin]);
 
   const loadRoster = useCallback(async (cid: string) => {
     const roster = await getClassStudents(cid);
@@ -216,7 +218,7 @@ function Progress() {
       <main className="min-h-screen" style={{ background: '#F8FAFF' }}>
         <SectionHeader badge="📈 Progress & Parent Reports"
           title="Track competencies & message parents"
-          subtitle="Tick off each skill a student masters, then generate a ready-to-send progress message." />
+          subtitle="Coaches tick the skills a student masters. The director reviews, edits and sends the parent message." />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {loading ? (
@@ -235,10 +237,12 @@ function Progress() {
                 </select>
                 <button onClick={() => classId && loadRoster(classId)} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
                 {saving && <span className="text-xs text-gray-400 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span>}
-                <button onClick={emailTodayAll} title="Email every parent whose child has new skills since their last report"
-                  className="sm:ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
-                  <Mail size={14} /> Email today&apos;s reports
-                </button>
+                {isAdmin && (
+                  <button onClick={emailTodayAll} title="Email every parent whose child has new skills since their last report"
+                    className="sm:ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+                    <Mail size={14} /> Email today&apos;s reports
+                  </button>
+                )}
                 {bulk && <span className="text-xs text-gray-600 w-full">{bulk}</span>}
               </div>
 
@@ -285,22 +289,26 @@ function Progress() {
                           <input value={contact.parentEmail} onChange={e => setContact({ ...contact, parentEmail: e.target.value })} onBlur={saveContact} placeholder="Parent email" className="px-3 py-2 rounded-lg border border-gray-200 text-sm" />
                         </div>
 
-                        <div className="mt-4 flex flex-wrap items-center gap-3">
-                          <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold">
-                            <button onClick={() => setScope('new')} className={`px-3 py-2 ${scope === 'new' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>New since last</button>
-                            <button onClick={() => setScope('all')} className={`px-3 py-2 ${scope === 'all' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Full summary</button>
+                        {isAdmin ? (
+                          <div className="mt-4 flex flex-wrap items-center gap-3">
+                            <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold">
+                              <button onClick={() => setScope('new')} className={`px-3 py-2 ${scope === 'new' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>New since last</button>
+                              <button onClick={() => setScope('all')} className={`px-3 py-2 ${scope === 'all' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Full summary</button>
+                            </div>
+                            <button onClick={buildReport} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
+                              <Send size={15} /> Generate parent message
+                            </button>
                           </div>
-                          <button onClick={buildReport} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
-                            <Send size={15} /> Generate parent message
-                          </button>
-                        </div>
+                        ) : (
+                          <p className="mt-4 text-xs text-gray-400">Tick the skills above as the student masters them. The director reviews and sends the parent report.</p>
+                        )}
                       </div>
 
                       {/* Report panel */}
                       {report && (
                         <div className="bg-white rounded-2xl border-2 border-blue-100 p-5">
-                          <h3 className="font-bold text-gray-900 text-sm mb-2">Parent message {report.count > 0 ? `· ${report.count} ${report.scope === 'all' ? `skill${report.count === 1 ? '' : 's'} total` : `new skill${report.count === 1 ? '' : 's'}`}` : (report.scope === 'all' ? '· none yet' : '· nothing new')}</h3>
-                          <textarea readOnly value={report.text} className="w-full h-44 text-sm rounded-xl border border-gray-200 p-3 bg-gray-50 text-gray-800" />
+                          <h3 className="font-bold text-gray-900 text-sm mb-2">Parent message {report.count > 0 ? `· ${report.count} ${report.scope === 'all' ? `skill${report.count === 1 ? '' : 's'} total` : `new skill${report.count === 1 ? '' : 's'}`}` : (report.scope === 'all' ? '· none yet' : '· nothing new')} <span className="font-normal text-gray-400">— review &amp; edit before sending</span></h3>
+                          <textarea value={report.text} onChange={e => setReport(r => r ? { ...r, text: e.target.value } : r)} className="w-full h-44 text-sm rounded-xl border border-gray-200 p-3 bg-white text-gray-800" />
                           <div className="flex flex-wrap gap-2 mt-3">
                             <button onClick={() => { navigator.clipboard?.writeText(report.text); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200"><Copy size={14} /> {copied ? 'Copied!' : 'Copy'}</button>
                             <a href={waHref} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-white" style={{ background: '#25D366' }}><MessageCircle size={14} /> WhatsApp</a>
