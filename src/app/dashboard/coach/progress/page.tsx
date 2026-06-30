@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Loader2, Users, ChevronDown, ChevronRight, Check,
-  MessageCircle, Mail, Copy, Send, Star, RefreshCw, AlertCircle, Award,
+  MessageCircle, Mail, Copy, Send, Star, RefreshCw, AlertCircle, Award, Search,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -94,10 +94,18 @@ function Progress() {
   const [contact, setContact] = useState({ parentName: '', parentPhone: '', parentEmail: '' });
   const [email, setEmail] = useState<{ state: 'idle' | 'sending' | 'sent' | 'error'; msg?: string }>({ state: 'idle' });
   const [bulk, setBulk] = useState('');
+  const [src, setSrc] = useState<'plan' | 'all'>('plan');   // which lessons to show for ticking
+  const [q, setQ] = useState('');
 
   const cls = classes.find(c => c.id === classId);
   const student = students.find(s => s.uid === uid);
-  const tree = useMemo(() => lessonTree(cls?.lessonIds ?? []), [cls?.lessonIds]);
+  const tree = useMemo(() => {
+    const ids = src === 'all' ? Object.keys(ALL_LESSONS) : (cls?.lessonIds ?? []);
+    let t = lessonTree(ids);
+    const needle = q.trim().toLowerCase();
+    if (needle) t = t.map(p => ({ ...p, lessons: p.lessons.filter(l => l.title.toLowerCase().includes(needle)) })).filter(p => p.lessons.length);
+    return t;
+  }, [src, cls?.lessonIds, q]);
 
   useEffect(() => {
     if (!profile?.uid) return;
@@ -359,11 +367,21 @@ function Progress() {
 
                       {/* Lesson tick list (coach ticks lessons; competencies follow) */}
                       <div className="space-y-3">
-                        <p className="text-xs text-gray-400 px-1">Tick each lesson as {student.displayName.split(/\s+/)[0]} completes it.</p>
+                        <div className="flex flex-wrap items-center gap-2 px-1">
+                          <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold shrink-0">
+                            <button onClick={() => setSrc('plan')} className={`px-3 py-2 ${src === 'plan' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>This class&apos;s plan</button>
+                            <button onClick={() => setSrc('all')} className={`px-3 py-2 ${src === 'all' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>All lessons</button>
+                          </div>
+                          <div className="relative flex-1 min-w-[160px]">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+                            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search lessons…" className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 text-sm" />
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-400 px-1">Tick each lesson as {student.displayName.split(/\s+/)[0]} completes it{src === 'all' ? ' — showing the whole curriculum.' : '.'}</p>
                         {tree.length === 0 ? (
-                          <div className="bg-white rounded-2xl border border-gray-100 p-6 text-sm text-gray-400">This class has no lessons assigned yet — build the plan in <span className="font-semibold">My Classes</span> first.</div>
+                          <div className="bg-white rounded-2xl border border-gray-100 p-6 text-sm text-gray-400">{q.trim() ? 'No lessons match your search.' : src === 'all' ? 'No lessons found.' : <>This class has no lessons in its plan yet — switch to <span className="font-semibold">All lessons</span> above, or build the plan in <span className="font-semibold">My Classes</span>.</>}</div>
                         ) : tree.map(p => {
-                          const isOpen = open.has(p.program);
+                          const isOpen = open.has(p.program) || !!q.trim();
                           const total = p.lessons.length;
                           const got = p.lessons.filter(l => done[l.id]).length;
                           return (
