@@ -137,7 +137,8 @@ function CoachDashboard() {
   const totalLessons = rows.reduce((n, r) => n + (r.lessonIds?.length ?? 0), 0);
 
   const actions = [
-    { icon: '📈', title: 'Progress & Parent Reports', text: 'Tick off skills and message parents', href: '/dashboard/coach/progress', color: '#10B981', bg: '#ECFDF5' },
+    { icon: '🙋', title: 'Attendance', text: 'Take the daily roll call', href: '/dashboard/coach/attendance', color: '#F59E0B', bg: '#FFFBEB' },
+    { icon: '📈', title: 'Competencies & Reports', text: 'Tick lessons; competencies auto-fill', href: '/dashboard/coach/progress', color: '#10B981', bg: '#ECFDF5' },
     { icon: '🏫', title: 'My Classes', text: 'Students, logins and the day-by-day plan', href: '/dashboard/coach/classes', color: '#2563EB', bg: '#EFF6FF' },
     { icon: '📚', title: 'Curriculum', text: 'Browse every program and lesson', href: '/curriculum', color: '#7C3AED', bg: '#F5F3FF' },
   ];
@@ -167,7 +168,7 @@ function CoachDashboard() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {actions.map(card => (
               <Link key={card.title} href={card.href}
                 className="flex items-start gap-4 p-5 rounded-2xl border-2 card-hover group"
