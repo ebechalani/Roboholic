@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
-import { Loader2, RefreshCw, Users, GraduationCap, BookOpen, ChevronDown, ChevronRight, KeyRound, ArrowRightLeft, MessageCircle, Copy } from 'lucide-react';
+import { Loader2, RefreshCw, Users, GraduationCap, BookOpen, ChevronDown, ChevronRight, KeyRound, ArrowRightLeft, MessageCircle, Copy, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
@@ -97,6 +97,7 @@ function Oversight() {
 
   const totalStudents = rows.reduce((n, r) => n + r.studentCount, 0);
   const totalLessons = rows.reduce((n, r) => n + (r.lessonIds?.length ?? 0), 0);
+  const confirmedCount = rows.reduce((n, r) => n + r.students.filter(s => s.confirmedAt).length, 0);
 
   return (
     <>
@@ -109,10 +110,11 @@ function Oversight() {
         />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             {[
               { label: 'Classes', value: rows.length, icon: <BookOpen size={18} />, color: '#2563EB' },
               { label: 'Students', value: totalStudents, icon: <Users size={18} />, color: '#7C3AED' },
+              { label: 'Confirmed by parents', value: `${confirmedCount}/${totalStudents}`, icon: <CheckCircle size={18} />, color: '#16A34A' },
               { label: 'Assigned lessons', value: totalLessons, icon: <GraduationCap size={18} />, color: '#10B981' },
             ].map(s => (
               <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-5">
@@ -186,6 +188,9 @@ function Oversight() {
                               {c.students.map(s => (
                                 <div key={s.uid} className="flex items-center gap-2 flex-wrap">
                                   <span className="text-sm text-gray-700 flex-1 min-w-[120px]">{s.displayName} <span className="text-gray-400 font-mono text-xs">@{s.username}</span></span>
+                                  {s.confirmedAt
+                                    ? <span className="badge-pill bg-green-50 text-green-700 text-[10px] shrink-0 inline-flex items-center gap-1"><CheckCircle size={10} /> Confirmed</span>
+                                    : <span className="badge-pill bg-amber-50 text-amber-700 text-[10px] shrink-0">Awaiting</span>}
                                   {s.parentPhone ? (
                                     <a target="_blank" rel="noreferrer"
                                       href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(confirmMessage(s.parentName, s.displayName, welcomeUrl(c.id, s.uid)))}`}
