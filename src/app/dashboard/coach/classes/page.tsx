@@ -373,14 +373,21 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
   const [plan, setPlan] = useState<string[][]>(initial);
   const [age, setAge] = useState<AgeGroupId | 'all'>(ageFromName(cls.name));
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
   useEffect(() => { setPlan(initial()); }, [cls.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const themes = ALL_COURSES.filter(c => age === 'all' || (PROG_AGES[c.programSlug] ?? []).includes(age));
 
   async function persist(next: string[][]) {
-    setPlan(next); setBusy(true);
-    try { await setClassPlan(cls.id, next); onUpdated({ ...cls, plan: next, lessonIds: next.flat() }); }
-    finally { setBusy(false); }
+    setPlan(next); setBusy(true); setErr('');
+    try {
+      await setClassPlan(cls.id, next);
+      onUpdated({ ...cls, plan: next, lessonIds: next.flat() });
+    } catch {
+      setErr('Could not save the plan. Make sure the updated Firestore rules are published, then try again.');
+    } finally {
+      setBusy(false);
+    }
   }
   const addToDay = (di: number, id: string) => {
     if (plan.flat().includes(id)) return;
@@ -411,6 +418,12 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
           </select>
         </label>
       </div>
+
+      {err && (
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
+          <AlertCircle size={15} className="mt-0.5 shrink-0" /> {err}
+        </div>
+      )}
 
       {plan.map((day, di) => (
         <div key={di} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">

@@ -16,7 +16,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut as sdkSignOut } from 'firebase/auth';
 import {
   getFirestore, doc, setDoc, collection, addDoc, getDocs, getDoc,
-  updateDoc, query, where, orderBy, deleteDoc,
+  updateDoc, query, where, orderBy, deleteDoc, type DocumentData,
 } from 'firebase/firestore';
 import { db, firebaseConfig } from '@/lib/firebase/client';
 import type { ClassDoc, ClassStudent, AttendanceDoc, AttendanceStatus } from '@/types';
@@ -55,6 +55,19 @@ export function studentPassword(code: string, username: string): string {
   return `rh-${normalizeCode(code)}-${username.toLowerCase()}`;
 }
 
+// Rebuild a ClassDoc from Firestore. The day-by-day `plan` is stored as a JSON
+// string (`planJson`) because Firestore forbids directly-nested arrays; we parse
+// it back into string[][] here. Legacy docs may hold `plan` inline.
+function classFromDoc(id: string, data: DocumentData): ClassDoc {
+  let plan: string[][] | undefined;
+  if (typeof data.planJson === 'string') {
+    try { const p = JSON.parse(data.planJson); if (Array.isArray(p)) plan = p as string[][]; } catch { /* ignore malformed */ }
+  } else if (Array.isArray(data.plan)) {
+    plan = data.plan as string[][];
+  }
+  return { ...(data as Omit<ClassDoc, 'id'>), id, plan };
+}
+
 // ─── Class CRUD (run as the signed-in coach) ─────────────────────
 export async function createClass(coachId: string, coachName: string, name: string): Promise<ClassDoc> {
   const code = generateClassCode();
@@ -73,7 +86,7 @@ export async function createClass(coachId: string, coachName: string, name: stri
 export async function getCoachClasses(coachId: string): Promise<ClassDoc[]> {
   const snap = await getDocs(query(collection(db, 'classes'), where('coachId', '==', coachId)));
   return snap.docs
-    .map(d => ({ id: d.id, ...(d.data() as Omit<ClassDoc, 'id'>) }))
+    .map(d => classFromDoc(d.id, d.data()))
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 }
 
@@ -81,22 +94,26 @@ export async function getCoachClasses(coachId: string): Promise<ClassDoc[]> {
 export async function getAllClasses(): Promise<ClassDoc[]> {
   const snap = await getDocs(collection(db, 'classes'));
   return snap.docs
-    .map(d => ({ id: d.id, ...(d.data() as Omit<ClassDoc, 'id'>) }))
+    .map(d => classFromDoc(d.id, d.data()))
     .sort((a, b) => (a.coachName || '').localeCompare(b.coachName || '') || (a.name || '').localeCompare(b.name || ''));
 }
 
 export async function getClass(classId: string): Promise<ClassDoc | null> {
   const snap = await getDoc(doc(db, 'classes', classId));
-  return snap.exists() ? ({ id: snap.id, ...(snap.data() as Omit<ClassDoc, 'id'>) }) : null;
+  return snap.exists() ? classFromDoc(snap.id, snap.data()) : null;
 }
 
 export async function setAssignedLessons(classId: string, lessonIds: string[]): Promise<void> {
   await updateDoc(doc(db, 'classes', classId), { lessonIds });
 }
 
-/** Save the day-by-day plan; keeps lessonIds in sync (= plan flattened) for access. */
+/**
+ * Save the day-by-day plan. Firestore forbids directly-nested arrays, so the
+ * plan (string[][]) is serialised to `planJson`; `lessonIds` stays a flat array
+ * (for access checks / the curriculum tree).
+ */
 export async function setClassPlan(classId: string, plan: string[][]): Promise<void> {
-  await updateDoc(doc(db, 'classes', classId), { plan, lessonIds: plan.flat() });
+  await updateDoc(doc(db, 'classes', classId), { planJson: JSON.stringify(plan), lessonIds: plan.flat() });
 }
 
 export async function getClassStudents(classId: string): Promise<ClassStudent[]> {

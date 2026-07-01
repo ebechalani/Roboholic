@@ -45,7 +45,8 @@ export interface ClassDoc {
   coachName?: string;
   code: string;               // e.g. "RH-K7M2P" — students use this to log in
   lessonIds: string[];        // assigned lesson ids (= plan flattened, for access)
-  plan?: string[][];          // the day-by-day plan: one array of lesson ids per day
+  plan?: string[][];          // the day-by-day plan: one array of lesson ids per day (in-app shape)
+  planJson?: string;          // storage shape: JSON.stringify(plan) — Firestore forbids nested arrays
   createdAt: string;
 }
 
