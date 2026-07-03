@@ -12,7 +12,7 @@ import {
   Video, Code, ExternalLink, Image as ImageIcon, List,
 } from 'lucide-react';
 import { ALL_LESSONS } from '@/lib/curricula';
-import { DRIVE_LINKS } from '@/lib/curricula/drive-links';
+import { DRIVE_LINKS, ACADEMY_DRIVE_FOLDER } from '@/lib/curricula/drive-links';
 import InteractiveExercises from '@/components/lesson/InteractiveExercises';
 import ChessBoards from '@/components/lesson/ChessBoards';
 import CoachWalkthrough from '@/components/lesson/CoachWalkthrough';
@@ -294,6 +294,8 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
             // (PDF/worksheet/code/slides) — Drive "view" links become direct downloads.
             const dl = canDownload && live && r.type !== 'link' && r.type !== 'video';
             const href = dl ? toDownloadHref(url) : url;
+            // Unmapped file but the coach/admin can reach the academy Drive folder to grab it.
+            const folder = !live && canDownload && !!ACADEMY_DRIVE_FOLDER;
             return (
               <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-all hover:shadow-sm">
                 <ResourceIcon type={r.type} />
@@ -301,9 +303,16 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
                   <div className="text-sm font-medium text-gray-900 truncate">{r.title}</div>
                   {r.description && <div className="text-xs text-gray-400">{r.description}</div>}
                   {!live && (
-                    <span className="inline-flex items-center gap-1 text-xs text-gray-400 mt-0.5">
-                      📁 In the academy Google Drive
-                    </span>
+                    folder ? (
+                      <a href={ACADEMY_DRIVE_FOLDER} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-0.5">
+                        📁 Open the academy Google Drive
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                        📁 In the academy Google Drive
+                      </span>
+                    )
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -314,8 +323,14 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
                       className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
                       {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
                     </a>
+                  ) : folder ? (
+                    <a href={ACADEMY_DRIVE_FOLDER} target="_blank" rel="noopener noreferrer"
+                      title="Open the academy Google Drive to download this file"
+                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <ExternalLink size={14} className="text-gray-600" />
+                    </a>
                   ) : (
-                    <span className="p-1.5 rounded-lg bg-gray-50 text-gray-300" title="Not linked yet — add the Drive link in the admin panel">
+                    <span className="p-1.5 rounded-lg bg-gray-50 text-gray-300" title="Not linked yet — add the academy Drive folder link in drive-links.ts">
                       <Download size={14} />
                     </span>
                   )}

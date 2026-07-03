@@ -1,3 +1,9 @@
+// The academy's shared Google Drive folder (share it "Anyone with the link — Viewer").
+// Coaches/admins use this to open & download any lesson file that isn't individually
+// mapped below. Leave '' to hide the link. Example:
+//   'https://drive.google.com/drive/folders/XXXXXXXXXXXXXXXXX'
+export const ACADEMY_DRIVE_FOLDER: string = '';
+
 // AUTO-GENERATED from the academy Google Drive (file IDs). Maps resource id -> exact Drive file link.
 export const DRIVE_LINKS: Record<string, string> = {
   "g12-book": "https://drive.google.com/file/d/11TI6WWA_BJ-zS8uRhZaevriazsF3ZzTb/view?usp=sharing",
