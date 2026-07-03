@@ -202,22 +202,33 @@ function Progress() {
     }
   }
 
-  // End-of-day: email every parent whose child has new competencies.
+  // End-of-day, one click: email every parent (across ALL classes) whose
+  // child has new competencies since their last report.
   async function emailTodayAll() {
     setBulk('Sending…');
     let sent = 0, skipped = 0, failed = 0;
-    for (const s of students) {
-      const r = composeReport(s, 'new', s.lessonsDone ?? {});
-      if (r.count === 0 || !s.parentEmail) { skipped++; continue; }
-      try {
-        await sendEmailTo(s.parentEmail, r.subject, r.text);
-        const now = new Date().toISOString();
-        await markReportSent(classId, s.uid, now);
-        setStudents(prev => prev.map(x => x.uid === s.uid ? { ...x, lastReportAt: now } : x));
-        sent++;
-      } catch { failed++; }
+    const failures: string[] = [];
+    for (const c of classes) {
+      let roster: ClassStudent[] = [];
+      try { roster = c.id === classId ? students : await getClassStudents(c.id); }
+      catch { continue; }
+      for (const s of roster) {
+        const r = composeReport(s, 'new', s.lessonsDone ?? {});
+        if (r.count === 0 || !s.parentEmail) { skipped++; continue; }
+        try {
+          await sendEmailTo(s.parentEmail, r.subject, r.text);
+          const now = new Date().toISOString();
+          await markReportSent(c.id, s.uid, now);
+          if (c.id === classId) setStudents(prev => prev.map(x => x.uid === s.uid ? { ...x, lastReportAt: now } : x));
+          sent++;
+          setBulk(`Sending… ${sent} emailed`);
+        } catch (e) {
+          failed++;
+          if (failures.length < 3) failures.push(`${s.displayName}: ${e instanceof Error ? e.message : 'failed'}`);
+        }
+      }
     }
-    setBulk(`Done — emailed ${sent}, skipped ${skipped}${failed ? `, failed ${failed}` : ''}.`);
+    setBulk(`Done — emailed ${sent} parent${sent === 1 ? '' : 's'}, skipped ${skipped} (nothing new or no email)${failed ? `, failed ${failed} — ${failures.join(' · ')}` : ''}.`);
   }
 
   async function saveContact() {
@@ -262,9 +273,9 @@ function Progress() {
                 <button onClick={() => classId && loadRoster(classId)} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
                 {saving && <span className="text-xs text-gray-400 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span>}
                 {isAdmin && (
-                  <button onClick={emailTodayAll} title="Email every parent whose child has new competencies since their last report"
+                  <button onClick={emailTodayAll} title="One click: email every parent, in every class, whose child has new competencies since their last report"
                     className="sm:ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
-                    <Mail size={14} /> Email today&apos;s reports
+                    <Mail size={14} /> Email all parents (all classes)
                   </button>
                 )}
                 {bulk && <span className="text-xs text-gray-600 w-full">{bulk}</span>}
