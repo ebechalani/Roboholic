@@ -493,13 +493,13 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
                 </button>
               </div>
 
-              {/* Print */}
+              {/* Print / save as PDF — a clean coach sheet (interactive panels are left out) */}
               <button
                 onClick={() => window.print()}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors no-print"
-                title="Print lesson"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors no-print text-xs font-bold text-gray-600"
+                title="Print this lesson or save it as a PDF coach sheet"
               >
-                <Printer size={15} className="text-gray-500" />
+                <Printer size={15} className="text-gray-500" /> <span className="hidden sm:inline">Print / PDF</span>
               </button>
             </div>
           </div>
@@ -507,6 +507,11 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Print-only byline */}
+        <div className="hidden print:flex items-center justify-between pb-3 mb-4 border-b border-gray-200 text-[11px] text-gray-500">
+          <span className="font-bold text-gray-800">🤖 RoboHolic Robotics Academy — coach sheet</span>
+          <span>{lesson.programTitle} · {lesson.duration} · Ages {lesson.ageGroup}</span>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Left sidebar — lesson info */}
@@ -531,7 +536,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
 
                 {/* Embedded video tutorial */}
                 {lesson.youtubeId && (
-                  <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 bg-black aspect-video">
+                  <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 bg-black aspect-video no-print">
                     <iframe
                       className="w-full h-full"
                       src={`https://www.youtube-nocookie.com/embed/${lesson.youtubeId}`}
@@ -647,7 +652,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
 
                 {lesson.boards?.length ? <ChessBoards boards={lesson.boards} color={lesson.programColor} /> : null}
 
-                {isCoachView && lesson.walkthrough?.length ? <CoachWalkthrough steps={lesson.walkthrough} slug={lesson.slug} color={lesson.programColor} /> : null}
+                {isCoachView && lesson.walkthrough?.length ? <div className="no-print"><CoachWalkthrough steps={lesson.walkthrough} slug={lesson.slug} color={lesson.programColor} /></div> : null}
 
                 {lesson.sections.map((section) => (
                   <LessonSectionBlock
@@ -658,7 +663,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
                   />
                 ))}
 
-                <InteractiveExercises lesson={lesson} />
+                <div className="no-print"><InteractiveExercises lesson={lesson} /></div>
               </div>
             )}
 

@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 import { PROGRAMS } from '@/lib/data';
 import { getCoachClasses, getClassStudents } from '@/lib/classes';
 import { ACADEMY_DRIVE_FOLDER } from '@/lib/drive';
+import { dayNumberForDate, planDays, todayStr } from '@/lib/camp';
 import { ALL_LESSONS } from '@/lib/curricula';
 import type { ClassDoc } from '@/types';
 
@@ -37,11 +38,18 @@ function MyClasses({ rows }: { rows: Row[] }) {
       </div>
     );
   }
+  // Which plan day is today? (null outside camp dates)
+  const todayN = dayNumberForDate(todayStr());
+
   return (
     <div className="space-y-5">
       {rows.map(c => {
-        const lessons = (c.lessonIds ?? []).map(id => ALL_LESSONS[id]).filter(Boolean);
-        const nextUp = lessons.slice(0, 3);
+        const plan = planDays(c);
+        const totalLessons = plan.reduce((n, d) => n + d.length, 0);
+        // Today's lessons if camp is running and this day is planned; else Day 1.
+        const showToday = todayN != null && todayN <= plan.length && (plan[todayN - 1]?.length ?? 0) > 0;
+        const dayIds = showToday ? plan[todayN! - 1] : (plan[0] ?? []);
+        const dayLessons = dayIds.map(id => ALL_LESSONS[id]).filter(Boolean);
         return (
           <div key={c.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
@@ -54,15 +62,18 @@ function MyClasses({ rows }: { rows: Row[] }) {
             <div className="px-6 py-3 flex flex-wrap gap-2 text-xs border-b border-gray-50">
               <span className="badge-pill bg-gray-100 text-gray-600">Code {c.code}</span>
               <span className="badge-pill bg-purple-50 text-purple-700">{c.studentCount} students</span>
-              <span className="badge-pill bg-green-50 text-green-700">{lessons.length} lessons · {Math.ceil(lessons.length / 2)} days</span>
+              <span className="badge-pill bg-green-50 text-green-700">{totalLessons} lessons · {plan.length} days</span>
             </div>
-            {lessons.length === 0 ? (
+            {totalLessons === 0 ? (
               <div className="px-6 py-5 text-sm text-gray-400">No lessons assigned yet — open the class to set the plan.</div>
             ) : (
               <div className="px-6 py-4">
-                <div className="text-xs font-bold text-gray-500 mb-2 flex items-center gap-1.5"><CalendarDays size={13} /> Day 1 — start here</div>
+                <div className="text-xs font-bold text-gray-500 mb-2 flex items-center gap-1.5">
+                  <CalendarDays size={13} />
+                  {showToday ? <>Today — Day {todayN} <span className="badge-pill bg-blue-50 text-blue-700 text-[10px]">live</span></> : 'Day 1 — start here'}
+                </div>
                 <div className="space-y-2">
-                  {nextUp.map(l => (
+                  {dayLessons.map(l => (
                     <Link key={l.id} href={`/lessons/${l.id}`} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: l.programColor }} />
                       <div className="flex-1 min-w-0">
@@ -73,7 +84,7 @@ function MyClasses({ rows }: { rows: Row[] }) {
                     </Link>
                   ))}
                 </div>
-                <Link href="/dashboard/coach/classes" className="inline-block mt-3 text-xs text-blue-600 font-semibold hover:underline">See the full day-by-day plan →</Link>
+                <Link href="/dashboard/coach/schedule" className="inline-block mt-3 text-xs text-blue-600 font-semibold hover:underline">See the week-by-week schedule →</Link>
               </div>
             )}
           </div>

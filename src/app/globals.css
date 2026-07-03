@@ -55,10 +55,16 @@ body {
   }
 }
 
-/* Print styles */
+/* Print styles — clean coach sheets (lesson pages, schedule, rosters) */
 @media print {
   .no-print { display: none !important; }
   nav, aside, footer { display: none !important; }
+  body, main, .min-h-screen { background: #fff !important; }
+  * { box-shadow: none !important; }
+  a { text-decoration: none !important; color: inherit !important; }
+  /* keep cards, list items and table rows on one page */
+  .rounded-2xl, .rounded-xl, li, tr { break-inside: avoid; }
+  @page { margin: 12mm; }
 }
 
 /* Student mode colorful overrides */
