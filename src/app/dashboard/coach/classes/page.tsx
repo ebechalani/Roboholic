@@ -10,7 +10,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import {
-  createClass, getCoachClasses, getClassStudents, addStudentToClass,
+  createClass, getCoachClasses, getAllClasses, getClassStudents, addStudentToClass,
   setClassPlan, removeStudentFromRoster, renameStudent, deleteClass,
 } from '@/lib/classes';
 import { ALL_COURSES, ALL_LESSONS } from '@/lib/curricula';
@@ -38,7 +38,8 @@ export default function CoachClassesPage() {
 }
 
 function Classes() {
-  const { profile, configured } = useAuth();
+  const { profile, configured, role } = useAuth();
+  const isAdmin = role === 'admin';
   const [classes, setClasses] = useState<ClassDoc[]>([]);
   const [selected, setSelected] = useState<ClassDoc | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,13 +49,14 @@ function Classes() {
     if (!configured || !profile) { setLoading(false); return; }
     setLoading(true); setError('');
     try {
-      setClasses(await getCoachClasses(profile.uid));
+      // The director sees (and can manage) every coach's class.
+      setClasses(isAdmin ? await getAllClasses() : await getCoachClasses(profile.uid));
     } catch {
       setError('Could not load classes — make sure the updated Firestore rules are published.');
     } finally {
       setLoading(false);
     }
-  }, [configured, profile]);
+  }, [configured, profile, isAdmin]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -158,6 +160,7 @@ function ClassList({ classes, onCreated, onOpen, coachId, coachName }: {
               </div>
               <div className="flex gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1"><BookOpen size={12} /> {c.lessonIds?.length ?? 0} lessons assigned</span>
+                {c.coachName && <span className="flex items-center gap-1"><GraduationCap size={12} /> {c.coachName}</span>}
               </div>
             </button>
           ))}
@@ -199,8 +202,11 @@ function ClassDetail({ cls, onBack, onUpdated }: {
       setNewName('');
       setLastAdded(student);
       setStudents(prev => [...prev, student]);
-    } catch {
-      setError('Could not create the student account. Check the Firestore rules and try again.');
+    } catch (err) {
+      // Show the real reason (permission-denied, auth/..., network) so it's fixable.
+      const code = typeof err === 'object' && err && 'code' in err ? String((err as { code: unknown }).code) : '';
+      const msg = err instanceof Error ? err.message : '';
+      setError(`Could not create the student account${code ? ` — ${code}` : msg ? ` — ${msg}` : ''}. If it says permission-denied, publish the updated Firestore rules; otherwise try again.`);
     } finally {
       setBusy(false);
     }
@@ -390,7 +396,11 @@ function LessonPlan({ cls, onUpdated }: { cls: ClassDoc; onUpdated: (c: ClassDoc
     }
   }
   const addToDay = (di: number, id: string) => {
-    if (plan.flat().includes(id)) return;
+    // A lesson can only sit in one day — tell the coach where it already is
+    // instead of silently ignoring the click.
+    const at = plan.findIndex(d => d.includes(id));
+    if (at !== -1) { setErr(`That lesson is already in Day ${at + 1}. Remove it there first, or use its "Move to day" dropdown.`); return; }
+    setErr('');
     void persist(plan.map((d, i) => (i === di ? [...d, id] : d)));
   };
   const removeFromDay = (di: number, li: number) =>

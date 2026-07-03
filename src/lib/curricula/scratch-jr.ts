@@ -335,11 +335,11 @@ export const SCRATCH_JR_LESSON_1: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'sjl1-r1', title: 'Scratch Jr Interface Poster (PDF)',      type: 'pdf',       audience: 'coach',   url: '/uploads/scratch-jr-interface-poster.pdf', description: 'Print and display in classroom', size: '2 MB' },
-    { id: 'sjl1-r2', title: 'Lesson 1 Worksheet — Explorer Mission',  type: 'worksheet', audience: 'student', url: '/uploads/scratch-jr-l1-worksheet.pdf',      description: 'Student drawing activity sheet',  size: '500 KB' },
-    { id: 'sjl1-r3', title: 'Scratch Jr Quick Reference Card',        type: 'pdf',       audience: 'both',    url: '/uploads/scratch-jr-quick-ref.pdf',         description: 'Block reference for classroom',   size: '1 MB' },
+    { id: 'sjl1-r1', title: 'ScratchJr Interface Guide (official)',   type: 'link',      audience: 'coach',   url: 'https://www.scratchjr.org/learn.html',      description: 'Interface, paint editor & block guides — print for the classroom' },
+    { id: 'sjl1-r2', title: 'Official ScratchJr Activities (worksheets)', type: 'link',  audience: 'both',    url: 'https://www.scratchjr.org/teach.html',      description: 'Free official activity sheets to use in class' },
+    { id: 'sjl1-r3', title: 'ScratchJr Block Reference (official)',   type: 'link',      audience: 'both',    url: 'https://www.scratchjr.org/learn.html',      description: 'Every block explained — the classroom reference' },
     { id: 'sjl1-r4', title: 'Getting Started Video — Scratch Jr',     type: 'video',     audience: 'coach',   url: 'https://www.scratchjr.org',                 description: 'Official intro video',            needsReview: true },
-    { id: 'sjl1-r5', title: 'Coach Demo Project File',                type: 'code',      audience: 'coach',   url: '/uploads/scratch-jr-demo-l1.sjr',           description: 'Pre-built demo for class',        size: '50 KB' },
+    { id: 'sjl1-r5', title: 'ScratchJr Curricula for Coaches (official)', type: 'link',  audience: 'coach',   url: 'https://www.scratchjr.org/teach.html',      description: 'Full free curricula (Animated Genres, Playground games) to demo from' },
   ],
 };
 
@@ -545,9 +545,9 @@ export const SCRATCH_JR_LESSON_2: LessonDetail = {
     },
   ],
   resources: [
-    { id: 'sjl2-r1', title: 'Lesson 2 Worksheet — My Cast',        type: 'worksheet', audience: 'student', url: '/uploads/scratch-jr-l2-worksheet.pdf' },
-    { id: 'sjl2-r2', title: 'Scratch Jr Character Library Guide',   type: 'pdf',       audience: 'coach',   url: '/uploads/scratch-jr-characters.pdf' },
-    { id: 'sjl2-r3', title: 'Story Planning Sticky Note Template',  type: 'pdf',       audience: 'coach',   url: '/uploads/story-planning-template.pdf' },
+    { id: 'sjl2-r1', title: 'Official ScratchJr Activities (worksheets)', type: 'link', audience: 'student', url: 'https://www.scratchjr.org/teach.html', description: 'Free official activity sheets — pick a character activity' },
+    { id: 'sjl2-r2', title: 'ScratchJr Paint Editor Guide (official)',    type: 'link', audience: 'coach',   url: 'https://www.scratchjr.org/learn.html', description: 'How to edit and create characters' },
+    { id: 'sjl2-r3', title: 'ScratchJr Curricula — story planning (official)', type: 'link', audience: 'coach', url: 'https://www.scratchjr.org/teach.html', description: 'The Animated Genres curriculum includes story-planning sheets' },
     { id: 'sjl2-r4', title: 'ScratchJr — Official Site (free activities & curricula)', type: 'link', audience: 'both', url: 'https://www.scratchjr.org', description: 'Free official ScratchJr activities and teacher curricula' },
   ],
 };

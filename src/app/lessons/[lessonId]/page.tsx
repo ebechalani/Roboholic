@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { ALL_LESSONS } from '@/lib/curricula';
 import { DRIVE_LINKS } from '@/lib/curricula/drive-links';
-import { ACADEMY_DRIVE_FOLDER } from '@/lib/drive';
+import { ACADEMY_DRIVE_FOLDER, PROGRAM_DRIVE_FOLDERS } from '@/lib/drive';
 import InteractiveExercises from '@/components/lesson/InteractiveExercises';
 import ChessBoards from '@/components/lesson/ChessBoards';
 import CoachWalkthrough from '@/components/lesson/CoachWalkthrough';
@@ -273,8 +273,11 @@ function toDownloadHref(url: string): string {
 }
 
 // ─── Resources panel ──────────────────────────────────────────────
-function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: LessonDetail['resources']; isCoachView: boolean; canDownload: boolean }) {
+function ResourcesPanel({ resources, isCoachView, canDownload, programSlug }: { resources: LessonDetail['resources']; isCoachView: boolean; canDownload: boolean; programSlug: string }) {
   const visible = isCoachView ? resources : resources.filter(r => r.audience !== 'coach');
+  // Folder to open for files without an exact link: the program's own Drive
+  // subfolder when we know it, otherwise the academy Drive root.
+  const folderUrl = PROGRAM_DRIVE_FOLDERS[programSlug] ?? ACADEMY_DRIVE_FOLDER;
   return (
     <div className="bg-white rounded-2xl border-2 border-gray-100 p-6">
       <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -301,8 +304,8 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
             // (PDF/worksheet/code/slides) — Drive "view" links become direct downloads.
             const dl = canDownload && live && r.type !== 'link' && r.type !== 'video';
             const href = dl ? toDownloadHref(url) : url;
-            // Unmapped file but the coach/admin can reach the academy Drive folder to grab it.
-            const folder = !live && canDownload && !!ACADEMY_DRIVE_FOLDER;
+            // Unmapped file but the coach/admin can reach the program's Drive folder to grab it.
+            const folder = !live && canDownload && !!folderUrl;
             return (
               <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-all hover:shadow-sm">
                 <ResourceIcon type={r.type} />
@@ -311,9 +314,9 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
                   {r.description && <div className="text-xs text-gray-400">{r.description}</div>}
                   {!live && (
                     folder ? (
-                      <a href={ACADEMY_DRIVE_FOLDER} target="_blank" rel="noopener noreferrer"
+                      <a href={folderUrl} target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-0.5">
-                        📁 Open the academy Google Drive
+                        📁 Open this program&apos;s Drive folder
                       </a>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs text-gray-400 mt-0.5">
@@ -331,8 +334,8 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
                       {r.type === 'link' ? <ExternalLink size={14} className="text-gray-600" /> : <Download size={14} className="text-gray-600" />}
                     </a>
                   ) : folder ? (
-                    <a href={ACADEMY_DRIVE_FOLDER} target="_blank" rel="noopener noreferrer"
-                      title="Open the academy Google Drive to download this file"
+                    <a href={folderUrl} target="_blank" rel="noopener noreferrer"
+                      title="Open this program's folder in the academy Drive to download the file"
                       className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
                       <ExternalLink size={14} className="text-gray-600" />
                     </a>
@@ -669,7 +672,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
 
             {/* Resources tab */}
             {activeTab === 'resources' && (
-              <ResourcesPanel resources={lesson.resources} isCoachView={isCoachView} canDownload={canDownload} />
+              <ResourcesPanel resources={lesson.resources} isCoachView={isCoachView} canDownload={canDownload} programSlug={lesson.programSlug} />
             )}
 
             {/* Assessment tab */}
