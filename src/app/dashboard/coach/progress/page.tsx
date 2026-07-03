@@ -184,7 +184,10 @@ function Progress() {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ to, subject, text }),
     });
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Could not send the email.'); }
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({} as { error?: string; detail?: string }));
+      throw new Error([e.error || 'Could not send the email.', e.detail].filter(Boolean).join(' — '));
+    }
   }
 
   async function emailSelected() {
