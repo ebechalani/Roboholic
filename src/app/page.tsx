@@ -5,10 +5,12 @@ import { useState } from 'react';
 import { BookOpen, Users, GraduationCap, Trophy, ArrowRight, CheckCircle, Star, Zap, Shield, Download, BarChart, Layers } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { useAuth } from '@/lib/auth/AuthProvider';
 import { PROGRAMS, PROGRAM_CATEGORIES, AGE_GROUPS } from '@/lib/data';
 
 // ─── Hero Section ─────────────────────────────────────────────────
 function HeroSection() {
+  const { role } = useAuth();
   return (
     <section className="relative hero-bg section-pattern min-h-[92vh] flex flex-col justify-center overflow-hidden">
       {/* Decorative animated blobs */}
@@ -50,33 +52,55 @@ function HeroSection() {
             projects, quizzes, and progress tracking — all in one place.
           </p>
 
-          {/* CTA buttons */}
+          {/* CTA buttons — role-aware: signed-in staff go straight to their tools */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
-              style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}
-            >
-              <GraduationCap size={20} />
-              I&apos;m a Coach
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="/login?tab=student"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
-              style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}
-            >
-              <Star size={20} />
-              I&apos;m a Student
-              <ArrowRight size={16} />
-            </Link>
+            {role === 'admin' ? (
+              <>
+                <Link href="/admin"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
+                  <GraduationCap size={20} /> Admin Panel <ArrowRight size={16} />
+                </Link>
+                <Link href="/dashboard/coach"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}>
+                  <Star size={20} /> Coach Dashboard <ArrowRight size={16} />
+                </Link>
+              </>
+            ) : role === 'coach' ? (
+              <>
+                <Link href="/dashboard/coach"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
+                  <GraduationCap size={20} /> My Dashboard <ArrowRight size={16} />
+                </Link>
+                <Link href="/dashboard/coach/schedule"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}>
+                  <Star size={20} /> Today&apos;s Schedule <ArrowRight size={16} />
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
+                  <GraduationCap size={20} /> I&apos;m a Coach <ArrowRight size={16} />
+                </Link>
+                <Link href="/login?tab=student"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-xl shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)' }}>
+                  <Star size={20} /> I&apos;m a Student <ArrowRight size={16} />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Quick stats */}
           <div className="flex flex-wrap gap-6">
             {[
-              { value: '500+', label: 'Lessons' },
-              { value: '26',   label: 'Technologies' },
+              { value: '300+', label: 'Lessons' },
+              { value: String(PROGRAMS.length), label: 'Technologies' },
               { value: '5',    label: 'Age Groups' },
               { value: '3',    label: 'Levels' },
             ].map(stat => (
@@ -114,7 +138,7 @@ function ProgramsSection() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-4">
-            <Layers size={14} /> 26 Programs
+            <Layers size={14} /> {PROGRAMS.length} Programs
           </div>
           <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4">
             One Platform.{' '}
@@ -229,10 +253,10 @@ function ProgramCard({ program }: { program: typeof PROGRAMS[0] }) {
 
 // ─── Features Section ─────────────────────────────────────────────
 const COACH_FEATURES = [
-  { icon: <BookOpen size={20} />, title: 'Complete Lesson Plans',     text: 'Every lesson includes objectives, materials, step-by-step instructions, coach notes, troubleshooting, and assessments.' },
-  { icon: <Shield size={20} />,   title: 'Coach-Only Notes',          text: 'Private sections only coaches see — tips, common mistakes, differentiation ideas, and classroom management advice.' },
-  { icon: <BarChart size={20} />, title: 'Student Progress Tracking', text: 'See exactly where each student is. Track lesson completion, quiz scores, and project submissions.' },
-  { icon: <Download size={20} />, title: 'Downloadable Resources',    text: 'PDFs, worksheets, code files, and project guides ready to download and print for every lesson.' },
+  { icon: <BookOpen size={20} />, title: 'Complete Lesson Plans',      text: 'Every lesson includes objectives, materials, step-by-step instructions, coach notes, troubleshooting, and assessments.' },
+  { icon: <BarChart size={20} />, title: 'ICT Competency Tracking',    text: 'Tick the lessons a student completes — the ICT competencies fill in automatically and feed director-approved parent reports.' },
+  { icon: <Shield size={20} />,   title: 'Attendance & Schedule',      text: 'A one-tap daily roll call, and the whole camp mapped week by week with today\'s lessons highlighted.' },
+  { icon: <Download size={20} />, title: 'Downloadable Resources',     text: 'Every lesson file deep-linked to the academy Drive — one click to download or print, plus clean PDF coach sheets.' },
 ];
 
 const STUDENT_FEATURES = [
@@ -312,12 +336,12 @@ function FeaturesSection() {
             <ul className="space-y-3">
               {[
                 'Curriculum map organized by age, level & technology',
-                'Step-by-step lesson plans with timing guides',
-                'Printable worksheets & downloadable resources',
-                'Student progress tracking & completion marking',
+                'Step-by-step lesson plans with coach walkthroughs',
+                'Daily attendance roll call & week-by-week camp schedule',
+                'ICT competency tracking with director-approved parent reports',
+                'Every lesson file downloadable from the academy Drive',
                 'Coach-only notes hidden from students',
-                'One-click access during live class sessions',
-                'Search & filter across all 500+ lessons',
+                'Print / PDF coach sheets for any lesson',
                 'Competition preparation & training materials',
               ].map(item => (
                 <li key={item} className="flex items-start gap-3 text-sm text-gray-600">

@@ -74,6 +74,15 @@ export interface ClassStudent {
   // a student only appears in the coach's roll call on their days.
   // Unset / empty = attends every camp day (Mon–Fri).
   attendDays?: number[];
+  // Camp fee tracking, admin-only. Key = month ('2026-07', '2026-08').
+  payments?: Record<string, StudentPayment>;
+}
+
+/** One month's camp fee payment (Whish wallet transfer or cash). */
+export interface StudentPayment {
+  method: 'whish' | 'cash';
+  at: string;                 // ISO date the admin recorded it
+  note?: string;
 }
 
 // ─── Attendance / roll call ─────────────────────────────────────
