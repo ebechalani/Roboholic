@@ -12,7 +12,8 @@ import {
   Video, Code, ExternalLink, Image as ImageIcon, List,
 } from 'lucide-react';
 import { ALL_LESSONS } from '@/lib/curricula';
-import { DRIVE_LINKS, ACADEMY_DRIVE_FOLDER } from '@/lib/curricula/drive-links';
+import { DRIVE_LINKS } from '@/lib/curricula/drive-links';
+import { ACADEMY_DRIVE_FOLDER } from '@/lib/drive';
 import InteractiveExercises from '@/components/lesson/InteractiveExercises';
 import ChessBoards from '@/components/lesson/ChessBoards';
 import CoachWalkthrough from '@/components/lesson/CoachWalkthrough';
@@ -280,6 +281,12 @@ function ResourcesPanel({ resources, isCoachView, canDownload }: { resources: Le
         <span className="text-xl">📁</span> Files & Resources
         {!isCoachView && (
           <span className="badge-pill bg-orange-100 text-orange-600 text-xs ml-auto">Student resources</span>
+        )}
+        {isCoachView && canDownload && ACADEMY_DRIVE_FOLDER && (
+          <a href={ACADEMY_DRIVE_FOLDER} target="_blank" rel="noopener noreferrer"
+            className="ml-auto text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1">
+            <ExternalLink size={12} /> Academy Drive
+          </a>
         )}
       </h3>
       {visible.length === 0 ? (

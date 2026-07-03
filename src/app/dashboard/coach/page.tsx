@@ -8,6 +8,7 @@ import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { PROGRAMS } from '@/lib/data';
 import { getCoachClasses, getClassStudents } from '@/lib/classes';
+import { ACADEMY_DRIVE_FOLDER } from '@/lib/drive';
 import { ALL_LESSONS } from '@/lib/curricula';
 import type { ClassDoc } from '@/types';
 
@@ -181,6 +182,19 @@ function CoachDashboard() {
               </Link>
             ))}
           </div>
+
+          {ACADEMY_DRIVE_FOLDER && (
+            <a href={ACADEMY_DRIVE_FOLDER} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-4 p-5 rounded-2xl border-2 card-hover group"
+              style={{ background: '#FFF7ED', borderColor: '#F9731630' }}>
+              <span className="text-3xl">📂</span>
+              <div className="flex-1">
+                <div className="font-bold text-gray-900 text-sm mb-0.5 group-hover:underline">Academy Google Drive</div>
+                <div className="text-xs text-gray-500">All original lesson files (PDFs, slides, worksheets) — open to view or download</div>
+              </div>
+              <ChevronRight size={18} className="text-gray-300 shrink-0" />
+            </a>
+          )}
 
           <QuickPrograms />
         </div>
