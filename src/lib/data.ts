@@ -80,8 +80,8 @@ export const PROGRAMS: Program[] = [
     ageGroups: ['4-5', '6-7'],
     levels: ['Beginner'],
     courseCount: 1,
-    lessonCount: 1,
-    tags: ['Screen-free', 'Sequences', 'Loops', 'Early Learning'],
+    lessonCount: 16,
+    tags: ['Screen-free', 'Sequences', 'Loops', 'Early Learning', 'SEL'],
   },
   {
     id: 'scratch-jr',

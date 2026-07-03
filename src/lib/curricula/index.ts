@@ -34,7 +34,7 @@ import { PHP_COURSE, PHP_LESSONS } from './php-mysql';
 import { PROJECTS_COURSE, PROJECTS_LESSONS } from './projects';
 import { MAKEX_COURSE, MAKEX_LESSONS, COMPETITION_COURSE, COMPETITION_LESSONS } from './competition';
 import { INVENTION_COURSE, INVENTION_LESSONS } from './invention';
-import { MTINY_COURSE, MTINY_LESSON } from './mtiny';
+import { MTINY_COURSE, MTINY_LESSON, MTINY_DISCOVER_LESSONS } from './mtiny';
 import {
   MBOT2_COURSE,
   MBOT2_LESSON_1, MBOT2_LESSON_2, MBOT2_LESSON_3, MBOT2_LESSON_4,
@@ -81,6 +81,7 @@ export const ALL_LESSONS: Record<string, LessonDetail> = {
   ...Object.fromEntries(COMPETITION_LESSONS.map(l => [l.id, l])),
   ...Object.fromEntries(INVENTION_LESSONS.map(l => [l.id, l])),
   [MTINY_LESSON.id]: MTINY_LESSON,
+  ...Object.fromEntries(MTINY_DISCOVER_LESSONS.map(l => [l.id, l])),
   [MBOT2_LESSON_1.id]: MBOT2_LESSON_1,
   [MBOT2_LESSON_2.id]: MBOT2_LESSON_2,
   [MBOT2_LESSON_3.id]: MBOT2_LESSON_3,
