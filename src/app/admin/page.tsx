@@ -8,7 +8,7 @@ import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { PROGRAMS, AGE_GROUPS, BADGES } from '@/lib/data';
 import {
-  Layers, BookOpen, Users, Package, Upload, GraduationCap, Award, ArrowRight, Eye,
+  Layers, BookOpen, Users, Package, Upload, GraduationCap, Award, ArrowRight, Eye, ClipboardCheck,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -36,6 +36,7 @@ function Admin() {
     { title: 'Import Materials', text: 'Bulk-import your Summer Camp 2025 curriculum.', href: '/admin/upload', icon: <Upload size={20} />, color: '#EC4899', bg: '#FDF2F8' },
     { title: 'Manage Users', text: 'Coaches and students — roles and access.', href: '/admin/users', icon: <Users size={20} />, color: '#0EA5E9', bg: '#F0F9FF' },
     { title: 'Coach Oversight', text: 'See each coach\'s classes, assigned lessons & students.', href: '/admin/oversight', icon: <Eye size={20} />, color: '#0D9488', bg: '#F0FDFA' },
+    { title: 'Attendance Overview', text: 'Today\'s roll call across all classes + absences per child.', href: '/admin/attendance', icon: <ClipboardCheck size={20} />, color: '#DC2626', bg: '#FEF2F2' },
   ];
 
   return (

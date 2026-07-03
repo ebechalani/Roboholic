@@ -159,9 +159,12 @@ function CoachDashboard() {
     <div className="flex min-h-screen">
       <Sidebar role="coach" userName={coachName} userEmoji="🎓" />
       <main className="flex-1 ml-64 min-h-screen" style={{ background: '#F0F4FF' }}>
-        <header className="bg-white border-b border-gray-100 sticky top-0 z-30 px-8 py-4">
-          <h1 className="font-black text-gray-900 text-lg">Welcome, {coachName}! 👋</h1>
-          <p className="text-xs text-gray-400">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <header className="bg-white border-b border-gray-100 sticky top-0 z-30 px-8 py-4 flex items-center justify-between gap-4">
+          <div>
+            <h1 className="font-black text-gray-900 text-lg">Welcome, {coachName}! 👋</h1>
+            <p className="text-xs text-gray-400">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          </div>
+          <Link href="/dashboard/coach/handbook" className="text-xs font-bold text-blue-600 hover:underline shrink-0">📘 New here? Read the coach handbook</Link>
         </header>
 
         <div className="p-8 space-y-8 max-w-5xl">

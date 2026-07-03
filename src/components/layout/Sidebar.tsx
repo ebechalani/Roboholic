@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, BookOpen, FolderOpen, Package, Trophy,
   Users, Settings, LogOut, ChevronRight, Star, BarChart2,
-  Upload, Cpu, Home, Shield, ClipboardCheck, CalendarDays,
+  Upload, Cpu, Home, Shield, ClipboardCheck, CalendarDays, LifeBuoy,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthProvider';
 
@@ -29,6 +29,7 @@ const COACH_NAV: NavItem[] = [
   { label: 'Projects',       href: '/projects',                icon: <FolderOpen size={18} /> },
   { label: 'Resources',      href: '/resources',               icon: <Package size={18} /> },
   { label: 'Competitions',   href: '/competitions',            icon: <Trophy size={18} /> },
+  { label: 'Handbook',       href: '/dashboard/coach/handbook', icon: <LifeBuoy size={18} /> },
 ];
 
 const STUDENT_NAV: NavItem[] = [

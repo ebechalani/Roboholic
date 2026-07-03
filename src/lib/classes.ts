@@ -166,6 +166,14 @@ export async function setAttendance(classId: string, date: string, marks: Record
     { date, marks, takenBy: takenBy ?? '', takenAt: new Date().toISOString() }, { merge: true });
 }
 
+/** Every roll call taken for a class so far (admin overview / absence counts). */
+export async function getAllAttendance(classId: string): Promise<AttendanceDoc[]> {
+  const snap = await getDocs(collection(db, 'classes', classId, 'attendance'));
+  return snap.docs
+    .map(d => d.data() as AttendanceDoc)
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+}
+
 /** Deletes a class and its whole roster. (Student auth accounts become
  *  unused — they can't reach anything without an assigned class.) */
 export async function deleteClass(classId: string): Promise<void> {
