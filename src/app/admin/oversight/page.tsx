@@ -43,6 +43,12 @@ function confirmMessage(parentName: string | undefined, childName: string, url: 
   const hi = parentName ? `Hello ${parentName}!` : 'Hello!';
   return `${hi} 👋\n\nThis is RoboHolic Robotics Academy — we're delighted to confirm ${first}'s place at our Summer Camp 2026.\n\nPlease open ${first}'s personal page to confirm the date of birth and see all the details (first day, login, payment):\n${url}\n\nSee you on Wednesday 1 July at 8:30 AM! 🤖`;
 }
+// WhatsApp message asking a parent for their email (so progress reports can be emailed).
+function askEmailMessage(parentName: string | undefined, childName: string) {
+  const first = (childName || '').split(/\s+/)[0] || 'your child';
+  const hi = parentName ? `Hello ${parentName}!` : 'Hello!';
+  return `${hi} 👋\n\nThis is RoboHolic Robotics Academy. Could you please send me your email address so I can email you ${first}'s progress reports from camp?\n\nThank you! 🤖`;
+}
 
 // Group a class's assigned lesson ids by their program, with titles.
 function byProgram(ids: string[]) {
@@ -146,6 +152,40 @@ function Oversight() {
               </div>
             ))}
           </div>
+
+          {/* Missing parent emails — these children can't receive emailed reports */}
+          {(() => {
+            const noEmail = rows.flatMap(c => c.students.filter(s => !(s.parentEmail || '').trim()).map(s => ({ s, cls: c.name })));
+            if (loading || noEmail.length === 0) return null;
+            return (
+              <details className="bg-amber-50 border-2 border-amber-200 rounded-2xl mb-6 overflow-hidden">
+                <summary className="cursor-pointer list-none px-5 py-3.5 flex items-center gap-2 text-sm font-bold text-amber-900">
+                  ⚠️ {noEmail.length} student{noEmail.length === 1 ? '' : 's'} without a parent email — progress reports can&apos;t be emailed to them <span className="ml-auto text-xs font-semibold text-amber-600">click to see who</span>
+                </summary>
+                <div className="px-5 pb-4 space-y-1.5">
+                  {noEmail.map(({ s, cls }) => (
+                    <div key={`${cls}-${s.uid}`} className="flex items-center gap-2 flex-wrap text-sm">
+                      <span className="font-semibold text-gray-800">{s.displayName}</span>
+                      <span className="text-xs text-gray-500">{cls}</span>
+                      {s.parentPhone ? (
+                        <>
+                          <span className="text-xs text-gray-600 ml-auto">{s.parentName || 'parent'} · {s.parentPhone}</span>
+                          <a target="_blank" rel="noreferrer"
+                            href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(askEmailMessage(s.parentName, s.displayName))}`}
+                            className="text-[11px] font-bold px-2.5 py-1 rounded-lg text-white inline-flex items-center gap-1" style={{ background: '#25D366' }}>
+                            <MessageCircle size={11} /> Ask for email
+                          </a>
+                        </>
+                      ) : (
+                        <span className="badge-pill bg-red-50 text-red-600 text-[10px] ml-auto">no contact on file — collect at pickup</span>
+                      )}
+                    </div>
+                  ))}
+                  <p className="text-[11px] text-amber-700 pt-1">Type the email into the student&apos;s “Parent email” field on the Progress page (it saves automatically) — they&apos;ll be included in the next “Email all parents”.</p>
+                </div>
+              </details>
+            );
+          })()}
 
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-500"><b className="text-gray-900">{rows.length}</b> class{rows.length === 1 ? '' : 'es'}</p>
