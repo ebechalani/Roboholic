@@ -1,4 +1,5 @@
 import type { Course, LessonDetail, LessonImage, LessonSection } from '@/types';
+import { DISCOVER_EXTRAS } from './mtiny-discover-extras';
 
 // ════════════════════════════════════════════════════════════════
 //  mTiny — screen-free tangible coding (ages 4–6)
@@ -231,6 +232,8 @@ function makeDiscoverLesson(u: DiscoverUnit, i: number, l: DiscoverLesson): Less
   const id = `mtiny-d${u.n}${i + 1}`;
   const num = `${u.n}.${i + 1}`;
   const title = `${num} ${l.t}`;
+  // Interactive teaching layer (guided walkthrough / quiz / matching game).
+  const extra = DISCOVER_EXTRAS[num];
   const sections: LessonSection[] = [
     {
       type: 'coach_prep', title: 'Before-Class Preparation', emoji: '📋', isCoachOnly: true,
@@ -302,6 +305,9 @@ function makeDiscoverLesson(u: DiscoverUnit, i: number, l: DiscoverLesson): Less
       'Completed the workbook page.',
     ],
     sections,
+    walkthrough: extra?.walk,
+    quiz: extra?.quiz,
+    interactions: extra ? [{ kind: 'match', title: extra.match.title, pairs: extra.match.pairs }] : undefined,
     resources: [
       { id: `${id}-r1`, title: `Lesson ${num} — official lesson plan (PDF)`, type: 'pdf', audience: 'both', url: D(l.plan), description: l.t },
       { id: `${id}-r2`, title: `Lesson ${num} — Engage video`, type: 'video', audience: 'both', url: D(l.video), description: 'Play at the start of class' },
