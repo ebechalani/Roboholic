@@ -159,16 +159,20 @@ function Progress() {
       lines.push('');
     }
     const today = new Date().toLocaleDateString();
+    // The director signs as founder; a coach account would sign as coach.
+    const signer = isAdmin
+      ? `${coachName}\nFounder — RoboHolic Robotics Academy`
+      : `Coach ${coachName}\nRoboHolic Robotics Academy`;
     const emptyText = sc === 'all'
-      ? `Hi! We haven't logged any competencies for ${first} yet — we'll share progress soon. — Coach ${coachName}, RoboHolic Robotics Academy`
-      : `Hi! No new competencies to report for ${first} since the last update — we'll share progress again soon. — Coach ${coachName}, RoboHolic Robotics Academy`;
+      ? `Hi! We haven't logged any competencies for ${first} yet — we'll share progress soon.\n— ${signer}`
+      : `Hi! No new competencies to report for ${first} since the last update — we'll share progress again soon.\n— ${signer}`;
     const intro = sc === 'all'
       ? `Here are all the ICT competencies ${first} has demonstrated so far (${total}):`
       : `Since our last update, ${first} has demonstrated ${total} new ICT competenc${total === 1 ? 'y' : 'ies'}:`;
     const text = total === 0 ? emptyText
-      : `🎉 RoboHolic Robotics Academy — progress update for ${s.displayName} (${today})\n\n${intro}\n\n${lines.join('\n').trim()}\n\nWell done, ${first}! 👏\n— Coach ${coachName}`;
+      : `🎉 RoboHolic Robotics Academy — progress update for ${s.displayName} (${today})\n\n${intro}\n\n${lines.join('\n').trim()}\n\nWell done, ${first}! 👏\n— ${signer}`;
     return { text, subject: `${s.displayName} — RoboHolic progress update`, count: total };
-  }, [coachName]);
+  }, [coachName, isAdmin]);
 
   function buildReport() {
     if (!student) return;
