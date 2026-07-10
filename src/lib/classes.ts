@@ -55,6 +55,17 @@ export function studentPassword(code: string, username: string): string {
   return `rh-${normalizeCode(code)}-${username.toLowerCase()}`;
 }
 
+// Retry a flaky read a few times before giving up — the academy's internet
+// connection to Google drops intermittently, and one retry usually lands.
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn(); }
+    catch (e) { last = e; if (i < attempts - 1) await new Promise(r => setTimeout(r, 1200 * (i + 1))); }
+  }
+  throw last;
+}
+
 // Rebuild a ClassDoc from Firestore. The day-by-day `plan` is stored as a JSON
 // string (`planJson`) because Firestore forbids directly-nested arrays; we parse
 // it back into string[][] here. Legacy docs may hold `plan` inline.
@@ -84,7 +95,7 @@ export async function createClass(coachId: string, coachName: string, name: stri
 }
 
 export async function getCoachClasses(coachId: string): Promise<ClassDoc[]> {
-  const snap = await getDocs(query(collection(db, 'classes'), where('coachId', '==', coachId)));
+  const snap = await withRetry(() => getDocs(query(collection(db, 'classes'), where('coachId', '==', coachId))));
   return snap.docs
     .map(d => classFromDoc(d.id, d.data()))
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
@@ -92,7 +103,7 @@ export async function getCoachClasses(coachId: string): Promise<ClassDoc[]> {
 
 /** All classes (admin only — used so the director can review/send every class). */
 export async function getAllClasses(): Promise<ClassDoc[]> {
-  const snap = await getDocs(collection(db, 'classes'));
+  const snap = await withRetry(() => getDocs(collection(db, 'classes')));
   return snap.docs
     .map(d => classFromDoc(d.id, d.data()))
     .sort((a, b) => (a.coachName || '').localeCompare(b.coachName || '') || (a.name || '').localeCompare(b.name || ''));
@@ -117,7 +128,7 @@ export async function setClassPlan(classId: string, plan: string[][]): Promise<v
 }
 
 export async function getClassStudents(classId: string): Promise<ClassStudent[]> {
-  const snap = await getDocs(query(collection(db, 'classes', classId, 'students'), orderBy('createdAt')));
+  const snap = await withRetry(() => getDocs(query(collection(db, 'classes', classId, 'students'), orderBy('createdAt'))));
   return snap.docs.map(d => d.data() as ClassStudent);
 }
 

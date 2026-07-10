@@ -186,8 +186,8 @@ function ClassDetail({ cls, onBack, onUpdated }: {
 
   const loadStudents = useCallback(async () => {
     setLoading(true);
-    try { setStudents(await getClassStudents(cls.id)); }
-    catch { setError('Could not load the roster.'); }
+    try { setStudents(await getClassStudents(cls.id)); setError(''); }
+    catch { setError('Could not load the roster — this is usually the internet connection dropping. It was retried 3 times; check your connection and click the class again.'); }
     finally { setLoading(false); }
   }, [cls.id]);
 

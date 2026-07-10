@@ -7,7 +7,10 @@
 // Every call site guards on `isFirebaseConfigured` before using them.
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import {
+  getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  type Firestore,
+} from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 export const firebaseConfig = {
@@ -34,7 +37,19 @@ let _storage: FirebaseStorage | undefined;
 if (isFirebaseConfigured) {
   _app = getApps().length ? getApp() : initializeApp(firebaseConfig);
   _auth = getAuth(_app);
-  _db = getFirestore(_app);
+  // In the browser, keep a persistent local cache (IndexedDB): when the
+  // internet connection flaps, already-loaded rosters/classes still display
+  // instead of erroring. Falls back to the default store on hot-reload or
+  // unsupported browsers; on the server (SSR/build) use the plain store.
+  if (typeof window !== 'undefined') {
+    try {
+      _db = initializeFirestore(_app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+    } catch {
+      _db = getFirestore(_app);
+    }
+  } else {
+    _db = getFirestore(_app);
+  }
   _storage = getStorage(_app);
 }
 
