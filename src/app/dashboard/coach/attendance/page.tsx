@@ -58,13 +58,22 @@ function Attendance() {
     p.then(cs => { setClasses(cs); if (cs[0]) setClassId(cs[0].id); }).finally(() => setLoading(false));
   }, [profile?.uid, isAdmin]);
 
+  const [loadErr, setLoadErr] = useState('');
   const load = useCallback(async (cid: string, d: string) => {
     if (!cid) return;
-    setBusy(true);
+    setBusy(true); setLoadErr('');
     try {
-      const [roster, att] = await Promise.all([getClassStudents(cid), getAttendance(cid, d)]);
-      setStudents(roster);
-      setMarks(att?.marks ?? {});
+      // Roster first — an attendance-read failure must never hide the students.
+      setStudents(await getClassStudents(cid));
+      try {
+        const att = await getAttendance(cid, d);
+        setMarks(att?.marks ?? {});
+      } catch {
+        setMarks({});
+        setLoadErr('Loaded the students, but could not read the saved roll call (connection or rules issue) — marks may appear empty.');
+      }
+    } catch {
+      setLoadErr('Could not load the students — check the internet connection and press Refresh.');
     } finally { setBusy(false); }
   }, []);
   useEffect(() => { if (classId) void load(classId, date); }, [classId, date, load]);
@@ -127,6 +136,8 @@ function Attendance() {
                 <button onClick={() => load(classId, date)} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
                 {saving && <span className="text-xs text-gray-400 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span>}
               </div>
+
+              {loadErr && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm mb-4">{loadErr}</div>}
 
               <div className="bg-white rounded-2xl border border-gray-100 p-5">
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-4">

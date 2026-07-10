@@ -15,8 +15,8 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut as sdkSignOut } from 'firebase/auth';
 import {
-  getFirestore, doc, setDoc, collection, addDoc, getDocs, getDoc,
-  updateDoc, query, where, orderBy, deleteDoc, type DocumentData,
+  getFirestore, doc, setDoc, collection, addDoc, getDocs, getDocsFromServer, getDoc,
+  updateDoc, query, where, orderBy, deleteDoc, type DocumentData, type Query,
 } from 'firebase/firestore';
 import { db, firebaseConfig } from '@/lib/firebase/client';
 import type { ClassDoc, ClassStudent, AttendanceDoc, AttendanceStatus, StudentPayment } from '@/types';
@@ -66,6 +66,19 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
   throw last;
 }
 
+// Server-first read: retries the live server (so the offline cache can never
+// silently return an empty first-load), then falls back to whatever the local
+// cache has — but only if the cache actually contains something.
+async function robustGetDocs<T>(q: Query<T>) {
+  try {
+    return await withRetry(() => getDocsFromServer(q));
+  } catch (err) {
+    const cached = await getDocs(q).catch(() => null);
+    if (cached && !cached.empty) return cached;
+    throw err;
+  }
+}
+
 // Rebuild a ClassDoc from Firestore. The day-by-day `plan` is stored as a JSON
 // string (`planJson`) because Firestore forbids directly-nested arrays; we parse
 // it back into string[][] here. Legacy docs may hold `plan` inline.
@@ -95,7 +108,7 @@ export async function createClass(coachId: string, coachName: string, name: stri
 }
 
 export async function getCoachClasses(coachId: string): Promise<ClassDoc[]> {
-  const snap = await withRetry(() => getDocs(query(collection(db, 'classes'), where('coachId', '==', coachId))));
+  const snap = await robustGetDocs(query(collection(db, 'classes'), where('coachId', '==', coachId)));
   return snap.docs
     .map(d => classFromDoc(d.id, d.data()))
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
@@ -103,7 +116,7 @@ export async function getCoachClasses(coachId: string): Promise<ClassDoc[]> {
 
 /** All classes (admin only — used so the director can review/send every class). */
 export async function getAllClasses(): Promise<ClassDoc[]> {
-  const snap = await withRetry(() => getDocs(collection(db, 'classes')));
+  const snap = await robustGetDocs(collection(db, 'classes'));
   return snap.docs
     .map(d => classFromDoc(d.id, d.data()))
     .sort((a, b) => (a.coachName || '').localeCompare(b.coachName || '') || (a.name || '').localeCompare(b.name || ''));
@@ -128,7 +141,7 @@ export async function setClassPlan(classId: string, plan: string[][]): Promise<v
 }
 
 export async function getClassStudents(classId: string): Promise<ClassStudent[]> {
-  const snap = await withRetry(() => getDocs(query(collection(db, 'classes', classId, 'students'), orderBy('createdAt'))));
+  const snap = await robustGetDocs(query(collection(db, 'classes', classId, 'students'), orderBy('createdAt')));
   return snap.docs.map(d => d.data() as ClassStudent);
 }
 

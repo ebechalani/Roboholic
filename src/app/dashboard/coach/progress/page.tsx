@@ -116,10 +116,17 @@ function Progress() {
     }).finally(() => setLoading(false));
   }, [profile?.uid, isAdmin]);
 
+  const [loadErr, setLoadErr] = useState('');
   const loadRoster = useCallback(async (cid: string) => {
-    const roster = await getClassStudents(cid);
-    setStudents(roster);
-    setUid(roster[0]?.uid ?? '');
+    setLoadErr('');
+    try {
+      const roster = await getClassStudents(cid);
+      setStudents(roster);
+      setUid(roster[0]?.uid ?? '');
+    } catch {
+      setStudents([]); setUid('');
+      setLoadErr('Could not load the students — check the internet connection and press Refresh.');
+    }
   }, []);
   useEffect(() => { if (classId) void loadRoster(classId); }, [classId, loadRoster]);
 
@@ -287,6 +294,8 @@ function Progress() {
                 )}
                 {bulk && <span className="text-xs text-gray-600 w-full">{bulk}</span>}
               </div>
+
+              {loadErr && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm mb-4">{loadErr}</div>}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Students list */}
