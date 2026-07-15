@@ -78,11 +78,21 @@ export interface ClassStudent {
   payments?: Record<string, StudentPayment>;
 }
 
-/** One month's camp fee payment (Whish wallet transfer or cash). */
+/** One month's camp fee for a student (the amount to collect + how it was paid). */
 export interface StudentPayment {
-  method: 'whish' | 'cash';
-  at: string;                 // ISO date the admin recorded it
+  amount?: number;            // fee to collect this month (also counts as collected once paid)
+  method?: 'whish' | 'cash';  // set when actually paid; absent = amount entered but not yet paid
+  at?: string;                // ISO date the payment was recorded
   note?: string;
+}
+
+/** An academy expense (admin-only bookkeeping). Firestore: expenses/{id}. */
+export interface Expense {
+  id: string;
+  label: string;
+  amount: number;
+  month?: string;             // optional '2026-07' tag
+  at: string;                 // ISO recorded
 }
 
 // ─── Attendance / roll call ─────────────────────────────────────

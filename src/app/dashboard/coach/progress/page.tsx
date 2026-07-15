@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 import { auth } from '@/lib/firebase/client';
 import {
   getCoachClasses, getAllClasses, getClassStudents,
-  setStudentLessonsDone, markReportSent, setParentContact,
+  setStudentLessonsDone, markReportSent, setParentContact, addLessonToClass,
 } from '@/lib/classes';
 import { ICT_STRANDS, mapSkillsToIct } from '@/lib/competencies';
 import { ALL_LESSONS } from '@/lib/curricula';
@@ -138,9 +138,11 @@ function Progress() {
     setEmail({ state: 'idle' });
   }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [addedNote, setAddedNote] = useState('');
   // Tick / untick a lesson for the selected student → competencies follow automatically.
   async function toggleLesson(id: string) {
     if (!student) return;
+    const turningOn = !done[id];
     const next = { ...done };
     if (next[id]) delete next[id]; else next[id] = new Date().toISOString();
     setDone(next);
@@ -148,6 +150,15 @@ function Progress() {
     try {
       await setStudentLessonsDone(classId, student.uid, next);
       setStudents(prev => prev.map(s => s.uid === student.uid ? { ...s, lessonsDone: next } : s));
+      // Ticking a lesson the class didn't have → add it (and its competencies) to the class.
+      if (turningOn && cls && !(cls.lessonIds ?? []).includes(id)) {
+        const updated = await addLessonToClass(cls, id);
+        if (updated) {
+          setClasses(prev => prev.map(c => c.id === updated.id ? updated : c));
+          setAddedNote(`Added “${ALL_LESSONS[id]?.title ?? id}” to this class’s plan.`);
+          setTimeout(() => setAddedNote(''), 4000);
+        }
+      }
     } finally { setSaving(false); }
   }
 
@@ -296,6 +307,7 @@ function Progress() {
               </div>
 
               {loadErr && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm mb-4">{loadErr}</div>}
+              {addedNote && <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-800 text-sm mb-4">✓ {addedNote}</div>}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Students list */}

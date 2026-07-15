@@ -132,6 +132,29 @@ export async function setAssignedLessons(classId: string, lessonIds: string[]): 
 }
 
 /**
+ * Add a lesson to a class if it isn't already there (appends to the last day
+ * of the plan). Used when a coach ticks a lesson from the full curriculum that
+ * wasn't assigned to their class, so the lesson — and its competencies — become
+ * part of the class for everyone. Returns the updated ClassDoc, or null if the
+ * lesson was already in the class.
+ */
+export async function addLessonToClass(cls: ClassDoc, lessonId: string): Promise<ClassDoc | null> {
+  if ((cls.lessonIds ?? []).includes(lessonId)) return null;
+  let plan: string[][];
+  if (cls.plan && cls.plan.length) {
+    plan = cls.plan.map(d => [...d]);
+  } else {
+    plan = [];
+    const ids = cls.lessonIds ?? [];
+    for (let i = 0; i < ids.length; i += 2) plan.push(ids.slice(i, i + 2));
+    if (!plan.length) plan = [[]];
+  }
+  plan[plan.length - 1].push(lessonId);
+  await setClassPlan(cls.id, plan);
+  return { ...cls, plan, lessonIds: plan.flat() };
+}
+
+/**
  * Save the day-by-day plan. Firestore forbids directly-nested arrays, so the
  * plan (string[][]) is serialised to `planJson`; `lessonIds` stays a flat array
  * (for access checks / the curriculum tree).

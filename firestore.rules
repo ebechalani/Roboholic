@@ -152,5 +152,10 @@ service cloud.firestore {
       allow read:   if isSignedIn() && (isOwner(resource.data.studentId) || isCoach());
       allow write:  if isCoach();   // awarded by coaches / system
     }
+
+    // ── Academy expenses (director bookkeeping — admin only) ──
+    match /expenses/{docId} {
+      allow read, write: if isAdmin();
+    }
   }
 }
