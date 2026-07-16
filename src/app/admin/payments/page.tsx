@@ -9,7 +9,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
-import { getAllClasses, getClassStudents, setStudentPayments } from '@/lib/classes';
+import { getAllClasses, getClassStudents, setStudentPayments, setParentContact } from '@/lib/classes';
 import { getExpenses, addExpense, deleteExpense } from '@/lib/finance';
 import type { ClassDoc, ClassStudent, StudentPayment, Expense } from '@/types';
 
@@ -83,6 +83,19 @@ function Payments() {
     const payments = { ...(s.payments ?? {}) };
     if (rec.amount != null) payments[month] = rec; else delete payments[month];
     void save(classId, s, payments);
+  }
+
+  async function saveContact(classId: string, s: ClassStudent, patch: { parentPhone?: string; parentEmail?: string }) {
+    setRows(prev => prev.map(r => r.id === classId ? { ...r, students: r.students.map(x => x.uid === s.uid ? { ...x, ...patch } : x) } : r));
+    try { await setParentContact(classId, s.uid, patch); }
+    catch { setError('Could not save the contact — check the connection and try again.'); void load(); }
+  }
+  function reminderMsg(s: ClassStudent): string {
+    const first = (s.displayName || '').split(/\s+/)[0] || 'your child';
+    const hi = s.parentName ? `Hello ${s.parentName}!` : 'Hello!';
+    const amt = s.payments?.[month]?.amount;
+    const fee = amt ? ` (${fmt(amt)})` : '';
+    return `${hi} 👋\n\nThis is RoboHolic Robotics Academy — a friendly reminder about ${first}'s camp fee for ${monthLabel}${fee}.\n\nYou can pay via Whish to wallet 70227005 (Eddy Bachaalany), or cash on Wednesday. Thank you! 🤖`;
   }
 
   async function addExp(e: React.FormEvent) {
@@ -227,15 +240,33 @@ function Payments() {
                                 )}
                                 {!p?.method && <span className="hidden print:inline badge-pill bg-red-50 text-red-600 text-[11px]">due</span>}
                               </div>
-                              {/* Parent contact */}
-                              <div className="flex items-center gap-3 flex-wrap mt-1.5 pl-0.5">
-                                {s.parentEmail
-                                  ? <a href={`mailto:${s.parentEmail}`} className="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1"><Mail size={11} /> {s.parentEmail}</a>
-                                  : <span className="text-[11px] text-gray-300 inline-flex items-center gap-1"><Mail size={11} /> no email</span>}
-                                {s.parentPhone
-                                  ? <a href={`https://wa.me/${waNum(s.parentPhone)}`} target="_blank" rel="noreferrer" className="text-[11px] text-green-600 hover:underline inline-flex items-center gap-1"><MessageCircle size={11} /> {s.parentPhone}</a>
-                                  : <span className="text-[11px] text-gray-300 inline-flex items-center gap-1"><MessageCircle size={11} /> no phone</span>}
+                              {/* Parent contact — editable, with a WhatsApp payment reminder */}
+                              <div className="flex items-center gap-2 flex-wrap mt-2 pl-0.5 no-print">
+                                <span className="inline-flex items-center gap-1">
+                                  <MessageCircle size={12} className="text-gray-300 shrink-0" />
+                                  <input defaultValue={s.parentPhone ?? ''} key={`ph-${s.uid}`} placeholder="WhatsApp (+961…)"
+                                    onBlur={e => { const v = e.target.value.trim(); if (v !== (s.parentPhone ?? '')) void saveContact(c.id, s, { parentPhone: v }); }}
+                                    className="w-32 px-2 py-1 rounded-lg border border-gray-200 text-xs" />
+                                </span>
+                                <span className="inline-flex items-center gap-1">
+                                  <Mail size={12} className="text-gray-300 shrink-0" />
+                                  <input defaultValue={s.parentEmail ?? ''} key={`em-${s.uid}`} placeholder="parent email"
+                                    onBlur={e => { const v = e.target.value.trim(); if (v !== (s.parentEmail ?? '')) void saveContact(c.id, s, { parentEmail: v }); }}
+                                    className="w-44 px-2 py-1 rounded-lg border border-gray-200 text-xs" />
+                                </span>
+                                {s.parentPhone ? (
+                                  <a href={`https://wa.me/${waNum(s.parentPhone)}?text=${encodeURIComponent(reminderMsg(s))}`} target="_blank" rel="noreferrer"
+                                    title="Send a WhatsApp payment reminder" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white" style={{ background: '#25D366' }}>
+                                    <MessageCircle size={11} /> Remind
+                                  </a>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-300 bg-gray-50" title="Add a phone number first">
+                                    <MessageCircle size={11} /> Remind
+                                  </span>
+                                )}
                               </div>
+                              {/* Print-only contact line */}
+                              <div className="hidden print:block text-[11px] text-gray-500 mt-1">{s.parentEmail || 'no email'} · {s.parentPhone || 'no phone'}</div>
                             </div>
                           );
                         })}
