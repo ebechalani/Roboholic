@@ -12,6 +12,7 @@ import type { Course, LessonDetail, LessonSection, Module, Resource, Difficulty,
 const L1 = 'Level I · First Flights (DroneBlocks)';
 const L2 = 'Level II · Programmed Flight (DroneBlocks)';
 const L3 = 'Level III · Python & Swarm (Advanced)';
+const L4 = 'Level IV · The Official DJI SDK (Tello-Python)';
 
 interface TL {
   id: string; title: string; emoji: string; difficulty: Difficulty; ageGroup: AgeGroupId;
@@ -85,6 +86,13 @@ const DB_INTRO: Resource = { id: 'db-intro', title: 'DroneBlocks: Intro to Tello
 const DB_PY: Resource = { id: 'db-py', title: 'DroneBlocks: Tello Programming with Python', type: 'link', audience: 'both', url: 'https://learn.droneblocks.io/p/tello-drone-programming-with-python', description: 'Official Python course' };
 const TELLO_PY_DOCS: Resource = { id: 'djitellopy', title: 'DJITelloPy — Python library & API docs', type: 'link', audience: 'both', url: 'https://djitellopy.readthedocs.io/en/latest/tello/', description: 'Official-SDK Python interface (pip install djitellopy)' };
 const RYZE: Resource = { id: 'ryze-edu', title: 'Ryze Tello EDU — official product page', type: 'link', audience: 'coach', url: 'https://www.ryzerobotics.com/tello-edu', description: 'Specs, app and SDK downloads' };
+// Official DJI Tello-Python sample repository (SDK command set, missions, video, pose control)
+const GH_REPO: Resource = { id: 'gh-tello-py', title: 'DJI Tello-Python — official sample repo (GitHub)', type: 'link', audience: 'both', url: 'https://github.com/dji-sdk/Tello-Python', description: 'Official DJI samples: Single_Tello_Test, Tello_Video, pose recognition, tello_state.py' };
+const GH_SINGLE: Resource = { id: 'gh-single-test', title: 'Single_Tello_Test — command.txt mission runner', type: 'link', audience: 'both', url: 'https://github.com/dji-sdk/Tello-Python/tree/master/Single_Tello_Test', description: 'Write a txt script of SDK commands and Tello executes them' };
+const GH_VIDEO: Resource = { id: 'gh-tello-video', title: 'Tello_Video — live video stream + control panel', type: 'link', audience: 'coach', url: 'https://github.com/dji-sdk/Tello-Python/tree/master/Tello_Video', description: 'H.264 video decoding + GUI; one-click install scripts for Win/mac/Linux' };
+const GH_POSE: Resource = { id: 'gh-tello-pose', title: 'Tello_Video_With_Pose_Recognition — fly with your body', type: 'link', audience: 'coach', url: 'https://github.com/dji-sdk/Tello-Python/tree/master/Tello_Video_With_Pose_Recognition', description: 'Official demo: poses mapped to flight commands' };
+const GH_STATE: Resource = { id: 'gh-tello-state', title: 'tello_state.py — read the drone\'s live state', type: 'link', audience: 'both', url: 'https://github.com/dji-sdk/Tello-Python/blob/master/tello_state.py', description: 'Official utility that prints Tello telemetry' };
+const GH_MULTI: Resource = { id: 'gh-multi-tello', title: 'Multi-Tello-Formation — official swarm repo', type: 'link', audience: 'coach', url: 'https://github.com/TelloSDK/Multi-Tello-Formation', description: 'DJI-referenced repo for multi-drone formations' };
 
 const CONFIGS: TL[] = [
   // ─── Level I · First Flights (DroneBlocks) ───
@@ -239,7 +247,111 @@ const CONFIGS: TL[] = [
     challenge: 'Choreograph a 2–3 drone synchronised routine (e.g. all rise, then each turns a different way) and perform it safely.',
     skills: ['Swarm', 'Parallelism', 'Capstone'],
     materials: [{ item: '2–3 Tello EDU + prop guards', quantity: 'per group' }, { item: 'Wi-Fi router + computer with djitellopy', quantity: '1 per group' }],
-    resources: [TELLO_PY_DOCS, DB_PY],
+    resources: [TELLO_PY_DOCS, DB_PY, GH_MULTI],
+  },
+
+  // ─── Level IV · The Official DJI SDK (dji-sdk/Tello-Python) ───
+  // NOTE: DJI's repo targets Python 2.7. These lessons teach the same official
+  // SDK ideas with tiny Python 3 snippets that run on modern machines, and link
+  // the original repo folders as the authoritative reference.
+  {
+    id: 'tl-13', title: 'Talk to the Drone: the Tello SDK over UDP', emoji: '📡', difficulty: 4, ageGroup: '13-15', moduleId: 'tl-m4', moduleTitle: L4, order: 13,
+    concept: 'what really happens under DroneBlocks — plain-text SDK commands over UDP', conceptExplain: 'Every app that flies the Tello (DroneBlocks, djitellopy, DJI\'s own samples) does the same thing: it sends plain-text commands like "takeoff" or "forward 50" to the drone\'s IP 192.168.10.1 on UDP port 8889, and the drone answers "ok" or "error". Level IV pulls the curtain back: students speak the SDK directly, exactly like DJI\'s official Tello-Python repo does. (DJI\'s repo is Python 2.7-era — our snippets are the same idea in Python 3.)',
+    objectives: ['Explain that the Tello is controlled by text commands over UDP (IP 192.168.10.1, port 8889)', 'Send "command", "battery?" and movement commands from Python', 'Read the drone\'s "ok"/value responses'],
+    steps: ['Connect the computer to the Tello Wi-Fi.', 'Run the snippet below — "command" switches the drone into SDK mode.', 'Ask questions first (props off!): battery?, speed?, time?.', 'Then, in a clear zone: send takeoff, forward 50, cw 90, land — one command at a time, reading each "ok".'],
+    code: [
+      'import socket',
+      'sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)',
+      "sock.bind(('', 9000))",
+      "tello = ('192.168.10.1', 8889)",
+      'def send(cmd):',
+      '    sock.sendto(cmd.encode(), tello)',
+      "    print(cmd, '->', sock.recv(1024).decode())",
+      "send('command')      # enter SDK mode",
+      "send('battery?')     # ask the battery %",
+    ],
+    challenge: 'Write a "drone dictionary": send 6 different SDK commands and record what each one answers — including one that returns a value (battery?) and one that returns "error" (find out why!).',
+    skills: ['Tello SDK', 'UDP & Networking', 'Python'],
+    quiz: [
+      { question: 'The Tello is commanded by sending:', options: ['plain-text commands over UDP', 'Bluetooth beeps', 'infrared signals', 'HDMI frames'], answerIndex: 0 },
+      { question: 'The first command you must always send is:', options: ['command (enters SDK mode)', 'land', 'flip', 'selfie'], answerIndex: 0 },
+      { question: 'When a command works, the Tello answers:', options: ['ok', 'yes sir', 'beep', 'nothing ever'], answerIndex: 0 },
+    ],
+    materials: [{ item: 'Tello EDU + prop guards', quantity: '1 per group' }, { item: 'Computer with Python 3', quantity: '1 per group' }],
+    resources: [GH_REPO, GH_SINGLE, TELLO_PY_DOCS],
+  },
+  {
+    id: 'tl-14', title: 'Mission Files: Fly a command.txt like DJI', emoji: '📜', difficulty: 4, ageGroup: '13-15', moduleId: 'tl-m4', moduleTitle: L4, order: 14,
+    concept: 'DJI\'s Single_Tello_Test pattern — the flight is a text file, the code just reads it', conceptExplain: 'In DJI\'s official Single_Tello_Test, the whole mission lives in command.txt — one SDK command per line, plus "delay N" lines — and a small runner script executes it. Separating the mission (data) from the runner (code) is real engineering: pilots edit a text file, nobody touches the program. Students write their own missions and run them with our 10-line Python 3 runner.',
+    objectives: ['Write a flight mission as a command.txt file (one SDK command per line, delay N between)', 'Run it with a mission-runner script', 'Iterate the mission by editing only the text file'],
+    steps: ['Create command.txt: command / takeoff / delay 3 / forward 60 / cw 90 / forward 60 / delay 2 / land.', 'Save the runner below next to it and run it in a clear flight zone.', 'Watch the drone execute the file line by line.', 'Edit ONLY command.txt to change the flight (square? zig-zag?) and re-run — no code changes.'],
+    code: [
+      'import socket, time',
+      'sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)',
+      "sock.bind(('', 9000))",
+      'def send(cmd):',
+      "    sock.sendto(cmd.encode(), ('192.168.10.1', 8889))",
+      "    print(cmd, '->', sock.recv(1024).decode())",
+      "for line in open('command.txt'):",
+      '    line = line.strip()',
+      "    if line.startswith('delay'): time.sleep(float(line.split()[1]))",
+      '    elif line: send(line)',
+    ],
+    challenge: 'Mission swap! Each team writes a command.txt for another team\'s drone. Fly it with zero edits to the runner — the mission file is the whole program.',
+    skills: ['Mission Files', 'Tello SDK', 'Code vs Data'],
+    quiz: [
+      { question: 'In Single_Tello_Test, the flight plan lives in:', options: ['a command.txt text file', 'the drone battery', 'a spreadsheet', 'the Wi-Fi router'], answerIndex: 0 },
+      { question: '"delay 3" in the mission file means:', options: ['wait 3 seconds before the next command', 'fly 3 meters', 'turn 3 degrees', 'blink 3 times'], answerIndex: 0 },
+      { question: 'Separating the mission file from the runner code means:', options: ['you change the flight without touching the code', 'the drone flies faster', 'you need two drones', 'nothing'], answerIndex: 0 },
+    ],
+    materials: [{ item: 'Tello EDU + prop guards', quantity: '1 per group' }, { item: 'Computer with Python 3 + a text editor', quantity: '1 per group' }],
+    resources: [GH_SINGLE, GH_REPO],
+  },
+  {
+    id: 'tl-15', title: 'Drone Telemetry: Read the State Stream', emoji: '🩺', difficulty: 4, ageGroup: '13-15', moduleId: 'tl-m4', moduleTitle: L4, order: 15,
+    concept: 'the Tello broadcasts its full state every 100 ms — like DJI\'s tello_state.py', conceptExplain: 'Once in SDK mode, the Tello continuously pushes a state string to UDP port 8890: pitch, roll, yaw, height, barometer, time-of-flight distance, battery, temperature and more, as "key:value;" pairs. DJI\'s tello_state.py prints it; students go further — parsing it into a Python dict and logging a flight like a black box.',
+    objectives: ['Listen on UDP 8890 and receive the raw state string', 'Parse "key:value;" pairs into a dictionary', 'Log battery/height over a flight and report the data'],
+    steps: ['Send "command" first (props off — this works on the ground).', 'Run the listener below and read one raw state line.', 'Parse it: split on ";" then on ":" — print bat, h and tof nicely.', 'Black-box exercise: log 30 seconds of state to a list during a short hover flight, then print min/max height and battery used.'],
+    code: [
+      'import socket',
+      'state = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)',
+      "state.bind(('', 8890))          # the Tello pushes state here",
+      'raw = state.recv(1024).decode()',
+      'data = dict(p.split(":") for p in raw.strip().strip(";").split(";"))',
+      'print("battery:", data["bat"], "% | height:", data["h"], "cm")',
+    ],
+    challenge: 'Build a "flight report": after a 30-second hover, print battery used, max height, and average temperature — and decide from the data if the drone is safe to fly again.',
+    skills: ['Telemetry', 'Data Parsing', 'Python Dictionaries'],
+    quiz: [
+      { question: 'The Tello broadcasts its state on UDP port:', options: ['8890', '80', '443', '1234'], answerIndex: 0 },
+      { question: 'The state string looks like:', options: ['key:value pairs separated by ;', 'a photo', 'music notes', 'a PDF'], answerIndex: 0 },
+      { question: '"bat:87" in the state stream means:', options: ['battery is at 87%', '87 drones connected', '87 cm high', 'error 87'], answerIndex: 0 },
+    ],
+    materials: [{ item: 'Tello EDU (props off for the ground part)', quantity: '1 per group' }, { item: 'Computer with Python 3', quantity: '1 per group' }],
+    resources: [GH_STATE, GH_REPO, TELLO_PY_DOCS],
+  },
+  {
+    id: 'tl-16', title: 'Live Video & Fly-by-Pose (DJI Showcase)', emoji: '🎥', difficulty: 5, ageGroup: '13-15', moduleId: 'tl-m4', moduleTitle: L4, order: 16,
+    concept: 'the drone\'s eye in code: video streaming, and DJI\'s pose-controlled flight demo', conceptExplain: 'DJI\'s Tello_Video receives the H.264 camera stream, decodes it and shows it in a GUI with a control panel; Tello_Video_With_Pose_Recognition goes further — it maps body poses to flight commands, so you fly the drone by striking poses. The original demos are Python 2.7 (one-click install scripts in each folder); for Python 3 the same stream is available via djitellopy\'s frame_read. This is the showcase lesson: seeing computer vision drive a real aircraft.',
+    objectives: ['Explain how the video stream reaches the computer (streamon → UDP video feed)', 'Show live drone video on screen', 'Describe how pose recognition maps a camera image to a flight command'],
+    steps: ['Send "streamon" (SDK) — the camera stream starts.', 'Python 3 path: use djitellopy — frame_read = tello.get_frame_read(), show frames with OpenCV; take a snapshot.', 'Explore DJI\'s Tello_Video folder (Resources): the decoder, GUI and control panel — run it if you have a Python 2.7 machine.', 'Watch/demo the pose-recognition sample: pose detected in the frame → command sent to the drone. Discuss: what else could the camera trigger?'],
+    code: [
+      '# Python 3 route (pip install djitellopy opencv-python)',
+      'from djitellopy import Tello',
+      'import cv2',
+      'tello = Tello(); tello.connect(); tello.streamon()',
+      'frame = tello.get_frame_read().frame',
+      "cv2.imwrite('drone_view.jpg', frame)   # snapshot from the sky",
+    ],
+    challenge: 'Team showcase: capture a live aerial snapshot of a target the class chooses, and present how DJI\'s pose demo turns "arms up" into a flight command — then invent (on paper) your own pose-to-command mapping.',
+    skills: ['Video Streaming', 'Computer Vision', 'Capstone'],
+    quiz: [
+      { question: 'To start the camera stream you send:', options: ['streamon', 'cheese', 'record', 'photo'], answerIndex: 0 },
+      { question: 'DJI\'s pose-recognition demo controls the drone with:', options: ['your body poses seen by the camera', 'a steering wheel', 'shouting', 'a magic wand'], answerIndex: 0 },
+      { question: 'The video arrives at the computer as:', options: ['an H.264 stream to decode', 'printed photos', 'a DVD', 'Morse code'], answerIndex: 0 },
+    ],
+    materials: [{ item: 'Tello EDU + prop guards', quantity: '1 per group' }, { item: 'Computer with Python 3 + djitellopy + OpenCV', quantity: '1 per group' }],
+    resources: [GH_VIDEO, GH_POSE, GH_REPO, TELLO_PY_DOCS],
   },
 ];
 
@@ -250,20 +362,22 @@ const sum = (c: TL) => ({ id: c.id, title: c.title, duration: '45–60 min', dif
 export const TELLO_COURSE: Course = {
   id: 'tello-edu-1', slug: 'code-and-fly-tello-edu', title: 'Code & Fly with Tello EDU',
   programId: 'drones', programSlug: 'drones', ageGroup: '10-12', level: 'Intermediate',
-  description: 'Program a real drone — the Ryze/DJI Tello EDU — across three levels. Level I: fly safely and code autonomous flights with DroneBlocks (take-off, directions, loops). Level II: flips, curves, variables, mission-pad navigation and the camera. Level III: text programming in Python with DJITelloPy — flight sequences, sensor data, mission-pad navigation, and a multi-drone swarm capstone. Built around the official DroneBlocks courses and the Tello SDK.',
+  description: 'Program a real drone — the Ryze/DJI Tello EDU — across four levels. Level I: fly safely and code autonomous flights with DroneBlocks (take-off, directions, loops). Level II: flips, curves, variables, mission-pad navigation and the camera. Level III: text programming in Python with DJITelloPy — flight sequences, sensor data, mission-pad navigation, and a multi-drone swarm capstone. Level IV: the official DJI SDK, straight from the dji-sdk/Tello-Python repo — raw UDP commands, command.txt mission files, the live state stream, and video + pose-controlled flight.',
   objectives: [
     'Fly the Tello EDU safely and pre-flight check it',
     'Code autonomous flights with DroneBlocks (moves, loops, variables)',
     'Use mission pads for precise navigation and the camera for FPV',
     'Program the drone in Python with DJITelloPy and read sensor data',
     'Coordinate a multi-drone swarm',
+    'Speak the official Tello SDK directly: UDP commands, mission files, telemetry and video',
   ],
-  duration: '12 lessons × 45–60 minutes', totalHours: 12, lessonCount: 12,
-  prerequisites: ['Comfortable with block coding; Python helps for Level III'],
-  skills: ['Drone Safety', 'DroneBlocks', 'Loops & Variables', 'Mission Pads', 'Python / DJITelloPy', 'Swarm'],
+  duration: '16 lessons × 45–60 minutes', totalHours: 16, lessonCount: 16,
+  prerequisites: ['Comfortable with block coding; Python helps for Levels III–IV'],
+  skills: ['Drone Safety', 'DroneBlocks', 'Loops & Variables', 'Mission Pads', 'Python / DJITelloPy', 'Tello SDK & UDP', 'Swarm'],
   modules: [
     { id: 'tl-m1', title: L1, order: 1, description: 'Fly safely and code your first autonomous flights with DroneBlocks: take-off/land, directions, and loop patterns.', lessons: CONFIGS.filter(c => c.moduleId === 'tl-m1').map(sum) },
     { id: 'tl-m2', title: L2, order: 2, description: 'Go further with DroneBlocks: flips & curves, variables, mission-pad navigation, and the onboard camera.', lessons: CONFIGS.filter(c => c.moduleId === 'tl-m2').map(sum) },
     { id: 'tl-m3', title: L3, order: 3, description: 'Text programming with Python + DJITelloPy: flight sequences, sensor data, mission-pad navigation, and a drone-swarm capstone.', lessons: CONFIGS.filter(c => c.moduleId === 'tl-m3').map(sum) },
+    { id: 'tl-m4', title: L4, order: 4, description: 'The official DJI Tello-Python repo, demystified: raw SDK commands over UDP, command.txt mission files (Single_Tello_Test), the 8890 state stream, and live video / pose-controlled flight.', lessons: CONFIGS.filter(c => c.moduleId === 'tl-m4').map(sum) },
   ],
 };
