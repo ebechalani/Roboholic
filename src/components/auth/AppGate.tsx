@@ -9,7 +9,8 @@ import { TERMS_VERSION } from '@/lib/legal';
 
 // Pages anyone may see without an account. The homepage is NOT public — it
 // lists the whole program catalogue, so it's behind login like everything else.
-const PUBLIC_PATHS = ['/login', '/register'];
+// /enroll is the public 2026–2027 registration form for parents.
+const PUBLIC_PATHS = ['/login', '/register', '/enroll'];
 
 function isPublic(pathname: string): boolean {
   // /welcome is the per-parent registration-confirmation page (capability link).

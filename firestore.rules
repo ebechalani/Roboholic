@@ -157,5 +157,12 @@ service cloud.firestore {
     match /expenses/{docId} {
       allow read, write: if isAdmin();
     }
+
+    // ── 2026–2027 enrollment requests ─────────────────────────
+    // Created ONLY by the public /api/enroll route (Admin SDK bypasses
+    // rules); in the app they are the director's business alone.
+    match /registrations/{docId} {
+      allow read, update, delete: if isAdmin();
+    }
   }
 }

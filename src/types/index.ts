@@ -86,6 +86,23 @@ export interface StudentPayment {
   note?: string;
 }
 
+/** A parent's enrollment request for the 2026–2027 school-year classes.
+ *  Created by the public /enroll form (via the Admin-SDK API route);
+ *  Firestore: registrations/{id}, readable/updatable by the admin only. */
+export interface Registration {
+  id: string;
+  childName: string;
+  dob?: string;
+  ageGroup?: string;          // '4-5' | '6-7' | '8-9' | '10-12' | '13-15' | ''
+  parentName: string;
+  parentPhone: string;
+  parentEmail?: string;
+  schedule?: string;          // preferred schedule choice
+  notes?: string;
+  status: 'new' | 'contacted' | 'enrolled' | 'archived';
+  createdAt: string;
+}
+
 /** An academy expense (admin-only bookkeeping). Firestore: expenses/{id}. */
 export interface Expense {
   id: string;

@@ -225,6 +225,10 @@ function LoginInner() {
           </div>
 
           {tab === 'coach' ? <CoachForm next={next} /> : <StudentForm />}
+
+          <p className="text-center text-xs text-gray-400 mt-6">
+            New to RoboHolic? <Link href="/enroll" className="text-blue-600 font-semibold hover:underline">📝 Register your child for 2026–2027</Link>
+          </p>
         </div>
       </div>
     </div>

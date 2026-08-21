@@ -8,7 +8,7 @@ import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { PROGRAMS, AGE_GROUPS, BADGES } from '@/lib/data';
 import {
-  Layers, BookOpen, Users, Package, Upload, GraduationCap, Award, ArrowRight, Eye, ClipboardCheck, Wallet,
+  Layers, BookOpen, Users, Package, Upload, GraduationCap, Award, ArrowRight, Eye, ClipboardCheck, Wallet, FilePlus2,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -38,6 +38,7 @@ function Admin() {
     { title: 'Coach Oversight', text: 'See each coach\'s classes, assigned lessons & students.', href: '/admin/oversight', icon: <Eye size={20} />, color: '#0D9488', bg: '#F0FDFA' },
     { title: 'Attendance Overview', text: 'Today\'s roll call across all classes + absences per child.', href: '/admin/attendance', icon: <ClipboardCheck size={20} />, color: '#DC2626', bg: '#FEF2F2' },
     { title: 'Payments', text: 'Track July & August camp fees — Whish or cash, per student.', href: '/admin/payments', icon: <Wallet size={20} />, color: '#7C3AED', bg: '#F5F3FF' },
+    { title: 'Registrations 2026–27', text: 'Parent sign-ups from the public /enroll form — contact & enroll.', href: '/admin/registrations', icon: <FilePlus2 size={20} />, color: '#F97316', bg: '#FFF7ED' },
   ];
 
   return (
