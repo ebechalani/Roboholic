@@ -69,7 +69,7 @@ export interface Track {
   tagline: string;      // one warm sentence for parents
   includes: string[];   // what the year includes (real tools)
   outcome: string;      // what the child can do by the end
-  /** Old enough for the MakeX competition squad. */
+  /** Old enough for the MakeX competition squad (from age 6). */
   makexEligible: boolean;
 }
 
@@ -99,7 +99,7 @@ export const TRACKS: Track[] = [
       'First chess moves and screen-free CS puzzles',
     ],
     outcome: 'By the end of the year your child can build a working motorised LEGO model, program a robot to do exactly what they planned, and proudly explain how it works.',
-    makexEligible: false,
+    makexEligible: true,
   },
   {
     age: '8-9', name: 'Builders', emoji: '🔧', level: 'Beginner → Intermediate',

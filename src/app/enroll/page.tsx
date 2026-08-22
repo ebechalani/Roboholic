@@ -206,7 +206,7 @@ export default function EnrollPage() {
         <div className={`rounded-2xl border-2 p-5 transition-all ${f.makex ? 'border-amber-400 bg-amber-50' : 'border-gray-100 bg-white'}`}>
           <Num n={4}>
             <span className="flex items-center gap-1.5"><Trophy size={17} className="text-amber-500" /> MakeX competition squad
-              <span className="badge-pill bg-amber-100 text-amber-700 text-[10px]">optional · ages 8+</span>
+              <span className="badge-pill bg-amber-100 text-amber-700 text-[10px]">optional · ages 6+</span>
             </span>
           </Num>
           <p className="text-sm text-gray-600 leading-relaxed mb-3 pl-9">
@@ -217,10 +217,10 @@ export default function EnrollPage() {
           </p>
 
           {!track ? (
-            <p className="text-sm text-gray-400 pl-9">👆 Choose your class above — the squad is open from age 8.</p>
+            <p className="text-sm text-gray-400 pl-9">👆 Choose your class above — the squad is open from age 6.</p>
           ) : !track.makexEligible ? (
             <p className="text-sm text-gray-500 bg-gray-50 rounded-xl px-3 py-2.5 ml-9">
-              The competition squad starts from <b>age 8</b> ({track.name} is ages {track.age}) — your child can join it in a future year. 🌱
+              The competition squad starts from <b>age 6</b> ({track.name} is ages {track.age}) — your child can join it in a future year. 🌱
             </p>
           ) : (
             <div className="pl-9">
