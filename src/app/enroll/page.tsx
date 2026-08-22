@@ -172,70 +172,88 @@ export default function EnrollPage() {
         </div>
 
         {/* 3 — Day & time */}
-        {branch && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <Num n={3}>Which day &amp; time? <span className="font-normal text-gray-400 text-sm">— {branch.name}</span></Num>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
-              {branch.classSlots.map(s => (
-                <button key={s.id} type="button" onClick={() => setF({ ...f, slotId: s.id, otherDay: '' })}
-                  className={`p-3 rounded-xl border-2 text-center transition-all ${f.slotId === s.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                  <div className="font-bold text-gray-900 text-sm">{s.day}</div>
-                  <div className="text-xs text-gray-500">{s.time}</div>
-                </button>
-              ))}
-            </div>
-            <div className="rounded-xl border border-dashed border-gray-300 p-3.5">
-              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
-                <CalendarPlus size={15} className="text-orange-500" /> None of these suit you? Ask for another day
-              </label>
-              <input value={f.otherDay} onChange={e => setF({ ...f, otherDay: e.target.value, slotId: e.target.value.trim() ? '' : f.slotId })}
-                placeholder="e.g. Monday at 4:00 PM, or Saturday morning"
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm" />
-              <p className="text-[11px] text-gray-400 mt-1.5">
-                We&apos;ll look for a group at that time — if it works, you&apos;ll get a confirmation on WhatsApp.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* 4 — MakeX competition squad */}
-        {branch && track?.makexEligible && (
-          <div className={`rounded-2xl border-2 p-5 transition-all ${f.makex ? 'border-amber-400 bg-amber-50' : 'border-gray-100 bg-white'}`}>
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" checked={f.makex} onChange={e => setF({ ...f, makex: e.target.checked, makexSlotId: '' })} className="mt-1 w-4 h-4 accent-amber-500" />
-              <span>
-                <span className="font-black text-gray-900 flex items-center gap-1.5"><Trophy size={16} className="text-amber-500" /> Join the MakeX competition squad</span>
-                <span className="block text-sm text-gray-600 mt-1 leading-relaxed">
-                  Extra training to prepare for the MakeX robotics competition — on a <b>different day</b> from the regular class.
-                  For students who want to compete.
-                </span>
-              </span>
-            </label>
-            {f.makex && (
-              <div className="mt-4 pl-7">
-                {makexSlots.length > 0 ? (
-                  <>
-                    <div className="text-xs font-bold text-gray-600 mb-2">Choose the training time:</div>
-                    <div className="grid grid-cols-2 gap-2.5 max-w-sm">
-                      {makexSlots.map(s => (
-                        <button key={s.id} type="button" onClick={() => setF({ ...f, makexSlotId: s.id })}
-                          className={`p-3 rounded-xl border-2 text-center transition-all ${f.makexSlotId === s.id ? 'border-amber-500 bg-white' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                          <div className="font-bold text-gray-900 text-sm">{s.day}</div>
-                          <div className="text-xs text-gray-500">{s.time}</div>
-                        </button>
-                      ))}
-                    </div>
-                    {chosenSlot && makexSlots.some(s => s.id === f.makexSlotId && s.day === chosenSlot.day) && (
-                      <p className="text-[11px] text-amber-700 mt-2">Heads up: that&apos;s the same day as the class — we&apos;ll confirm it works for you.</p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-xs text-amber-800 bg-white rounded-lg px-3 py-2 border border-amber-200">{branch.makexNote}</p>
-                )}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <Num n={3}>Which day &amp; time?{branch && <span className="font-normal text-gray-400 text-sm"> — {branch.name}</span>}</Num>
+          {!branch ? (
+            <p className="text-sm text-gray-400">👆 Choose a branch above and the class times will appear here.</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+                {branch.classSlots.map(s => (
+                  <button key={s.id} type="button" onClick={() => setF({ ...f, slotId: s.id, otherDay: '' })}
+                    className={`p-3 rounded-xl border-2 text-center transition-all ${f.slotId === s.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <div className="font-bold text-gray-900 text-sm">{s.day}</div>
+                    <div className="text-xs text-gray-500">{s.time}</div>
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
-        )}
+              <div className="rounded-xl border border-dashed border-gray-300 p-3.5">
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+                  <CalendarPlus size={15} className="text-orange-500" /> None of these suit you? Ask for another day
+                </label>
+                <input value={f.otherDay} onChange={e => setF({ ...f, otherDay: e.target.value, slotId: e.target.value.trim() ? '' : f.slotId })}
+                  placeholder="e.g. Monday at 4:00 PM, or Saturday morning"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm" />
+                <p className="text-[11px] text-gray-400 mt-1.5">
+                  We&apos;ll look for a group at that time — if it works, you&apos;ll get a confirmation on WhatsApp.
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* 4 — MakeX competition squad (always visible so parents know it exists) */}
+        <div className={`rounded-2xl border-2 p-5 transition-all ${f.makex ? 'border-amber-400 bg-amber-50' : 'border-gray-100 bg-white'}`}>
+          <Num n={4}>
+            <span className="flex items-center gap-1.5"><Trophy size={17} className="text-amber-500" /> MakeX competition squad
+              <span className="badge-pill bg-amber-100 text-amber-700 text-[10px]">optional · ages 8+</span>
+            </span>
+          </Num>
+          <p className="text-sm text-gray-600 leading-relaxed mb-3 pl-9">
+            Extra training to prepare for the <b>MakeX robotics competition</b> — on a <b>different day</b> from the regular class,
+            for students who want to compete. {branch?.id === 'jdeideh' || !branch
+              ? <>Training is at our <b>Jdeideh</b> branch on <b>Saturday, 3:00 PM or 4:30 PM</b>.</>
+              : <>{branch.makexNote}</>}
+          </p>
+
+          {!track ? (
+            <p className="text-sm text-gray-400 pl-9">👆 Choose your class above — the squad is open from age 8.</p>
+          ) : !track.makexEligible ? (
+            <p className="text-sm text-gray-500 bg-gray-50 rounded-xl px-3 py-2.5 ml-9">
+              The competition squad starts from <b>age 8</b> ({track.name} is ages {track.age}) — your child can join it in a future year. 🌱
+            </p>
+          ) : (
+            <div className="pl-9">
+              <label className="flex items-center gap-3 cursor-pointer bg-white rounded-xl border-2 border-amber-200 px-4 py-3">
+                <input type="checkbox" checked={f.makex} onChange={e => setF({ ...f, makex: e.target.checked, makexSlotId: '' })} className="w-4 h-4 accent-amber-500" />
+                <span className="font-bold text-gray-900 text-sm">Yes — my child wants to join the MakeX squad 🏆</span>
+              </label>
+              {f.makex && (
+                <div className="mt-4">
+                  {makexSlots.length > 0 ? (
+                    <>
+                      <div className="text-xs font-bold text-gray-600 mb-2">Choose the training time:</div>
+                      <div className="grid grid-cols-2 gap-2.5 max-w-sm">
+                        {makexSlots.map(s => (
+                          <button key={s.id} type="button" onClick={() => setF({ ...f, makexSlotId: s.id })}
+                            className={`p-3 rounded-xl border-2 text-center transition-all ${f.makexSlotId === s.id ? 'border-amber-500 bg-white' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                            <div className="font-bold text-gray-900 text-sm">{s.day}</div>
+                            <div className="text-xs text-gray-500">{s.time}</div>
+                          </button>
+                        ))}
+                      </div>
+                      {chosenSlot && makexSlots.some(s => s.id === f.makexSlotId && s.day === chosenSlot.day) && (
+                        <p className="text-[11px] text-amber-700 mt-2">Heads up: that&apos;s the same day as the class — we&apos;ll confirm it works for you.</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-amber-800 bg-white rounded-lg px-3 py-2 border border-amber-200">{branch?.makexNote}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* 5 — Child & parent details */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
