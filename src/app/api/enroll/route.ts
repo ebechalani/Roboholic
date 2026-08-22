@@ -41,6 +41,17 @@ export async function POST(req: Request) {
     parentName: clip(body.parentName, 120),
     parentPhone: clip(body.parentPhone, 30),
     parentEmail: clip(body.parentEmail, 160),
+    // Branch + chosen weekly class time
+    branch: clip(body.branch, 30),
+    branchName: clip(body.branchName, 60),
+    trackName: clip(body.trackName, 60),
+    slotId: clip(body.slotId, 40),
+    slotLabel: clip(body.slotLabel, 60),
+    otherDay: clip(body.otherDay, 120),
+    // MakeX competition squad
+    makex: body.makex === true,
+    makexSlotId: clip(body.makexSlotId, 40),
+    makexSlotLabel: clip(body.makexSlotLabel, 60),
     schedule: clip(body.schedule, 60),
     notes: clip(body.notes, 1500),
     status: 'new' as const,
@@ -48,6 +59,9 @@ export async function POST(req: Request) {
   };
   if (!reg.childName || !reg.parentName || !reg.parentPhone) {
     return NextResponse.json({ error: 'Please fill the child\'s name, your name and your WhatsApp number.' }, { status: 400 });
+  }
+  if (!reg.slotLabel && !reg.otherDay) {
+    return NextResponse.json({ error: 'Please pick a class time — or tell us the day that suits you.' }, { status: 400 });
   }
 
   let store;
@@ -63,8 +77,24 @@ export async function POST(req: Request) {
       await t.sendMail({
         from: `RoboHolic Enrollment <${SMTP_USER}>`,
         to: SMTP_USER,
-        subject: `New 2026–2027 registration: ${reg.childName}`,
-        text: `A parent registered a child for 2026–2027:\n\nChild: ${reg.childName}${reg.dob ? ` (DOB ${reg.dob})` : ''}${reg.ageGroup ? ` · ages ${reg.ageGroup}` : ''}\nParent: ${reg.parentName}\nWhatsApp: ${reg.parentPhone}\nEmail: ${reg.parentEmail || '—'}\nPreferred schedule: ${reg.schedule || '—'}\nNotes: ${reg.notes || '—'}\n\nSee all registrations: Admin Panel → Registrations.`,
+        subject: `New 2026–2027 registration: ${reg.childName}${reg.makex ? ' + MakeX' : ''}`,
+        text: [
+          'A parent registered a child for 2026–2027:',
+          '',
+          `Child:   ${reg.childName}${reg.dob ? ` (DOB ${reg.dob})` : ''}`,
+          `Class:   ${reg.trackName || reg.ageGroup || '—'}`,
+          `Branch:  ${reg.branchName || reg.branch || '—'}`,
+          `Time:    ${reg.slotLabel || '(none picked)'}`,
+          ...(reg.otherDay ? [`REQUESTED ANOTHER DAY: ${reg.otherDay}  ← needs your confirmation`] : []),
+          ...(reg.makex ? [`MakeX:   YES${reg.makexSlotLabel ? ` — ${reg.makexSlotLabel}` : ' (branch has no squad — arrange at Jdeideh)'}`] : []),
+          '',
+          `Parent:  ${reg.parentName}`,
+          `WhatsApp: ${reg.parentPhone}`,
+          `Email:   ${reg.parentEmail || '—'}`,
+          `Notes:   ${reg.notes || '—'}`,
+          '',
+          'See all registrations: Admin Panel → Registrations.',
+        ].join('\n'),
       });
     } catch { /* notification only */ }
   }

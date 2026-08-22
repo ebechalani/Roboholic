@@ -97,7 +97,16 @@ export interface Registration {
   parentName: string;
   parentPhone: string;
   parentEmail?: string;
-  schedule?: string;          // preferred schedule choice
+  // Branch + chosen class time (see src/lib/enrollment.ts)
+  branch?: string;            // 'jdeideh' | 'beit-chabeb'
+  slotId?: string;            // chosen weekly class slot
+  slotLabel?: string;         // human label, stored so it survives schedule edits
+  otherDay?: string;          // parent's requested alternative day/time
+  // MakeX competition squad (a different day from the class)
+  makex?: boolean;
+  makexSlotId?: string;
+  makexSlotLabel?: string;
+  schedule?: string;          // legacy free-text preference (older submissions)
   notes?: string;
   status: 'new' | 'contacted' | 'enrolled' | 'archived';
   createdAt: string;

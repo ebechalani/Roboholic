@@ -4,13 +4,14 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import {
   Loader2, RefreshCw, Users, MessageCircle, Mail, Copy, CheckCircle,
-  Phone, StickyNote, Baby, Printer,
+  Phone, StickyNote, Baby, Printer, MapPin, Clock, Trophy, CalendarPlus,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { db } from '@/lib/firebase/client';
+import { branchById, BRANCHES, slotLabel } from '@/lib/enrollment';
 import type { Registration } from '@/types';
 
 const STATUSES: { key: Registration['status']; label: string; color: string; bg: string }[] = [
@@ -61,6 +62,21 @@ function Registrations() {
     return c;
   }, [rows]);
 
+  // Group planning: how many children want each time slot (archived excluded).
+  const planning = useMemo(() => {
+    const live = rows.filter(r => r.status !== 'archived');
+    return BRANCHES.map(b => {
+      const mine = live.filter(r => r.branch === b.id);
+      const slots = [...b.classSlots, ...b.makexSlots].map(s => ({
+        slot: s,
+        isMakex: b.makexSlots.some(m => m.id === s.id),
+        kids: mine.filter(r => (r.slotId === s.id) || (r.makexSlotId === s.id)),
+      })).filter(x => x.kids.length > 0);
+      const otherDay = mine.filter(r => r.otherDay);
+      return { branch: b, total: mine.length, slots, otherDay, makex: mine.filter(r => r.makex).length };
+    }).filter(b => b.total > 0);
+  }, [rows]);
+
   const visible = filter === 'all' ? rows : rows.filter(r => r.status === filter);
   const enrollUrl = typeof window !== 'undefined' ? `${window.location.origin}/enroll` : '/enroll';
 
@@ -90,6 +106,40 @@ function Registrations() {
           </div>
 
           {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm mb-4 no-print">{error}</div>}
+
+          {/* Group planning — how many children want each time slot */}
+          {planning.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
+              <h3 className="font-bold text-gray-900 text-sm mb-3">📊 Group planning <span className="font-normal text-gray-400">— demand per time slot (archived excluded)</span></h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {planning.map(p => (
+                  <div key={p.branch.id}>
+                    <div className="text-xs font-black text-gray-800 mb-1.5 flex items-center gap-1">
+                      <MapPin size={12} className="text-indigo-500" /> {p.branch.name}
+                      <span className="badge-pill bg-gray-100 text-gray-500 text-[10px] ml-1">{p.total} registered</span>
+                      {p.makex > 0 && <span className="badge-pill bg-amber-50 text-amber-700 text-[10px]"><Trophy size={9} className="inline" /> {p.makex} MakeX</span>}
+                    </div>
+                    <div className="space-y-1">
+                      {p.slots.map(({ slot, isMakex, kids }) => (
+                        <div key={slot.id} className="flex items-center gap-2 text-xs">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isMakex ? 'bg-amber-500' : 'bg-blue-500'}`} />
+                          <span className="text-gray-600 flex-1">{slotLabel(slot)}{isMakex && <span className="text-amber-600 font-semibold"> · MakeX</span>}</span>
+                          <span className={`badge-pill text-[10px] ${kids.length >= 4 ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{kids.length} {kids.length === 1 ? 'child' : 'children'}</span>
+                        </div>
+                      ))}
+                      {p.otherDay.length > 0 && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-orange-500" />
+                          <span className="text-orange-700 flex-1">asked for another day</span>
+                          <span className="badge-pill bg-orange-50 text-orange-700 text-[10px]">{p.otherDay.length}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Stats + filter */}
           <div className="flex flex-wrap gap-2 mb-6 no-print">
@@ -134,9 +184,45 @@ function Registrations() {
                       <span className="badge-pill text-xs font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
                     </div>
 
+                    {/* Branch · class time · MakeX */}
+                    <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                      {r.branch && (
+                        <span className="badge-pill bg-indigo-50 text-indigo-700 text-[11px] inline-flex items-center gap-1">
+                          <MapPin size={11} /> {branchById(r.branch)?.name ?? r.branch}
+                        </span>
+                      )}
+                      {r.slotLabel && (
+                        <span className="badge-pill bg-green-50 text-green-700 text-[11px] inline-flex items-center gap-1">
+                          <Clock size={11} /> {r.slotLabel}
+                        </span>
+                      )}
+                      {r.makex && (
+                        <span className="badge-pill bg-amber-50 text-amber-700 text-[11px] inline-flex items-center gap-1">
+                          <Trophy size={11} /> MakeX{r.makexSlotLabel ? ` · ${r.makexSlotLabel}` : ' (arrange)'}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Requested a different day — needs the director's confirmation */}
+                    {r.otherDay && (
+                      <div className="rounded-xl border-2 border-dashed border-orange-300 bg-orange-50 px-3 py-2.5 mb-3">
+                        <div className="text-xs font-bold text-orange-800 flex items-center gap-1.5 mb-1">
+                          <CalendarPlus size={13} /> Asked for another day: “{r.otherDay}”
+                        </div>
+                        <p className="text-[11px] text-orange-700 mb-2">If you can open a group at that time, confirm it with the parent.</p>
+                        {r.parentPhone && (
+                          <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(`Hello ${r.parentName}! 👋 This is RoboHolic Robotics Academy. Good news — we can confirm ${(r.childName || '').split(/\s+/)[0]}'s place for ${r.otherDay}${r.branch ? ` at our ${branchById(r.branch)?.name ?? ''} branch` : ''}. Shall we save the spot?`)}`}
+                            target="_blank" rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-white px-3 py-1.5 rounded-lg no-print" style={{ background: '#25D366' }}>
+                            <CheckCircle size={11} /> Confirm this day on WhatsApp
+                          </a>
+                        )}
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-3 flex-wrap text-xs mb-3">
                       {r.parentPhone && (
-                        <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(`Hello ${r.parentName}! 👋 This is RoboHolic Robotics Academy — thank you for registering ${(r.childName || '').split(/\s+/)[0]} for our 2026–2027 classes! We'd love to confirm the group and schedule with you.`)}`}
+                        <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(`Hello ${r.parentName}! 👋 This is RoboHolic Robotics Academy — thank you for registering ${(r.childName || '').split(/\s+/)[0]} for our 2026–2027 classes${r.slotLabel ? ` (${r.slotLabel}${r.branch ? `, ${branchById(r.branch)?.name ?? ''}` : ''})` : ''}${r.makex ? ' + the MakeX squad' : ''}. We're happy to confirm the place and go over the details with you.`)}`}
                           target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-bold text-white px-3 py-1.5 rounded-lg" style={{ background: '#25D366' }}>
                           <MessageCircle size={12} /> WhatsApp {r.parentPhone}
                         </a>
