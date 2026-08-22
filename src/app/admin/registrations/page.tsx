@@ -5,6 +5,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import {
   Loader2, RefreshCw, Users, MessageCircle, Mail, Copy, CheckCircle,
   Phone, StickyNote, Baby, Printer, MapPin, Clock, Trophy, CalendarPlus,
+  Download, LayoutGrid, Table2,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -22,6 +23,44 @@ const STATUSES: { key: Registration['status']; label: string; color: string; bg:
 ];
 const waNum = (phone?: string) => { let d = (phone || '').replace(/\D/g, ''); if (!d) return ''; if (d.startsWith('00')) d = d.slice(2); if (d.startsWith('961')) return d; if (d.startsWith('0')) d = d.slice(1); return '961' + d; };
 
+// ─── Excel export ────────────────────────────────────────────────
+// CSV that Excel opens natively: UTF-8 BOM (so accents/Arabic survive) and
+// phone numbers written as ="03..." so Excel keeps them as text and doesn't
+// eat the leading zero of Lebanese numbers.
+const csvCell = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+const csvPhone = (v?: string) => (v ? `"=""${String(v).replace(/"/g, '')}"""` : '""');
+
+const COLUMNS: { header: string; get: (r: Registration) => string; phone?: boolean }[] = [
+  { header: 'Registered', get: r => (r.createdAt || '').slice(0, 10) },
+  { header: 'Status', get: r => r.status },
+  { header: 'Child', get: r => r.childName },
+  { header: 'Age group', get: r => r.ageGroup || '' },
+  { header: 'Date of birth', get: r => r.dob || '' },
+  { header: 'Branch', get: r => (r.branch ? branchById(r.branch)?.name ?? r.branch : '') },
+  { header: 'Class day & time', get: r => r.slotLabel || '' },
+  { header: 'Requested another day', get: r => r.otherDay || '' },
+  { header: 'MakeX', get: r => (r.makex ? 'YES' : '') },
+  { header: 'MakeX time', get: r => r.makexSlotLabel || '' },
+  { header: 'Parent', get: r => r.parentName },
+  { header: 'WhatsApp', get: r => r.parentPhone, phone: true },
+  { header: 'Email', get: r => r.parentEmail || '' },
+  { header: 'Notes', get: r => r.notes || '' },
+];
+
+function exportCsv(rows: Registration[], label: string) {
+  const lines = [
+    COLUMNS.map(c => csvCell(c.header)).join(','),
+    ...rows.map(r => COLUMNS.map(c => (c.phone ? csvPhone(c.get(r)) : csvCell(c.get(r)))).join(',')),
+  ];
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `RoboHolic-registrations-${label}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export default function AdminRegistrationsPage() {
   return (
     <RequireRole allow={['admin']}>
@@ -36,6 +75,7 @@ function Registrations() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | Registration['status']>('all');
   const [copied, setCopied] = useState(false);
+  const [view, setView] = useState<'table' | 'cards'>('table');
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -102,7 +142,20 @@ function Registrations() {
               <MessageCircle size={14} /> Share on WhatsApp
             </a>
             <button onClick={() => void load()} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
-            <button onClick={() => window.print()} className="ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 text-gray-700"><Printer size={14} /> Print / PDF</button>
+
+            <div className="ml-auto flex items-center gap-2">
+              {/* View toggle */}
+              <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold bg-white">
+                <button onClick={() => setView('table')} className={`px-3 py-2 inline-flex items-center gap-1.5 ${view === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}><Table2 size={13} /> Table</button>
+                <button onClick={() => setView('cards')} className={`px-3 py-2 inline-flex items-center gap-1.5 ${view === 'cards' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}><LayoutGrid size={13} /> Cards</button>
+              </div>
+              <button onClick={() => exportCsv(visible, filter)} disabled={visible.length === 0}
+                title="Download an Excel-ready file of the registrations shown"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-40" style={{ background: '#16A34A' }}>
+                <Download size={14} /> Excel ({visible.length})
+              </button>
+              <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 text-gray-700"><Printer size={14} /> Print</button>
+            </div>
           </div>
 
           {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm mb-4 no-print">{error}</div>}
@@ -162,6 +215,76 @@ function Registrations() {
             <div className="text-center py-16 text-gray-400">
               <Users size={32} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm">{rows.length === 0 ? 'No registrations yet — share the link with parents!' : 'Nothing with this status.'}</p>
+            </div>
+          ) : view === 'table' ? (
+            /* ─── Table view: everything at a glance ─── */
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 text-left text-[11px] uppercase tracking-wide text-gray-500">
+                      <th className="px-3 py-2.5 font-bold">Child</th>
+                      <th className="px-3 py-2.5 font-bold">Age</th>
+                      <th className="px-3 py-2.5 font-bold">Branch</th>
+                      <th className="px-3 py-2.5 font-bold">Class time</th>
+                      <th className="px-3 py-2.5 font-bold">MakeX</th>
+                      <th className="px-3 py-2.5 font-bold">Parent</th>
+                      <th className="px-3 py-2.5 font-bold">WhatsApp</th>
+                      <th className="px-3 py-2.5 font-bold">Email</th>
+                      <th className="px-3 py-2.5 font-bold">Status</th>
+                      <th className="px-3 py-2.5 font-bold no-print"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visible.map(r => {
+                      const st = STATUSES.find(s => s.key === r.status) ?? STATUSES[0];
+                      return (
+                        <tr key={r.id} className="border-t border-gray-50 hover:bg-blue-50/30 align-top">
+                          <td className="px-3 py-2.5">
+                            <div className="font-bold text-gray-900 whitespace-nowrap">{r.childName}</div>
+                            {r.dob && <div className="text-[11px] text-gray-400">DOB {r.dob}</div>}
+                            {r.notes && <div className="text-[11px] text-gray-400 max-w-[220px] truncate" title={r.notes}>📝 {r.notes}</div>}
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap text-gray-600">{r.ageGroup || '—'}</td>
+                          <td className="px-3 py-2.5 whitespace-nowrap text-gray-600">{r.branch ? branchById(r.branch)?.name ?? r.branch : '—'}</td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            {r.slotLabel ? <span className="text-gray-800">{r.slotLabel}</span> : <span className="text-gray-300">—</span>}
+                            {r.otherDay && <div className="text-[11px] font-semibold text-orange-600">asked: {r.otherDay}</div>}
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            {r.makex
+                              ? <span className="badge-pill bg-amber-50 text-amber-700 text-[10px]"><Trophy size={9} className="inline" /> {r.makexSlotLabel || 'yes'}</span>
+                              : <span className="text-gray-300">—</span>}
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap text-gray-700">{r.parentName}</td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            {r.parentPhone
+                              ? <a href={`https://wa.me/${waNum(r.parentPhone)}`} target="_blank" rel="noreferrer" className="text-green-600 font-semibold hover:underline">{r.parentPhone}</a>
+                              : <span className="text-gray-300">—</span>}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {r.parentEmail
+                              ? <a href={`mailto:${r.parentEmail}`} className="text-blue-600 hover:underline break-all">{r.parentEmail}</a>
+                              : <span className="text-gray-300">—</span>}
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            <span className="badge-pill text-[10px] font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap no-print">
+                            <select value={r.status} onChange={e => void setStatus(r, e.target.value as Registration['status'])}
+                              className="text-[11px] rounded-lg border border-gray-200 px-2 py-1 bg-white">
+                              {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                            </select>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[11px] text-gray-400 px-3 py-2.5 border-t border-gray-50 no-print">
+                Scroll sideways for more columns · change a status with the dropdown · <b>Excel</b> downloads exactly these {visible.length} row{visible.length === 1 ? '' : 's'} (notes and requested days included).
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
