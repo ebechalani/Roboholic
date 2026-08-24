@@ -28,7 +28,6 @@ export const BRANCHES: Branch[] = [
     classSlots: [
       { id: 'jd-wed-1600', day: 'Wednesday', time: '4:00 PM' },
       { id: 'jd-wed-1730', day: 'Wednesday', time: '5:30 PM' },
-      { id: 'jd-thu-1600', day: 'Thursday', time: '4:00 PM' },
       { id: 'jd-thu-1730', day: 'Thursday', time: '5:30 PM' },
       { id: 'jd-fri-1600', day: 'Friday', time: '4:00 PM' },
       { id: 'jd-fri-1730', day: 'Friday', time: '5:30 PM' },
