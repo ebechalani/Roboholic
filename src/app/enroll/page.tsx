@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, CheckCircle, ArrowRight, MessageCircle, Trophy, CalendarPlus, MapPin, Crown } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, MessageCircle, Trophy, CalendarPlus, MapPin, Crown, Swords } from 'lucide-react';
 import { BRANCHES, TRACKS, branchById, trackByAge, slotLabel, type Slot } from '@/lib/enrollment';
 
 // ════════════════════════════════════════════════════════════════
@@ -16,6 +16,7 @@ const EMPTY = {
   branch: '', ageGroup: '', slotId: '', otherDay: '',
   makex: false, makexSlotId: '',
   chess: false, chessSlotId: '',
+  muayThai: false, muayThaiSlotId: '',
   childName: '', dob: '', parentName: '', parentPhone: '', parentEmail: '', notes: '', website: '',
 };
 
@@ -34,6 +35,7 @@ export default function EnrollPage() {
   const chosenSlot = useMemo(() => branch?.classSlots.find(s => s.id === f.slotId), [branch, f.slotId]);
   const makexSlots = branch?.makexSlots ?? [];
   const chessSlots = branch?.chessSlots ?? [];
+  const mtSlots = branch?.muayThaiSlots ?? [];
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,6 +44,14 @@ export default function EnrollPage() {
     if (!f.slotId && !f.otherDay.trim()) return setError('Please pick a class time — or tell us the day that suits you.');
     if (f.makex && makexSlots.length > 0 && !f.makexSlotId) return setError('Please pick a MakeX training time.');
     if (f.chess && chessSlots.length > 0 && !f.chessSlotId) return setError('Please pick a chess club time.');
+    if (f.muayThai && mtSlots.length > 0 && !f.muayThaiSlotId) return setError('Please pick a Muay Thai time.');
+    // Muay Thai and the robotics class can fall on the same day+time.
+    {
+      const mt = mtSlots.find(s => s.id === f.muayThaiSlotId);
+      if (f.muayThai && mt && chosenSlot && mt.day === chosenSlot.day && mt.time === chosenSlot.time) {
+        return setError(`Muay Thai and the robotics class are both ${mt.day} at ${mt.time} — please pick a different time for one of them.`);
+      }
+    }
     setBusy(true); setError('');
     try {
       const payload = {
@@ -49,6 +59,7 @@ export default function EnrollPage() {
         slotLabel: chosenSlot ? slotLabel(chosenSlot) : '',
         makexSlotLabel: makexSlots.find(s => s.id === f.makexSlotId) ? slotLabel(makexSlots.find(s => s.id === f.makexSlotId) as Slot) : '',
         chessSlotLabel: chessSlots.find(s => s.id === f.chessSlotId) ? slotLabel(chessSlots.find(s => s.id === f.chessSlotId) as Slot) : '',
+        muayThaiSlotLabel: mtSlots.find(s => s.id === f.muayThaiSlotId) ? slotLabel(mtSlots.find(s => s.id === f.muayThaiSlotId) as Slot) : '',
         branchName: branch?.name ?? '',
         trackName: track ? `${track.name} (${track.age})` : '',
       };
@@ -80,7 +91,8 @@ export default function EnrollPage() {
             {chosenSlot && <> on <b>{slotLabel(chosenSlot)}</b></>}
             {f.otherDay.trim() && !chosenSlot && <> — you asked for <b>{f.otherDay.trim()}</b></>}
             {f.makex && <> plus the <b>MakeX competition squad</b></>}
-            {f.chess && <> plus the <b>chess club</b></>}.
+            {f.chess && <> plus the <b>chess club</b></>}
+            {f.muayThai && <> plus <b>Muay Thai</b></>}.
           </p>
           <p className="text-gray-400 text-xs leading-relaxed mb-6">
             {f.otherDay.trim()
@@ -311,9 +323,58 @@ export default function EnrollPage() {
           )}
         </div>
 
-        {/* 6 — Child & parent details */}
+        {/* 6 — Muay Thai (a separate class) */}
+        <div className={`rounded-2xl border-2 p-5 transition-all ${f.muayThai ? 'border-red-400 bg-red-50' : 'border-gray-100 bg-white'}`}>
+          <Num n={6}>
+            <span className="flex items-center gap-1.5"><Swords size={17} className="text-red-500" /> Muay Thai
+              <span className="badge-pill bg-red-100 text-red-700 text-[10px] font-bold">optional</span>
+            </span>
+          </Num>
+          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+            A separate <b>Friday class</b> — fitness, discipline, technique and self-defence, taught in a safe, structured way for kids and teens.
+            {branch && mtSlots.length === 0 && <> {branch.muayThaiNote}</>}
+          </p>
+          {!branch ? (
+            <p className="text-xs text-gray-400">Choose a branch above to see the Muay Thai times.</p>
+          ) : (
+            <div>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" checked={f.muayThai} onChange={e => setF({ ...f, muayThai: e.target.checked, muayThaiSlotId: '' })} className="w-4 h-4 accent-red-500" />
+                <span className="font-bold text-gray-900 text-sm">Yes — my child wants to join Muay Thai 🥊</span>
+              </label>
+              {f.muayThai && (
+                <div className="mt-4 pl-7">
+                  {mtSlots.length > 0 ? (
+                    <>
+                      <div className="text-xs font-bold text-gray-600 mb-2">Choose the Muay Thai time:</div>
+                      <div className="grid grid-cols-2 gap-2.5 max-w-sm">
+                        {mtSlots.map(s => (
+                          <button key={s.id} type="button" onClick={() => setF({ ...f, muayThaiSlotId: s.id })}
+                            className={`p-3 rounded-xl border-2 text-center transition-all ${f.muayThaiSlotId === s.id ? 'border-red-500 bg-white' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                            <div className="font-bold text-gray-900 text-sm">{s.day}</div>
+                            <div className="text-xs text-gray-500">{s.time}</div>
+                          </button>
+                        ))}
+                      </div>
+                      {/* Muay Thai can land on the same day+time as the robotics class. */}
+                      {chosenSlot && mtSlots.some(s => s.id === f.muayThaiSlotId && s.day === chosenSlot.day && s.time === chosenSlot.time) && (
+                        <p className="text-[11px] text-red-600 font-semibold mt-2">
+                          That&apos;s the same time as the robotics class you picked ({slotLabel(chosenSlot)}) — please choose a different class time above.
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-red-800 bg-white rounded-lg px-3 py-2 border border-red-200">{branch.muayThaiNote}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 7 — Child & parent details */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <Num n={6}>Your details</Num>
+          <Num n={7}>Your details</Num>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -365,6 +426,7 @@ export default function EnrollPage() {
               {f.otherDay.trim() && ` · requested: ${f.otherDay.trim()}`}
               {f.makex && ` · + MakeX squad${f.makexSlotId ? ` (${slotLabel(makexSlots.find(s => s.id === f.makexSlotId) as Slot)})` : ''}`}
               {f.chess && ` · + Chess club${f.chessSlotId ? ` (${slotLabel(chessSlots.find(s => s.id === f.chessSlotId) as Slot)})` : ''}`}
+              {f.muayThai && ` · + Muay Thai${f.muayThaiSlotId ? ` (${slotLabel(mtSlots.find(s => s.id === f.muayThaiSlotId) as Slot)})` : ''}`}
             </div>
           </div>
         )}

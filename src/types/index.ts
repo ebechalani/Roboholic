@@ -110,6 +110,10 @@ export interface Registration {
   chess?: boolean;
   chessSlotId?: string;
   chessSlotLabel?: string;
+  // Muay Thai (a separate class from robotics & coding)
+  muayThai?: boolean;
+  muayThaiSlotId?: string;
+  muayThaiSlotLabel?: string;
   schedule?: string;          // legacy free-text preference (older submissions)
   notes?: string;
   status: 'new' | 'contacted' | 'enrolled' | 'archived';
