@@ -268,7 +268,7 @@ export default function EnrollPage() {
             </span>
           </Num>
           <p className="text-sm text-gray-600 leading-relaxed mb-3">
-            A separate <b>Saturday chess class</b> — openings, tactics, endgames and real games, taught from the official ChessKid curriculum.
+            A separate <b>Saturday chess class</b> — openings, tactics, endgames and real games, taught step by step from first moves to confident play.
             Great on its own or alongside robotics.
             {branch && chessSlots.length === 0 && <> {branch.chessNote}</>}
           </p>
