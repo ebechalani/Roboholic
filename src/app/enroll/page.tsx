@@ -339,9 +339,10 @@ export default function EnrollPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-              <input value={f.parentEmail} onChange={set('parentEmail')} type="email" placeholder="optional — for progress reports"
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email *</label>
+              <input value={f.parentEmail} onChange={set('parentEmail')} type="email" required placeholder="you@example.com"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm" />
+              <p className="text-[11px] text-gray-400 mt-1">We send your child&apos;s progress reports here.</p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Anything we should know?</label>

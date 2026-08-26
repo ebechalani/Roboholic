@@ -61,8 +61,11 @@ export async function POST(req: Request) {
     status: 'new' as const,
     createdAt: new Date().toISOString(),
   };
-  if (!reg.childName || !reg.parentName || !reg.parentPhone) {
-    return NextResponse.json({ error: 'Please fill the child\'s name, your name and your WhatsApp number.' }, { status: 400 });
+  if (!reg.childName || !reg.parentName || !reg.parentPhone || !reg.parentEmail) {
+    return NextResponse.json({ error: 'Please fill the child\'s name, your name, your WhatsApp number and your email.' }, { status: 400 });
+  }
+  if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(reg.parentEmail)) {
+    return NextResponse.json({ error: 'That email address doesn\'t look right — please check it.' }, { status: 400 });
   }
   if (!reg.slotLabel && !reg.otherDay) {
     return NextResponse.json({ error: 'Please pick a class time — or tell us the day that suits you.' }, { status: 400 });
