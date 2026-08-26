@@ -97,6 +97,9 @@ export interface Registration {
   parentName: string;
   parentPhone: string;
   parentEmail?: string;
+  // Which activity they registered for (tab on the public form).
+  // Missing on early submissions = robotics.
+  activity?: 'robotics' | 'drawing' | 'muaythai';
   // Branch + chosen class time (see src/lib/enrollment.ts)
   branch?: string;            // 'jdeideh' | 'beit-chabeb'
   slotId?: string;            // chosen weekly class slot

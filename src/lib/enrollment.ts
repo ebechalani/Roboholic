@@ -28,6 +28,10 @@ export interface Branch {
   muayThaiSlots: Slot[];
   /** Shown when the branch itself has no Muay Thai class. */
   muayThaiNote?: string;
+  /** Drawing class times (a separate class from robotics & coding). */
+  drawingSlots: Slot[];
+  /** Shown when the branch itself has no drawing class. */
+  drawingNote?: string;
 }
 
 export const BRANCHES: Branch[] = [
@@ -51,6 +55,11 @@ export const BRANCHES: Branch[] = [
     muayThaiSlots: [
       { id: 'jd-mt-fri-1730', day: 'Friday', time: '5:30 PM' },
     ],
+    drawingSlots: [
+      { id: 'jd-draw-wed-1800', day: 'Wednesday', time: '6:00 PM' },
+      { id: 'jd-draw-sat-1500', day: 'Saturday', time: '3:00 PM' },
+      { id: 'jd-draw-sat-1630', day: 'Saturday', time: '4:30 PM' },
+    ],
   },
   {
     id: 'beit-chabeb', name: 'Beit Chabeb', emoji: '📍',
@@ -65,7 +74,10 @@ export const BRANCHES: Branch[] = [
     chessSlots: [],
     chessNote: 'The chess club runs at our Jdeideh branch on Saturday — tick the box and we\'ll arrange it with you.',
     muayThaiSlots: [],
-    muayThaiNote: 'Muay Thai runs at our Jdeideh branch on Friday — tick the box and we\'ll arrange it with you.',
+    muayThaiNote: 'Muay Thai runs at our Jdeideh branch on Friday — register and we\'ll arrange it with you.',
+    drawingSlots: [
+      { id: 'bc-draw-sat-1100', day: 'Saturday', time: '11:00 AM' },
+    ],
   },
 ];
 
@@ -74,7 +86,7 @@ export const slotLabel = (s: Slot) => `${s.day} · ${s.time}`;
 /** Find a slot across every branch (used by the admin view). */
 export function findSlot(id: string): Slot | undefined {
   for (const b of BRANCHES) {
-    const s = [...b.classSlots, ...b.makexSlots, ...b.chessSlots, ...b.muayThaiSlots].find(x => x.id === id);
+    const s = [...b.classSlots, ...b.makexSlots, ...b.chessSlots, ...b.muayThaiSlots, ...b.drawingSlots].find(x => x.id === id);
     if (s) return s;
   }
   return undefined;
@@ -166,3 +178,39 @@ export const TRACKS: Track[] = [
 ];
 
 export const trackByAge = (age: string) => TRACKS.find(t => t.age === age);
+
+// ─── Activities (the three tabs on the public form) ──────────────
+export type ActivityId = 'robotics' | 'drawing' | 'muaythai';
+
+export interface Activity {
+  id: ActivityId;
+  name: string;
+  short: string;        // tab label
+  emoji: string;
+  color: string;
+  blurb: string;        // one line under the tabs
+  /** Times for this activity at a given branch. */
+  slots: (b: Branch) => Slot[];
+  /** Shown when the branch doesn't run this activity. */
+  note: (b: Branch) => string | undefined;
+}
+
+export const ACTIVITIES: Activity[] = [
+  {
+    id: 'robotics', name: 'Robotics & Coding', short: 'Robotics', emoji: '🤖', color: '#2563EB',
+    blurb: 'A full school year of robots, coding, drones and 3D design — for ages 4 to 15. Optional MakeX competition squad and chess club.',
+    slots: b => b.classSlots, note: () => undefined,
+  },
+  {
+    id: 'drawing', name: 'Drawing Classes', short: 'Drawing', emoji: '🎨', color: '#7C3AED',
+    blurb: 'Saturday drawing classes — sketching, shading, colour and imagination, step by step from first lines to finished pieces.',
+    slots: b => b.drawingSlots, note: b => b.drawingNote,
+  },
+  {
+    id: 'muaythai', name: 'Muay Thai', short: 'Muay Thai', emoji: '🥊', color: '#DC2626',
+    blurb: 'Fitness, discipline, technique and self-defence — taught in a safe, structured way for kids and teens.',
+    slots: b => b.muayThaiSlots, note: b => b.muayThaiNote,
+  },
+];
+
+export const activityById = (id: string) => ACTIVITIES.find(a => a.id === id);

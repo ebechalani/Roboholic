@@ -12,7 +12,7 @@ import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { db } from '@/lib/firebase/client';
-import { branchById, BRANCHES, slotLabel } from '@/lib/enrollment';
+import { branchById, activityById, ACTIVITIES, BRANCHES, slotLabel } from '@/lib/enrollment';
 import type { Registration } from '@/types';
 
 const STATUSES: { key: Registration['status']; label: string; color: string; bg: string }[] = [
@@ -33,6 +33,7 @@ const csvPhone = (v?: string) => (v ? `"=""${String(v).replace(/"/g, '')}"""` : 
 const COLUMNS: { header: string; get: (r: Registration) => string; phone?: boolean }[] = [
   { header: 'Registered', get: r => (r.createdAt || '').slice(0, 10) },
   { header: 'Status', get: r => r.status },
+  { header: 'Activity', get: r => activityById(r.activity ?? 'robotics')?.name ?? 'Robotics & Coding' },
   { header: 'Child', get: r => r.childName },
   { header: 'Age group', get: r => r.ageGroup || '' },
   { header: 'Date of birth', get: r => r.dob || '' },
@@ -80,6 +81,7 @@ function Registrations() {
   const [filter, setFilter] = useState<'all' | Registration['status']>('all');
   const [copied, setCopied] = useState(false);
   const [view, setView] = useState<'table' | 'cards'>('table');
+  const [act, setAct] = useState<'all' | 'robotics' | 'drawing' | 'muaythai'>('all');
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -111,19 +113,22 @@ function Registrations() {
     const live = rows.filter(r => r.status !== 'archived');
     return BRANCHES.map(b => {
       const mine = live.filter(r => r.branch === b.id);
-      const slots = [...b.classSlots, ...b.makexSlots, ...b.chessSlots, ...b.muayThaiSlots].map(s => ({
+      const slots = [...b.classSlots, ...b.drawingSlots, ...b.muayThaiSlots, ...b.makexSlots, ...b.chessSlots].map(s => ({
         slot: s,
         kind: b.makexSlots.some(m => m.id === s.id) ? 'makex' as const
           : b.chessSlots.some(c => c.id === s.id) ? 'chess' as const
-          : b.muayThaiSlots.some(m => m.id === s.id) ? 'muaythai' as const : 'class' as const,
+          : b.muayThaiSlots.some(m => m.id === s.id) ? 'muaythai' as const
+          : b.drawingSlots.some(d => d.id === s.id) ? 'drawing' as const : 'class' as const,
         kids: mine.filter(r => (r.slotId === s.id) || (r.makexSlotId === s.id) || (r.chessSlotId === s.id) || (r.muayThaiSlotId === s.id)),
       })).filter(x => x.kids.length > 0);
       const otherDay = mine.filter(r => r.otherDay);
-      return { branch: b, total: mine.length, slots, otherDay, makex: mine.filter(r => r.makex).length, chess: mine.filter(r => r.chess).length, muayThai: mine.filter(r => r.muayThai).length };
+      return { branch: b, total: mine.length, slots, otherDay, makex: mine.filter(r => r.makex).length, chess: mine.filter(r => r.chess).length };
     }).filter(b => b.total > 0);
   }, [rows]);
 
-  const visible = filter === 'all' ? rows : rows.filter(r => r.status === filter);
+  const visible = rows
+    .filter(r => filter === 'all' || r.status === filter)
+    .filter(r => act === 'all' || (r.activity ?? 'robotics') === act);
   const enrollUrl = typeof window !== 'undefined' ? `${window.location.origin}/enroll` : '/enroll';
 
   return (
@@ -178,16 +183,16 @@ function Registrations() {
                       <span className="badge-pill bg-gray-100 text-gray-500 text-[10px] ml-1">{p.total} registered</span>
                       {p.makex > 0 && <span className="badge-pill bg-amber-50 text-amber-700 text-[10px]"><Trophy size={9} className="inline" /> {p.makex} MakeX</span>}
                       {p.chess > 0 && <span className="badge-pill bg-emerald-50 text-emerald-700 text-[10px]">♟️ {p.chess} chess</span>}
-                      {p.muayThai > 0 && <span className="badge-pill bg-red-50 text-red-700 text-[10px]">🥊 {p.muayThai} Muay Thai</span>}
                     </div>
                     <div className="space-y-1">
                       {p.slots.map(({ slot, kind, kids }) => (
                         <div key={slot.id} className="flex items-center gap-2 text-xs">
-                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${kind === 'makex' ? 'bg-amber-500' : kind === 'chess' ? 'bg-emerald-500' : kind === 'muaythai' ? 'bg-red-500' : 'bg-blue-500'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${kind === 'makex' ? 'bg-amber-500' : kind === 'chess' ? 'bg-emerald-500' : kind === 'muaythai' ? 'bg-red-500' : kind === 'drawing' ? 'bg-purple-500' : 'bg-blue-500'}`} />
                           <span className="text-gray-600 flex-1">{slotLabel(slot)}
                             {kind === 'makex' && <span className="text-amber-600 font-semibold"> · MakeX</span>}
                             {kind === 'chess' && <span className="text-emerald-600 font-semibold"> · Chess</span>}
                             {kind === 'muaythai' && <span className="text-red-600 font-semibold"> · Muay Thai</span>}
+                            {kind === 'drawing' && <span className="text-purple-600 font-semibold"> · Drawing</span>}
                           </span>
                           <span className={`badge-pill text-[10px] ${kids.length >= 4 ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{kids.length} {kids.length === 1 ? 'child' : 'children'}</span>
                         </div>
@@ -205,6 +210,25 @@ function Registrations() {
               </div>
             </div>
           )}
+
+          {/* Activity filter */}
+          <div className="flex flex-wrap gap-2 mb-3 no-print">
+            <button onClick={() => setAct('all')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold border-2 ${act === 'all' ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600'}`}>
+              All activities ({rows.length})
+            </button>
+            {ACTIVITIES.map(a => {
+              const n = rows.filter(r => (r.activity ?? 'robotics') === a.id).length;
+              const on = act === a.id;
+              return (
+                <button key={a.id} onClick={() => setAct(a.id)}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold border-2 ${on ? 'text-white' : 'bg-white text-gray-600 border-gray-200'}`}
+                  style={on ? { background: a.color, borderColor: a.color } : {}}>
+                  {a.emoji} {a.short} ({n})
+                </button>
+              );
+            })}
+          </div>
 
           {/* Stats + filter */}
           <div className="flex flex-wrap gap-2 mb-6 no-print">
@@ -235,13 +259,13 @@ function Registrations() {
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr className="bg-gray-50 text-left text-[11px] uppercase tracking-wide text-gray-500">
+                      <th className="px-3 py-2.5 font-bold">Activity</th>
                       <th className="px-3 py-2.5 font-bold">Child</th>
                       <th className="px-3 py-2.5 font-bold">Age</th>
                       <th className="px-3 py-2.5 font-bold">Branch</th>
                       <th className="px-3 py-2.5 font-bold">Class time</th>
                       <th className="px-3 py-2.5 font-bold">MakeX</th>
                       <th className="px-3 py-2.5 font-bold">Chess</th>
-                      <th className="px-3 py-2.5 font-bold">Muay Thai</th>
                       <th className="px-3 py-2.5 font-bold">Parent</th>
                       <th className="px-3 py-2.5 font-bold">WhatsApp</th>
                       <th className="px-3 py-2.5 font-bold">Email</th>
@@ -254,6 +278,11 @@ function Registrations() {
                       const st = STATUSES.find(s => s.key === r.status) ?? STATUSES[0];
                       return (
                         <tr key={r.id} className="border-t border-gray-50 hover:bg-blue-50/30 align-top">
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            {(() => { const a = activityById(r.activity ?? 'robotics'); return a
+                              ? <span className="badge-pill text-[10px] font-bold" style={{ background: a.color + '18', color: a.color }}>{a.emoji} {a.short}</span>
+                              : <span className="text-gray-300">—</span>; })()}
+                          </td>
                           <td className="px-3 py-2.5">
                             <div className="font-bold text-gray-900 whitespace-nowrap">{r.childName}</div>
                             {r.dob && <div className="text-[11px] text-gray-400">DOB {r.dob}</div>}
@@ -273,11 +302,6 @@ function Registrations() {
                           <td className="px-3 py-2.5 whitespace-nowrap">
                             {r.chess
                               ? <span className="badge-pill bg-emerald-50 text-emerald-700 text-[10px]">♟️ {r.chessSlotLabel || 'yes'}</span>
-                              : <span className="text-gray-300">—</span>}
-                          </td>
-                          <td className="px-3 py-2.5 whitespace-nowrap">
-                            {r.muayThai
-                              ? <span className="badge-pill bg-red-50 text-red-700 text-[10px]">🥊 {r.muayThaiSlotLabel || 'yes'}</span>
                               : <span className="text-gray-300">—</span>}
                           </td>
                           <td className="px-3 py-2.5 whitespace-nowrap text-gray-700">{r.parentName}</td>
@@ -331,8 +355,11 @@ function Registrations() {
                       <span className="badge-pill text-xs font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
                     </div>
 
-                    {/* Branch · class time · MakeX */}
+                    {/* Activity · branch · class time · add-ons */}
                     <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                      {(() => { const a = activityById(r.activity ?? 'robotics'); return a && (
+                        <span className="badge-pill text-[11px] font-bold" style={{ background: a.color + '18', color: a.color }}>{a.emoji} {a.name}</span>
+                      ); })()}
                       {r.branch && (
                         <span className="badge-pill bg-indigo-50 text-indigo-700 text-[11px] inline-flex items-center gap-1">
                           <MapPin size={11} /> {branchById(r.branch)?.name ?? r.branch}
@@ -351,11 +378,6 @@ function Registrations() {
                       {r.chess && (
                         <span className="badge-pill bg-emerald-50 text-emerald-700 text-[11px] inline-flex items-center gap-1">
                           ♟️ Chess{r.chessSlotLabel ? ` · ${r.chessSlotLabel}` : ' (arrange)'}
-                        </span>
-                      )}
-                      {r.muayThai && (
-                        <span className="badge-pill bg-red-50 text-red-700 text-[11px] inline-flex items-center gap-1">
-                          🥊 Muay Thai{r.muayThaiSlotLabel ? ` · ${r.muayThaiSlotLabel}` : ' (arrange)'}
                         </span>
                       )}
                     </div>

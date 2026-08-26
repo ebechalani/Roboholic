@@ -41,6 +41,9 @@ export async function POST(req: Request) {
     parentName: clip(body.parentName, 120),
     parentPhone: clip(body.parentPhone, 30),
     parentEmail: clip(body.parentEmail, 160),
+    // Which activity (tab): robotics | drawing | muaythai
+    activity: (['robotics', 'drawing', 'muaythai'] as const).includes(body.activity as 'robotics') ? (body.activity as 'robotics' | 'drawing' | 'muaythai') : 'robotics',
+    activityName: clip(body.activityName, 40),
     // Branch + chosen weekly class time
     branch: clip(body.branch, 30),
     branchName: clip(body.branchName, 60),
@@ -88,11 +91,12 @@ export async function POST(req: Request) {
       await t.sendMail({
         from: `RoboHolic Enrollment <${SMTP_USER}>`,
         to: SMTP_USER,
-        subject: `New 2026–2027 registration: ${reg.childName}${reg.makex ? ' + MakeX' : ''}${reg.chess ? ' + Chess' : ''}${reg.muayThai ? ' + Muay Thai' : ''}`,
+        subject: `New 2026–2027 registration (${reg.activityName || reg.activity}): ${reg.childName}${reg.makex ? ' + MakeX' : ''}${reg.chess ? ' + Chess' : ''}`,
         text: [
           'A parent registered a child for 2026–2027:',
           '',
           `Child:   ${reg.childName}${reg.dob ? ` (DOB ${reg.dob})` : ''}`,
+          `Activity: ${reg.activityName || reg.activity}`,
           `Class:   ${reg.trackName || reg.ageGroup || '—'}`,
           `Branch:  ${reg.branchName || reg.branch || '—'}`,
           `Time:    ${reg.slotLabel || '(none picked)'}`,
