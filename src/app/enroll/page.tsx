@@ -251,6 +251,7 @@ export default function EnrollPage() {
                     style={f.slotId === s.id ? { borderColor: activity.color, background: activity.color + '12' } : {}}>
                     <div className="font-bold text-gray-900 text-sm">{s.day}</div>
                     <div className="text-xs text-gray-500">{s.time}</div>
+                    {s.note && <div className="text-[11px] font-bold mt-0.5" style={{ color: activity.color }}>{s.note}</div>}
                   </button>
                 ))}
               </div>

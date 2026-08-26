@@ -8,6 +8,7 @@ export interface Slot {
   id: string;
   day: string;      // 'Wednesday'
   time: string;     // '4:00 PM'
+  note?: string;    // e.g. 'ages 15+' — shown on the chip and kept in the record
 }
 
 export interface Branch {
@@ -53,7 +54,8 @@ export const BRANCHES: Branch[] = [
       { id: 'jd-chess-sat-1630', day: 'Saturday', time: '4:30 PM' },
     ],
     muayThaiSlots: [
-      { id: 'jd-mt-fri-1730', day: 'Friday', time: '5:30 PM' },
+      { id: 'jd-mt-fri-1730', day: 'Friday', time: '5:30 PM', note: 'under 15' },
+      { id: 'jd-mt-tuethu-1900', day: 'Tuesday & Thursday', time: '7:00 PM', note: 'ages 15+' },
     ],
     drawingSlots: [
       { id: 'jd-draw-wed-1800', day: 'Wednesday', time: '6:00 PM' },
@@ -82,7 +84,7 @@ export const BRANCHES: Branch[] = [
 ];
 
 export const branchById = (id: string) => BRANCHES.find(b => b.id === id);
-export const slotLabel = (s: Slot) => `${s.day} · ${s.time}`;
+export const slotLabel = (s: Slot) => `${s.day} · ${s.time}${s.note ? ` (${s.note})` : ''}`;
 /** Find a slot across every branch (used by the admin view). */
 export function findSlot(id: string): Slot | undefined {
   for (const b of BRANCHES) {
