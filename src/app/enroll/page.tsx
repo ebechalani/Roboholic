@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, CheckCircle, ArrowRight, MessageCircle, Trophy, CalendarPlus, MapPin } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, MessageCircle, Trophy, CalendarPlus, MapPin, Crown } from 'lucide-react';
 import { BRANCHES, TRACKS, branchById, trackByAge, slotLabel, type Slot } from '@/lib/enrollment';
 
 // ════════════════════════════════════════════════════════════════
@@ -15,6 +15,7 @@ import { BRANCHES, TRACKS, branchById, trackByAge, slotLabel, type Slot } from '
 const EMPTY = {
   branch: '', ageGroup: '', slotId: '', otherDay: '',
   makex: false, makexSlotId: '',
+  chess: false, chessSlotId: '',
   childName: '', dob: '', parentName: '', parentPhone: '', parentEmail: '', notes: '', website: '',
 };
 
@@ -32,6 +33,7 @@ export default function EnrollPage() {
   // The chosen class slot, so we can keep MakeX on a different day.
   const chosenSlot = useMemo(() => branch?.classSlots.find(s => s.id === f.slotId), [branch, f.slotId]);
   const makexSlots = branch?.makexSlots ?? [];
+  const chessSlots = branch?.chessSlots ?? [];
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,12 +41,14 @@ export default function EnrollPage() {
     if (!f.ageGroup) return setError('Please choose your child\'s age group.');
     if (!f.slotId && !f.otherDay.trim()) return setError('Please pick a class time — or tell us the day that suits you.');
     if (f.makex && makexSlots.length > 0 && !f.makexSlotId) return setError('Please pick a MakeX training time.');
+    if (f.chess && chessSlots.length > 0 && !f.chessSlotId) return setError('Please pick a chess club time.');
     setBusy(true); setError('');
     try {
       const payload = {
         ...f,
         slotLabel: chosenSlot ? slotLabel(chosenSlot) : '',
         makexSlotLabel: makexSlots.find(s => s.id === f.makexSlotId) ? slotLabel(makexSlots.find(s => s.id === f.makexSlotId) as Slot) : '',
+        chessSlotLabel: chessSlots.find(s => s.id === f.chessSlotId) ? slotLabel(chessSlots.find(s => s.id === f.chessSlotId) as Slot) : '',
         branchName: branch?.name ?? '',
         trackName: track ? `${track.name} (${track.age})` : '',
       };
@@ -75,7 +79,8 @@ export default function EnrollPage() {
             <b>{track?.name}</b> class at <b>{branch?.name}</b>
             {chosenSlot && <> on <b>{slotLabel(chosenSlot)}</b></>}
             {f.otherDay.trim() && !chosenSlot && <> — you asked for <b>{f.otherDay.trim()}</b></>}
-            {f.makex && <> plus the <b>MakeX competition squad</b></>}.
+            {f.makex && <> plus the <b>MakeX competition squad</b></>}
+            {f.chess && <> plus the <b>chess club</b></>}.
           </p>
           <p className="text-gray-400 text-xs leading-relaxed mb-6">
             {f.otherDay.trim()
@@ -255,9 +260,60 @@ export default function EnrollPage() {
           )}
         </div>
 
-        {/* 5 — Child & parent details */}
+        {/* 5 — Chess club (a separate class, Saturdays) */}
+        <div className={`rounded-2xl border-2 p-5 transition-all ${f.chess ? 'border-emerald-400 bg-emerald-50' : 'border-gray-100 bg-white'}`}>
+          <Num n={5}>
+            <span className="flex items-center gap-1.5"><Crown size={17} className="text-emerald-600" /> Chess club
+              <span className="badge-pill bg-emerald-100 text-emerald-700 text-[10px] font-bold">optional</span>
+            </span>
+          </Num>
+          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+            A separate <b>Saturday chess class</b> — openings, tactics, endgames and real games, taught from the official ChessKid curriculum.
+            Great on its own or alongside robotics.
+            {branch && chessSlots.length === 0 && <> {branch.chessNote}</>}
+          </p>
+          {!branch ? (
+            <p className="text-xs text-gray-400">Choose a branch above to see the chess times.</p>
+          ) : (
+            <div>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" checked={f.chess} onChange={e => setF({ ...f, chess: e.target.checked, chessSlotId: '' })} className="w-4 h-4 accent-emerald-600" />
+                <span className="font-bold text-gray-900 text-sm">Yes — my child wants to join the chess club ♟️</span>
+              </label>
+              {f.chess && (
+                <div className="mt-4 pl-7">
+                  {chessSlots.length > 0 ? (
+                    <>
+                      <div className="text-xs font-bold text-gray-600 mb-2">Choose the chess time:</div>
+                      <div className="grid grid-cols-2 gap-2.5 max-w-sm">
+                        {chessSlots.map(s => (
+                          <button key={s.id} type="button" onClick={() => setF({ ...f, chessSlotId: s.id })}
+                            className={`p-3 rounded-xl border-2 text-center transition-all ${f.chessSlotId === s.id ? 'border-emerald-500 bg-white' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                            <div className="font-bold text-gray-900 text-sm">{s.day}</div>
+                            <div className="text-xs text-gray-500">{s.time}</div>
+                          </button>
+                        ))}
+                      </div>
+                      {/* Chess and MakeX share the Saturday slots — flag a clash. */}
+                      {f.makex && f.chessSlotId && f.makexSlotId &&
+                        chessSlots.find(s => s.id === f.chessSlotId)?.time === makexSlots.find(s => s.id === f.makexSlotId)?.time && (
+                        <p className="text-[11px] text-red-600 font-semibold mt-2">
+                          That&apos;s the same time as the MakeX squad you picked — please choose the other chess time (or the other MakeX time).
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-emerald-800 bg-white rounded-lg px-3 py-2 border border-emerald-200">{branch.chessNote}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 6 — Child & parent details */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <Num n={5}>Your details</Num>
+          <Num n={6}>Your details</Num>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -307,6 +363,7 @@ export default function EnrollPage() {
               {chosenSlot && ` · ${slotLabel(chosenSlot)}`}
               {f.otherDay.trim() && ` · requested: ${f.otherDay.trim()}`}
               {f.makex && ` · + MakeX squad${f.makexSlotId ? ` (${slotLabel(makexSlots.find(s => s.id === f.makexSlotId) as Slot)})` : ''}`}
+              {f.chess && ` · + Chess club${f.chessSlotId ? ` (${slotLabel(chessSlots.find(s => s.id === f.chessSlotId) as Slot)})` : ''}`}
             </div>
           </div>
         )}

@@ -106,6 +106,10 @@ export interface Registration {
   makex?: boolean;
   makexSlotId?: string;
   makexSlotLabel?: string;
+  // Chess club (a separate class from robotics & coding)
+  chess?: boolean;
+  chessSlotId?: string;
+  chessSlotLabel?: string;
   schedule?: string;          // legacy free-text preference (older submissions)
   notes?: string;
   status: 'new' | 'contacted' | 'enrolled' | 'archived';

@@ -41,6 +41,8 @@ const COLUMNS: { header: string; get: (r: Registration) => string; phone?: boole
   { header: 'Requested another day', get: r => r.otherDay || '' },
   { header: 'MakeX', get: r => (r.makex ? 'YES' : '') },
   { header: 'MakeX time', get: r => r.makexSlotLabel || '' },
+  { header: 'Chess', get: r => (r.chess ? 'YES' : '') },
+  { header: 'Chess time', get: r => r.chessSlotLabel || '' },
   { header: 'Parent', get: r => r.parentName },
   { header: 'WhatsApp', get: r => r.parentPhone, phone: true },
   { header: 'Email', get: r => r.parentEmail || '' },
@@ -107,13 +109,14 @@ function Registrations() {
     const live = rows.filter(r => r.status !== 'archived');
     return BRANCHES.map(b => {
       const mine = live.filter(r => r.branch === b.id);
-      const slots = [...b.classSlots, ...b.makexSlots].map(s => ({
+      const slots = [...b.classSlots, ...b.makexSlots, ...b.chessSlots].map(s => ({
         slot: s,
-        isMakex: b.makexSlots.some(m => m.id === s.id),
-        kids: mine.filter(r => (r.slotId === s.id) || (r.makexSlotId === s.id)),
+        kind: b.makexSlots.some(m => m.id === s.id) ? 'makex' as const
+          : b.chessSlots.some(c => c.id === s.id) ? 'chess' as const : 'class' as const,
+        kids: mine.filter(r => (r.slotId === s.id) || (r.makexSlotId === s.id) || (r.chessSlotId === s.id)),
       })).filter(x => x.kids.length > 0);
       const otherDay = mine.filter(r => r.otherDay);
-      return { branch: b, total: mine.length, slots, otherDay, makex: mine.filter(r => r.makex).length };
+      return { branch: b, total: mine.length, slots, otherDay, makex: mine.filter(r => r.makex).length, chess: mine.filter(r => r.chess).length };
     }).filter(b => b.total > 0);
   }, [rows]);
 
@@ -171,12 +174,16 @@ function Registrations() {
                       <MapPin size={12} className="text-indigo-500" /> {p.branch.name}
                       <span className="badge-pill bg-gray-100 text-gray-500 text-[10px] ml-1">{p.total} registered</span>
                       {p.makex > 0 && <span className="badge-pill bg-amber-50 text-amber-700 text-[10px]"><Trophy size={9} className="inline" /> {p.makex} MakeX</span>}
+                      {p.chess > 0 && <span className="badge-pill bg-emerald-50 text-emerald-700 text-[10px]">♟️ {p.chess} chess</span>}
                     </div>
                     <div className="space-y-1">
-                      {p.slots.map(({ slot, isMakex, kids }) => (
+                      {p.slots.map(({ slot, kind, kids }) => (
                         <div key={slot.id} className="flex items-center gap-2 text-xs">
-                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isMakex ? 'bg-amber-500' : 'bg-blue-500'}`} />
-                          <span className="text-gray-600 flex-1">{slotLabel(slot)}{isMakex && <span className="text-amber-600 font-semibold"> · MakeX</span>}</span>
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${kind === 'makex' ? 'bg-amber-500' : kind === 'chess' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                          <span className="text-gray-600 flex-1">{slotLabel(slot)}
+                            {kind === 'makex' && <span className="text-amber-600 font-semibold"> · MakeX</span>}
+                            {kind === 'chess' && <span className="text-emerald-600 font-semibold"> · Chess</span>}
+                          </span>
                           <span className={`badge-pill text-[10px] ${kids.length >= 4 ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{kids.length} {kids.length === 1 ? 'child' : 'children'}</span>
                         </div>
                       ))}
@@ -228,6 +235,7 @@ function Registrations() {
                       <th className="px-3 py-2.5 font-bold">Branch</th>
                       <th className="px-3 py-2.5 font-bold">Class time</th>
                       <th className="px-3 py-2.5 font-bold">MakeX</th>
+                      <th className="px-3 py-2.5 font-bold">Chess</th>
                       <th className="px-3 py-2.5 font-bold">Parent</th>
                       <th className="px-3 py-2.5 font-bold">WhatsApp</th>
                       <th className="px-3 py-2.5 font-bold">Email</th>
@@ -254,6 +262,11 @@ function Registrations() {
                           <td className="px-3 py-2.5 whitespace-nowrap">
                             {r.makex
                               ? <span className="badge-pill bg-amber-50 text-amber-700 text-[10px]"><Trophy size={9} className="inline" /> {r.makexSlotLabel || 'yes'}</span>
+                              : <span className="text-gray-300">—</span>}
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            {r.chess
+                              ? <span className="badge-pill bg-emerald-50 text-emerald-700 text-[10px]">♟️ {r.chessSlotLabel || 'yes'}</span>
                               : <span className="text-gray-300">—</span>}
                           </td>
                           <td className="px-3 py-2.5 whitespace-nowrap text-gray-700">{r.parentName}</td>
@@ -322,6 +335,11 @@ function Registrations() {
                       {r.makex && (
                         <span className="badge-pill bg-amber-50 text-amber-700 text-[11px] inline-flex items-center gap-1">
                           <Trophy size={11} /> MakeX{r.makexSlotLabel ? ` · ${r.makexSlotLabel}` : ' (arrange)'}
+                        </span>
+                      )}
+                      {r.chess && (
+                        <span className="badge-pill bg-emerald-50 text-emerald-700 text-[11px] inline-flex items-center gap-1">
+                          ♟️ Chess{r.chessSlotLabel ? ` · ${r.chessSlotLabel}` : ' (arrange)'}
                         </span>
                       )}
                     </div>

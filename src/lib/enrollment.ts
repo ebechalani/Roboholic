@@ -20,6 +20,10 @@ export interface Branch {
   makexSlots: Slot[];
   /** Shown when the branch itself has no MakeX squad. */
   makexNote?: string;
+  /** Chess club times (a separate class from robotics & coding). */
+  chessSlots: Slot[];
+  /** Shown when the branch itself has no chess club. */
+  chessNote?: string;
 }
 
 export const BRANCHES: Branch[] = [
@@ -36,6 +40,10 @@ export const BRANCHES: Branch[] = [
       { id: 'jd-sat-1500', day: 'Saturday', time: '3:00 PM' },
       { id: 'jd-sat-1630', day: 'Saturday', time: '4:30 PM' },
     ],
+    chessSlots: [
+      { id: 'jd-chess-sat-1500', day: 'Saturday', time: '3:00 PM' },
+      { id: 'jd-chess-sat-1630', day: 'Saturday', time: '4:30 PM' },
+    ],
   },
   {
     id: 'beit-chabeb', name: 'Beit Chabeb', emoji: '📍',
@@ -47,6 +55,8 @@ export const BRANCHES: Branch[] = [
     ],
     makexSlots: [],
     makexNote: 'The MakeX competition squad trains at our Jdeideh branch on Saturday — tick the box and we\'ll arrange it with you.',
+    chessSlots: [],
+    chessNote: 'The chess club runs at our Jdeideh branch on Saturday — tick the box and we\'ll arrange it with you.',
   },
 ];
 
@@ -55,7 +65,7 @@ export const slotLabel = (s: Slot) => `${s.day} · ${s.time}`;
 /** Find a slot across every branch (used by the admin view). */
 export function findSlot(id: string): Slot | undefined {
   for (const b of BRANCHES) {
-    const s = [...b.classSlots, ...b.makexSlots].find(x => x.id === id);
+    const s = [...b.classSlots, ...b.makexSlots, ...b.chessSlots].find(x => x.id === id);
     if (s) return s;
   }
   return undefined;

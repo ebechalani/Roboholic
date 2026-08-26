@@ -52,6 +52,10 @@ export async function POST(req: Request) {
     makex: body.makex === true,
     makexSlotId: clip(body.makexSlotId, 40),
     makexSlotLabel: clip(body.makexSlotLabel, 60),
+    // Chess club
+    chess: body.chess === true,
+    chessSlotId: clip(body.chessSlotId, 40),
+    chessSlotLabel: clip(body.chessSlotLabel, 60),
     schedule: clip(body.schedule, 60),
     notes: clip(body.notes, 1500),
     status: 'new' as const,
@@ -77,7 +81,7 @@ export async function POST(req: Request) {
       await t.sendMail({
         from: `RoboHolic Enrollment <${SMTP_USER}>`,
         to: SMTP_USER,
-        subject: `New 2026–2027 registration: ${reg.childName}${reg.makex ? ' + MakeX' : ''}`,
+        subject: `New 2026–2027 registration: ${reg.childName}${reg.makex ? ' + MakeX' : ''}${reg.chess ? ' + Chess' : ''}`,
         text: [
           'A parent registered a child for 2026–2027:',
           '',
@@ -87,6 +91,7 @@ export async function POST(req: Request) {
           `Time:    ${reg.slotLabel || '(none picked)'}`,
           ...(reg.otherDay ? [`REQUESTED ANOTHER DAY: ${reg.otherDay}  ← needs your confirmation`] : []),
           ...(reg.makex ? [`MakeX:   YES${reg.makexSlotLabel ? ` — ${reg.makexSlotLabel}` : ' (branch has no squad — arrange at Jdeideh)'}`] : []),
+          ...(reg.chess ? [`Chess:   YES${reg.chessSlotLabel ? ` — ${reg.chessSlotLabel}` : ' (branch has no club — arrange at Jdeideh)'}`] : []),
           '',
           `Parent:  ${reg.parentName}`,
           `WhatsApp: ${reg.parentPhone}`,
