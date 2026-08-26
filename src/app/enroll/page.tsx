@@ -54,7 +54,7 @@ export default function EnrollPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!f.branch) return setError('Please choose a branch.');
-    if (!f.ageGroup) return setError('Please choose your child\'s age group.');
+    if (isRobotics && !f.ageGroup) return setError('Please choose your child\'s age group.');
     if (!f.slotId && !f.otherDay.trim()) return setError('Please pick a time — or tell us the day that suits you.');
     if (isRobotics) {
       if (f.makex && makexSlots.length > 0 && !f.makexSlotId) return setError('Please pick a MakeX training time.');
@@ -195,10 +195,11 @@ export default function EnrollPage() {
           </div>
         </div>
 
-        {/* 2 — Age (full course cards for robotics, simple chips otherwise) */}
+        {/* 2 — Which class (robotics only: age & level with the course description) */}
+        {isRobotics && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <Num n={2}>{isRobotics ? <>Which class? <span className="font-normal text-gray-400 text-sm">— by age &amp; level</span></> : <>How old is your child?</>}</Num>
-          {isRobotics ? (
+          <Num n={2}>Which class? <span className="font-normal text-gray-400 text-sm">— by age &amp; level</span></Num>
+          {(
             <div className="space-y-2.5">
               {TRACKS.map(t => {
                 const active = f.ageGroup === t.age;
@@ -234,23 +235,14 @@ export default function EnrollPage() {
                 );
               })}
             </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {TRACKS.map(t => (
-                <button key={t.age} type="button" onClick={() => setF({ ...f, ageGroup: t.age })}
-                  className={`px-4 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${f.ageGroup === t.age ? 'text-white' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
-                  style={f.ageGroup === t.age ? { background: activity.color, borderColor: activity.color } : {}}>
-                  {t.emoji} Ages {t.age}
-                </button>
-              ))}
-            </div>
           )}
         </div>
+        )}
 
-        {/* 3 — Day & time */}
+        {/* Day & time */}
         {branch && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <Num n={3}>Which day &amp; time? <span className="font-normal text-gray-400 text-sm">— {activity.name} · {branch.name}</span></Num>
+            <Num n={isRobotics ? 3 : 2}>Which day &amp; time? <span className="font-normal text-gray-400 text-sm">— {activity.name} · {branch.name}</span></Num>
             {slots.length > 0 ? (
               <div className={`grid grid-cols-2 ${slots.length > 3 ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-2.5 mb-4`}>
                 {slots.map(s => (
@@ -385,7 +377,7 @@ export default function EnrollPage() {
 
         {/* Details */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <Num n={isRobotics ? 6 : 4}>Your details</Num>
+          <Num n={isRobotics ? 6 : 3}>Your details</Num>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -434,7 +426,6 @@ export default function EnrollPage() {
             {activity.emoji} {activity.name}
             {branch && ` · ${branch.name}`}
             {isRobotics && track && ` · ${track.name} (ages ${track.age})`}
-            {!isRobotics && f.ageGroup && ` · ages ${f.ageGroup}`}
             {chosenSlot && ` · ${slotLabel(chosenSlot)}`}
             {f.otherDay.trim() && ` · requested: ${f.otherDay.trim()}`}
             {isRobotics && f.makex && ` · + MakeX${f.makexSlotId ? ` (${slotLabel(makexSlots.find(s => s.id === f.makexSlotId) as Slot)})` : ''}`}
