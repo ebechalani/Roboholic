@@ -19,7 +19,7 @@ import {
   updateDoc, query, where, orderBy, deleteDoc, type DocumentData, type Query,
 } from 'firebase/firestore';
 import { db, firebaseConfig } from '@/lib/firebase/client';
-import type { ClassDoc, ClassStudent, AttendanceDoc, AttendanceStatus, StudentPayment } from '@/types';
+import type { ClassDoc, ClassStudent, AttendanceDoc, AttendanceStatus, StudentPayment, PaymentRecord } from '@/types';
 
 // Unambiguous characters (no 0/O, 1/I/L) — kid-proof class codes.
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -216,6 +216,11 @@ export async function setAttendance(classId: string, date: string, marks: Record
 /** Replace a student's whole payments map (month → payment). Admin only. */
 export async function setStudentPayments(classId: string, uid: string, payments: Record<string, StudentPayment>): Promise<void> {
   await updateDoc(doc(db, 'classes', classId, 'students', uid), { payments });
+}
+
+/** Replace a student's school-year fee ledger (list of payments + validity). Admin only. */
+export async function setStudentPaymentRecords(classId: string, uid: string, paymentRecords: PaymentRecord[]): Promise<void> {
+  await setDoc(doc(db, 'classes', classId, 'students', uid), { paymentRecords }, { merge: true });
 }
 
 /** Every roll call taken for a class so far (admin overview / absence counts). */

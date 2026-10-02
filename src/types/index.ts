@@ -76,6 +76,20 @@ export interface ClassStudent {
   attendDays?: number[];
   // Camp fee tracking, admin-only. Key = month ('2026-07', '2026-08').
   payments?: Record<string, StudentPayment>;
+  // School-year fee ledger: every payment with the period it covers.
+  paymentRecords?: PaymentRecord[];
+}
+
+/** A single fee payment with the period it covers (school-year ledger).
+ *  Stored on the roster entry as ClassStudent.paymentRecords. */
+export interface PaymentRecord {
+  id: string;
+  amount: number;
+  method: 'whish' | 'cash';
+  paidAt: string;       // YYYY-MM-DD the money was received
+  validUntil: string;   // YYYY-MM-DD the paid period ends
+  note?: string;
+  confirmedAt?: string; // ISO when the parent was sent the WhatsApp confirmation
 }
 
 /** One month's camp fee for a student (the amount to collect + how it was paid). */
