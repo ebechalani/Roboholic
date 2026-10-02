@@ -5,15 +5,16 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import {
   Loader2, RefreshCw, Users, MessageCircle, Mail, Copy, CheckCircle,
   Phone, StickyNote, Baby, Printer, MapPin, Clock, Trophy, CalendarPlus,
-  Download, LayoutGrid, Table2,
+  Download, LayoutGrid, Table2, UserPlus, KeyRound,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { db } from '@/lib/firebase/client';
+import { getAllClasses, addStudentToClass } from '@/lib/classes';
 import { branchById, activityById, ACTIVITIES, BRANCHES, slotLabel } from '@/lib/enrollment';
-import type { Registration } from '@/types';
+import type { Registration, ClassDoc } from '@/types';
 
 const STATUSES: { key: Registration['status']; label: string; color: string; bg: string }[] = [
   { key: 'new', label: 'New', color: '#2563EB', bg: '#EFF6FF' },
@@ -82,11 +83,15 @@ function Registrations() {
   const [copied, setCopied] = useState(false);
   const [view, setView] = useState<'table' | 'cards'>('table');
   const [act, setAct] = useState<'all' | 'robotics' | 'drawing' | 'muaythai'>('all');
+  const [classes, setClasses] = useState<ClassDoc[]>([]);
+  const [target, setTarget] = useState<Record<string, string>>({});
+  const [converting, setConverting] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const snap = await getDocs(collection(db, 'registrations'));
+      const [snap, cls] = await Promise.all([getDocs(collection(db, 'registrations')), getAllClasses().catch(() => [] as ClassDoc[])]);
+      setClasses(cls);
       const list = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Registration, 'id'>) }));
       list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       setRows(list);
@@ -100,6 +105,46 @@ function Registrations() {
     setRows(prev => prev.map(x => x.id === r.id ? { ...x, status } : x));
     try { await updateDoc(doc(db, 'registrations', r.id), { status }); }
     catch { setError('Could not save the status — try again.'); void load(); }
+  }
+
+  // Turn a registration into a real student account in a class: creates the
+  // login, carries the parent contact + DOB onto the roster, and stamps the
+  // registration so it can never be converted twice.
+  async function convert(r: Registration) {
+    const classId = target[r.id];
+    if (!classId) { setError(`Pick the class to put ${r.childName} in first.`); return; }
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) { setError('That class no longer exists — press Refresh.'); return; }
+    if (r.studentUid) { setError(`${r.childName} has already been converted.`); return; }
+    setConverting(r.id); setError('');
+    try {
+      const { student } = await addStudentToClass(cls, r.childName, {
+        parentName: r.parentName || '',
+        parentPhone: r.parentPhone || '',
+        parentEmail: r.parentEmail || '',
+        ...(r.dob ? { dob: r.dob } : {}),
+      });
+      const patch = {
+        status: 'enrolled' as const,
+        studentUid: student.uid,
+        studentClassId: cls.id,
+        studentUsername: student.username,
+        convertedAt: new Date().toISOString(),
+      };
+      await updateDoc(doc(db, 'registrations', r.id), patch);
+      setRows(prev => prev.map(x => x.id === r.id ? { ...x, ...patch } : x));
+    } catch (e) {
+      const code = typeof e === 'object' && e && 'code' in e ? String((e as { code: unknown }).code) : '';
+      setError(`Could not create the student account${code ? ` (${code})` : ''}. Check the Firestore rules and try again.`);
+    } finally { setConverting(null); }
+  }
+
+  /** Message handing the parent their child's login. */
+  function loginMsg(r: Registration) {
+    const cls = classes.find(c => c.id === r.studentClassId);
+    const first = (r.childName || '').split(/\s+/)[0] || 'your child';
+    const hi = r.parentName ? `Hello ${r.parentName}!` : 'Hello!';
+    return `${hi} 👋\n\nThis is RoboHolic Academy — ${first} is enrolled! Here is their login for our platform:\n\n🔑 Class code: *${cls?.code ?? ''}*\n👤 Username: *${r.studentUsername ?? ''}*\n\nGo to the site → Log In → Student, and enter those two. See you in class! 🤖`;
   }
 
   const counts = useMemo(() => {
@@ -270,6 +315,7 @@ function Registrations() {
                       <th className="px-3 py-2.5 font-bold">WhatsApp</th>
                       <th className="px-3 py-2.5 font-bold">Email</th>
                       <th className="px-3 py-2.5 font-bold">Status</th>
+                      <th className="px-3 py-2.5 font-bold no-print">Enrol</th>
                       <th className="px-3 py-2.5 font-bold no-print"></th>
                     </tr>
                   </thead>
@@ -317,6 +363,31 @@ function Registrations() {
                           </td>
                           <td className="px-3 py-2.5 whitespace-nowrap">
                             <span className="badge-pill text-[10px] font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap no-print">
+                            {r.studentUid ? (
+                              <span className="inline-flex items-center gap-1.5">
+                                <span className="badge-pill bg-green-50 text-green-700 text-[10px]"><KeyRound size={9} className="inline" /> {r.studentUsername}</span>
+                                {r.parentPhone && (
+                                  <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(loginMsg(r))}`}
+                                    target="_blank" rel="noreferrer" title="Send the login to the parent"
+                                    className="p-1 rounded-lg text-green-600 hover:bg-green-50"><MessageCircle size={13} /></a>
+                                )}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1">
+                                <select value={target[r.id] || ''} onChange={e => setTarget({ ...target, [r.id]: e.target.value })}
+                                  className="text-[11px] rounded-lg border border-gray-200 px-1.5 py-1 bg-white max-w-[130px]">
+                                  <option value="">class…</option>
+                                  {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                                <button onClick={() => void convert(r)} disabled={!target[r.id] || converting === r.id}
+                                  title="Create the student account in this class"
+                                  className="inline-flex items-center gap-1 text-[11px] font-bold text-white px-2 py-1 rounded-lg disabled:opacity-40" style={{ background: '#2563EB' }}>
+                                  {converting === r.id ? <Loader2 size={10} className="animate-spin" /> : <UserPlus size={10} />}
+                                </button>
+                              </span>
+                            )}
                           </td>
                           <td className="px-3 py-2.5 whitespace-nowrap no-print">
                             <select value={r.status} onChange={e => void setStatus(r, e.target.value as Registration['status'])}
@@ -414,6 +485,40 @@ function Registrations() {
 
                     {r.notes && (
                       <p className="text-xs text-gray-600 bg-gray-50 rounded-xl px-3 py-2 mb-3 flex items-start gap-1.5"><StickyNote size={12} className="mt-0.5 shrink-0 text-amber-500" /> {r.notes}</p>
+                    )}
+
+                    {/* Convert into a real student account */}
+                    {r.studentUid ? (
+                      <div className="rounded-xl border-2 border-green-200 bg-green-50 px-3 py-2.5 mb-3">
+                        <div className="text-xs font-bold text-green-800 flex items-center gap-1.5 mb-1">
+                          <KeyRound size={13} /> Enrolled — login created
+                        </div>
+                        <div className="text-[11px] text-green-900">
+                          Class: <b>{classes.find(c => c.id === r.studentClassId)?.name ?? '—'}</b>
+                          {' · '}code <b className="font-mono">{classes.find(c => c.id === r.studentClassId)?.code ?? '—'}</b>
+                          {' · '}username <b className="font-mono">{r.studentUsername}</b>
+                        </div>
+                        {r.parentPhone && (
+                          <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(loginMsg(r))}`}
+                            target="_blank" rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-white px-3 py-1.5 rounded-lg mt-2 no-print" style={{ background: '#25D366' }}>
+                            <MessageCircle size={11} /> Send the login on WhatsApp
+                          </a>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 flex-wrap mb-3 no-print">
+                        <select value={target[r.id] || ''} onChange={e => setTarget({ ...target, [r.id]: e.target.value })}
+                          className="text-xs rounded-lg border border-gray-200 px-2 py-1.5 bg-white">
+                          <option value="">Put in class…</option>
+                          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        <button onClick={() => void convert(r)} disabled={!target[r.id] || converting === r.id}
+                          title="Create the student account and add them to the class"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-white px-3 py-1.5 rounded-lg disabled:opacity-40" style={{ background: '#2563EB' }}>
+                          {converting === r.id ? <Loader2 size={11} className="animate-spin" /> : <UserPlus size={11} />} Convert to student
+                        </button>
+                      </div>
                     )}
 
                     <div className="flex items-center gap-1.5 flex-wrap no-print">

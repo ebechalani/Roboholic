@@ -251,7 +251,9 @@ export interface NewStudentResult {
 
 export async function addStudentToClass(
   cls: ClassDoc,
-  displayName: string
+  displayName: string,
+  /** Extra roster fields written with the new student (parent contact, dob...). */
+  extra?: Partial<Omit<ClassStudent, 'uid' | 'displayName' | 'username' | 'createdAt'>>
 ): Promise<NewStudentResult> {
   const app2 = getSecondaryApp();
   const auth2 = getAuth(app2);
@@ -286,6 +288,7 @@ export async function addStudentToClass(
       const student: ClassStudent = {
         uid, displayName: displayName.trim(), username,
         createdAt: new Date().toISOString(),
+        ...(extra ?? {}),
       };
       await setDoc(doc(db, 'classes', cls.id, 'students', uid), student);
       return { student };

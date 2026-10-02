@@ -135,6 +135,12 @@ export interface Registration {
   notes?: string;
   status: 'new' | 'contacted' | 'enrolled' | 'archived';
   createdAt: string;
+  // Set once the registration has been turned into a real student account,
+  // so it can never be converted twice.
+  studentUid?: string;
+  studentClassId?: string;
+  studentUsername?: string;
+  convertedAt?: string;
 }
 
 /** An academy expense (admin-only bookkeeping). Firestore: expenses/{id}. */
