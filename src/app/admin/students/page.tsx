@@ -83,6 +83,7 @@ function Students() {
   const [act, setAct] = useState<'all' | 'robotics' | 'drawing' | 'muaythai'>('all');
   const [pay, setPay] = useState<'all' | Status>('all');
   const [openId, setOpenId] = useState('');
+  const [view, setView] = useState<'simple' | 'table'>('simple');
   const [form, setForm] = useState({ amount: '', method: 'whish' as 'whish' | 'cash', paidAt: today(), validUntil: validUntilFor(today()), note: '' });
 
   const load = useCallback(async () => {
@@ -127,6 +128,14 @@ function Students() {
   const removePayment = (r: Registration, id: string) => void savePayments(r, (r.feePayments ?? []).filter(p => p.id !== id));
   const markConfirmed = (r: Registration, id: string) =>
     void savePayments(r, (r.feePayments ?? []).map(p => p.id === id ? { ...p, confirmedAt: new Date().toISOString() } : p));
+
+  /** The payment as currently typed in the form (for the one-tap receipt). */
+  function draftPayment(): PaymentRecord | null {
+    const amount = parseFloat(form.amount);
+    if (isNaN(amount) || amount <= 0) return null;
+    const paidAt = form.paidAt || today();
+    return { id: 'draft', amount, method: form.method, paidAt, validUntil: form.validUntil || validUntilFor(paidAt) };
+  }
 
   function receiptMsg(r: Registration, p: PaymentRecord) {
     const first = (r.childName || '').split(/\s+/)[0] || 'your child';
@@ -205,6 +214,10 @@ function Students() {
             <button onClick={() => void load()} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
             {saving && <span className="text-xs text-gray-400 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span>}
             <div className="ml-auto flex items-center gap-2">
+              <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold bg-white">
+                <button onClick={() => setView('simple')} className={`px-3 py-2 ${view === 'simple' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Simple</button>
+                <button onClick={() => setView('table')} className={`px-3 py-2 ${view === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Table</button>
+              </div>
               <button onClick={exportCsv} disabled={visible.length === 0}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-40" style={{ background: '#16A34A' }}>
                 <Download size={14} /> Excel ({visible.length})
@@ -263,6 +276,141 @@ function Students() {
                 <div className="text-center py-16 text-gray-400">
                   <Users size={32} className="mx-auto mb-2 opacity-40" />
                   <p className="text-sm">No students match this filter.</p>
+                </div>
+              ) : (
+                view === 'simple' ? (
+                /* ─── Simple view: one card per child ─── */
+                <div className="space-y-3">
+                  {visible.map(r => {
+                    const st = statusOf(r); const l = latest(r); const S = STATUS[st.key];
+                    const open = openId === r.id;
+                    const draft = open ? draftPayment() : null;
+                    const paidCount = (r.feePayments ?? []).length;
+                    return (
+                      <div key={r.id} className="bg-white rounded-2xl border-2 p-4" style={{ borderColor: open ? '#93C5FD' : '#F3F4F6' }}>
+                        <div className="flex items-start gap-3 flex-wrap">
+                          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-black shrink-0"
+                            style={{ background: S.color }}>{(r.childName || '?').trim().charAt(0).toUpperCase()}</div>
+                          <div className="flex-1 min-w-[180px]">
+                            <div className="font-black text-gray-900 text-lg leading-tight">{r.childName}</div>
+                            <div className="text-xs text-gray-500">{classOf(r)}</div>
+                            <div className="text-xs text-gray-600 mt-1.5 flex items-center gap-3 flex-wrap">
+                              {r.parentName && <span>👤 {r.parentName}</span>}
+                              {r.parentPhone && <a href={`https://wa.me/${waNum(r.parentPhone)}`} target="_blank" rel="noreferrer" className="text-green-600 font-semibold hover:underline">📱 {r.parentPhone}</a>}
+                              {r.parentEmail && <a href={`mailto:${r.parentEmail}`} className="text-blue-600 hover:underline">✉️ {r.parentEmail}</a>}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="badge-pill text-xs font-black" style={{ background: S.bg, color: S.color }}>{S.label}</span>
+                            {l && (
+                              <div className="text-[11px] mt-1" style={{ color: S.color }}>
+                                until {pretty(l.validUntil)}<br />{st.days >= 0 ? `${st.days} days left` : `${Math.abs(st.days)} days ago`}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap mt-3 no-print">
+                          <button onClick={() => { setOpenId(open ? '' : r.id); setError(''); setForm(f => ({ ...f, amount: '', paidAt: today(), validUntil: validUntilFor(today()) })); }}
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#2563EB' }}>
+                            <Plus size={15} /> {open ? 'Close' : 'Record payment'}
+                          </button>
+                          {l && r.parentPhone && (
+                            <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(receiptMsg(r, l))}`}
+                              target="_blank" rel="noreferrer" onClick={() => markConfirmed(r, l.id)}
+                              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#25D366' }}>
+                              <MessageCircle size={15} /> Send receipt{l.confirmedAt ? ' ✓' : ''}
+                            </a>
+                          )}
+                          {r.parentPhone && st.key !== 'active' && (
+                            <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(renewMsg(r))}`}
+                              target="_blank" rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#F59E0B' }}>
+                              <CalendarClock size={15} /> Ask to pay
+                            </a>
+                          )}
+                          {paidCount > 0 && (
+                            <span className="text-xs text-gray-400 ml-auto">
+                              {paidCount} payment{paidCount === 1 ? '' : 's'} · {fmt((r.feePayments ?? []).reduce((n, p) => n + (p.amount || 0), 0))} total
+                            </span>
+                          )}
+                        </div>
+
+                        {open && (
+                          <div className="mt-3 pt-3 border-t border-gray-100">
+                            <div className="flex flex-wrap items-end gap-2.5">
+                              <label className="text-xs font-bold text-gray-600">How much?
+                                <div className="flex items-center gap-1 mt-1">
+                                  <span className="text-gray-400">{CUR}</span>
+                                  <input type="number" inputMode="decimal" autoFocus value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
+                                    placeholder="100" className="w-28 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-base font-bold" />
+                                </div>
+                              </label>
+                              {feeChips.length > 0 && (
+                                <div className="flex items-center gap-1 pb-1.5 flex-wrap">
+                                  {feeChips.map(([k, v]) => (
+                                    <button key={k} type="button" onClick={() => setForm({ ...form, amount: String(v) })}
+                                      className="px-2.5 py-2 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100">
+                                      {CUR}{v} {k}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                              <label className="text-xs font-bold text-gray-600">How?
+                                <select value={form.method} onChange={e => setForm({ ...form, method: e.target.value as 'whish' | 'cash' })}
+                                  className="block mt-1 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm bg-white">
+                                  <option value="whish">Whish</option>
+                                  <option value="cash">Cash</option>
+                                </select>
+                              </label>
+                              <label className="text-xs font-bold text-gray-600">Paid on
+                                <input type="date" value={form.paidAt}
+                                  onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: validUntilFor(e.target.value) })}
+                                  className="block mt-1 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm" />
+                              </label>
+                              <div className="text-xs font-bold text-gray-600">Valid until
+                                <div className="mt-1 px-3 py-2.5 rounded-xl bg-green-50 border-2 border-green-200 text-sm font-black text-green-800 whitespace-nowrap">
+                                  {pretty(form.validUntil)}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-wrap mt-3">
+                              <button type="button" onClick={() => addPayment(r)} disabled={saving === r.id}
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50">
+                                {saving === r.id ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Save only
+                              </button>
+                              {draft && r.parentPhone ? (
+                                <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(receiptMsg(r, draft))}`}
+                                  target="_blank" rel="noreferrer" onClick={() => addPayment(r)}
+                                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-black text-white" style={{ background: '#25D366' }}>
+                                  <MessageCircle size={16} /> Save &amp; send payment received
+                                </a>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-black text-gray-300 bg-gray-50"
+                                  title={r.parentPhone ? 'Enter the amount first' : 'No WhatsApp number on file'}>
+                                  <MessageCircle size={16} /> Save &amp; send payment received
+                                </span>
+                              )}
+                            </div>
+
+                            {paidCount > 0 && (
+                              <div className="mt-3 space-y-1">
+                                {(r.feePayments ?? []).slice().sort((a, b) => (b.paidAt || '').localeCompare(a.paidAt || '')).map(p => (
+                                  <div key={p.id} className="flex items-center gap-2 text-xs bg-gray-50 rounded-lg px-3 py-1.5 flex-wrap">
+                                    <span className="font-bold text-gray-900">{fmt(p.amount)}</span>
+                                    <span className="text-gray-500">{p.method === 'whish' ? 'Whish' : 'cash'} · paid {pretty(p.paidAt)} → valid to {pretty(p.validUntil)}</span>
+                                    {p.confirmedAt && <span className="badge-pill bg-green-50 text-green-700 text-[10px]">sent ✓</span>}
+                                    <button onClick={() => removePayment(r, p.id)} className="ml-auto p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"><Trash2 size={12} /></button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -427,6 +575,7 @@ function Students() {
                     {visible.length} student{visible.length === 1 ? '' : 's'} · click <b>Payment</b> to record an amount — the validity is filled in automatically · <b>Confirm</b> sends the parent a WhatsApp receipt, <b>Remind</b> chases an expired one.
                   </p>
                 </div>
+              )
               )}
             </>
           )}
