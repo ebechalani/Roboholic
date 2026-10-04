@@ -1,17 +1,17 @@
 'use client';
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
 import {
   Loader2, RefreshCw, Users, MessageCircle, Mail, Printer, Download, Search,
-  Plus, Trash2, CheckCircle, CalendarClock, ChevronDown, ChevronRight, Wallet, Banknote,
+  Plus, Trash2, CheckCircle, CalendarClock, ChevronDown, ChevronRight, Wallet, Banknote, UserPlus,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { db } from '@/lib/firebase/client';
-import { activityById, branchById, ACTIVITIES } from '@/lib/enrollment';
+import { activityById, branchById, ACTIVITIES, BRANCHES, slotLabel } from '@/lib/enrollment';
 import { getSettings, DEFAULT_SETTINGS } from '@/lib/settings';
 import type { Registration, PaymentRecord, AcademySettings } from '@/types';
 
@@ -65,6 +65,11 @@ function classOf(r: Registration): string {
   return [a?.name, b, when].filter(Boolean).join(' · ');
 }
 
+const EMPTY_NEW = {
+  childName: '', dob: '', activity: 'robotics', branch: 'jdeideh', slotId: '',
+  parentName: '', parentPhone: '', parentEmail: '', notes: '',
+};
+
 export default function AdminStudentsPage() {
   return (
     <RequireRole allow={['admin']}>
@@ -84,6 +89,51 @@ function Students() {
   const [pay, setPay] = useState<'all' | Status>('all');
   const [openId, setOpenId] = useState('');
   const [view, setView] = useState<'simple' | 'table'>('simple');
+  const [adding, setAdding] = useState(false);
+  const [addBusy, setAddBusy] = useState(false);
+  const [nf, setNf] = useState({ ...EMPTY_NEW });
+  // Times for the class + branch chosen in the add form.
+  const newSlots = useMemo(() => {
+    const b = branchById(nf.branch);
+    const a = activityById(nf.activity);
+    return b && a ? a.slots(b) : [];
+  }, [nf.branch, nf.activity]);
+
+  /** Add a walk-in family by hand — same shape as a public registration. */
+  async function addStudent() {
+    const name = nf.childName.trim();
+    if (!name) { setError('Enter the child\'s name.'); return; }
+    setAddBusy(true); setError('');
+    const slot = newSlots.find(x => x.id === nf.slotId);
+    const a = activityById(nf.activity);
+    const b = branchById(nf.branch);
+    const rec = {
+      childName: name,
+      dob: nf.dob || '',
+      parentName: nf.parentName.trim(),
+      parentPhone: nf.parentPhone.trim(),
+      parentEmail: nf.parentEmail.trim(),
+      activity: nf.activity as 'robotics' | 'drawing' | 'muaythai',
+      activityName: a?.name ?? '',
+      branch: nf.branch,
+      branchName: b?.name ?? '',
+      slotId: nf.slotId,
+      slotLabel: slot ? slotLabel(slot) : '',
+      notes: nf.notes.trim(),
+      status: 'enrolled' as const,
+      addedByAdmin: true,
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      const ref = await addDoc(collection(db, 'registrations'), rec);
+      setRows(prev => [...prev, { id: ref.id, ...rec } as Registration]
+        .sort((x, y) => (x.childName || '').localeCompare(y.childName || '')));
+      setNf({ ...EMPTY_NEW });
+      setAdding(false);
+    } catch {
+      setError('Could not add the student — make sure the updated Firestore rules are published.');
+    } finally { setAddBusy(false); }
+  }
   const [form, setForm] = useState({ amount: '', method: 'whish' as 'whish' | 'cash', paidAt: today(), validUntil: validUntilFor(today()), note: '' });
 
   const load = useCallback(async () => {
@@ -232,6 +282,89 @@ function Students() {
             <div className="flex justify-center py-16"><Loader2 className="animate-spin text-blue-600" size={26} /></div>
           ) : (
             <>
+          {/* Add a student by hand (walk-in / phone registration) */}
+          <div className="mb-5 no-print">
+            {!adding ? (
+              <button onClick={() => { setAdding(true); setError(''); }}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white"
+                style={{ background: 'linear-gradient(135deg, #0F2044, #2563EB)' }}>
+                <UserPlus size={16} /> Add a student
+              </button>
+            ) : (
+              <div className="bg-white rounded-2xl border-2 border-blue-200 p-5">
+                <h3 className="font-black text-gray-900 mb-3 flex items-center gap-2"><UserPlus size={17} className="text-blue-600" /> Add a student</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Child&apos;s name *</label>
+                    <input value={nf.childName} onChange={e => setNf({ ...nf, childName: e.target.value })} autoFocus
+                      placeholder="e.g. Sami Khoury" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Date of birth</label>
+                    <input type="date" value={nf.dob} onChange={e => setNf({ ...nf, dob: e.target.value })}
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Class</label>
+                    <select value={nf.activity} onChange={e => setNf({ ...nf, activity: e.target.value, slotId: '' })}
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-white">
+                      {ACTIVITIES.map(a => <option key={a.id} value={a.id}>{a.emoji} {a.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Branch</label>
+                    <select value={nf.branch} onChange={e => setNf({ ...nf, branch: e.target.value, slotId: '' })}
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-white">
+                      {BRANCHES.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Day &amp; time</label>
+                    <div className="flex flex-wrap gap-2">
+                      {newSlots.length === 0 ? (
+                        <span className="text-xs text-gray-400">No times for that class at this branch — it will be saved without a time.</span>
+                      ) : newSlots.map(s => (
+                        <button key={s.id} type="button" onClick={() => setNf({ ...nf, slotId: s.id })}
+                          className={`px-3 py-2 rounded-xl border-2 text-xs font-bold ${nf.slotId === s.id ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                          {s.day} · {s.time}{s.note ? ` (${s.note})` : ''}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Parent&apos;s name</label>
+                    <input value={nf.parentName} onChange={e => setNf({ ...nf, parentName: e.target.value })}
+                      placeholder="Parent name" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">WhatsApp number</label>
+                    <input value={nf.parentPhone} onChange={e => setNf({ ...nf, parentPhone: e.target.value })} inputMode="tel"
+                      placeholder="70 123 456" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Email</label>
+                    <input value={nf.parentEmail} onChange={e => setNf({ ...nf, parentEmail: e.target.value })} type="email"
+                      placeholder="parent@example.com" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Note</label>
+                    <input value={nf.notes} onChange={e => setNf({ ...nf, notes: e.target.value })}
+                      placeholder="anything to remember" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-4">
+                  <button onClick={() => void addStudent()} disabled={addBusy || !nf.childName.trim()}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+                    style={{ background: '#2563EB' }}>
+                    {addBusy ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />} Add student
+                  </button>
+                  <button onClick={() => { setAdding(false); setNf({ ...EMPTY_NEW }); setError(''); }}
+                    className="px-4 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200">Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+
               {/* Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
                 {[

@@ -170,6 +170,8 @@ service cloud.firestore {
     // rules); in the app they are the director's business alone.
     match /registrations/{docId} {
       allow read, update, delete: if isAdmin();
+      // The director can also add a walk-in family by hand.
+      allow create: if isAdmin();
     }
   }
 }
