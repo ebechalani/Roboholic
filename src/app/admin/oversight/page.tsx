@@ -10,7 +10,7 @@ import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { db, auth } from '@/lib/firebase/client';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { setStudentAttendDays } from '@/lib/classes';
+import { setStudentAttendDays, setClassCoach, getCoaches } from '@/lib/classes';
 import { ALL_LESSONS } from '@/lib/curricula';
 import type { ClassDoc, ClassStudent } from '@/types';
 
@@ -70,6 +70,17 @@ function Oversight() {
   const [target, setTarget] = useState<Record<string, string>>({});
   const [moveBusy, setMoveBusy] = useState<string | null>(null);
   const [moveMsg, setMoveMsg] = useState('');
+  const [coaches, setCoaches] = useState<{ uid: string; name: string; email: string }[]>([]);
+  useEffect(() => { getCoaches().then(setCoaches).catch(() => {}); }, []);
+
+  // Assign/reassign the coach who teaches a class.
+  async function assignCoach(classId: string, coachId: string) {
+    const c = coaches.find(x => x.uid === coachId);
+    if (!c) return;
+    setRows(prev => prev.map(r => r.id === classId ? { ...r, coachId, coachName: c.name } : r));
+    try { await setClassCoach(classId, coachId, c.name); }
+    catch { setMoveMsg('Could not assign the coach — try again.'); void load(); }
+  }
 
   // Set which weekdays a student attends → controls who shows in the coach's roll call.
   async function toggleDay(classId: string, s: ClassStudent, n: number) {
@@ -215,7 +226,16 @@ function Oversight() {
                       <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0"><GraduationCap size={20} /></div>
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-gray-900 text-sm">{c.name}</div>
-                        <div className="text-xs text-gray-400">Coach: {c.coachName || '—'}</div>
+                        <div className="text-xs text-gray-400 flex items-center gap-1.5 flex-wrap">
+                          Coach:
+                          <select value={coaches.some(x => x.uid === c.coachId) ? c.coachId : ''}
+                            onClick={e => e.stopPropagation()}
+                            onChange={e => { e.stopPropagation(); void assignCoach(c.id, e.target.value); }}
+                            className={`text-[11px] rounded-lg border px-1.5 py-0.5 bg-white ${c.coachName === 'Unassigned' || !c.coachName ? 'border-amber-300 text-amber-700 font-bold' : 'border-gray-200 text-gray-600'}`}>
+                            <option value="">{c.coachName === 'Unassigned' || !c.coachName ? '⚠ Unassigned' : c.coachName}</option>
+                            {coaches.map(co => <option key={co.uid} value={co.uid}>{co.name}</option>)}
+                          </select>
+                        </div>
                       </div>
                       <span className="badge-pill bg-gray-100 text-gray-600 text-xs inline-flex items-center gap-1"><KeyRound size={11} /> {c.code}</span>
                       <span className="badge-pill bg-purple-50 text-purple-700 text-xs inline-flex items-center gap-1"><Users size={11} /> {c.studentCount}</span>

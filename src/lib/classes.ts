@@ -127,6 +127,21 @@ export async function getClass(classId: string): Promise<ClassDoc | null> {
   return snap.exists() ? classFromDoc(snap.id, snap.data()) : null;
 }
 
+/** Reassign a class to a coach (admin only). */
+export async function setClassCoach(classId: string, coachId: string, coachName: string): Promise<void> {
+  await updateDoc(doc(db, 'classes', classId), { coachId, coachName });
+}
+
+/** Approved coaches, for the admin's class-assignment picker. */
+export async function getCoaches(): Promise<{ uid: string; name: string; email: string }[]> {
+  const snap = await getDocs(query(collection(db, 'users'), where('role', '==', 'coach')));
+  return snap.docs
+    .map(d => ({ uid: d.id, name: (d.data().full_name as string) || '', email: (d.data().email as string) || '', status: d.data().status as string | undefined, active: d.data().is_active }))
+    .filter(c => (c.status ?? 'approved') === 'approved' && c.active !== false)
+    .map(({ uid, name, email }) => ({ uid, name, email }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export async function setAssignedLessons(classId: string, lessonIds: string[]): Promise<void> {
   await updateDoc(doc(db, 'classes', classId), { lessonIds });
 }

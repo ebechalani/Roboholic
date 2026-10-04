@@ -10,7 +10,8 @@ import Footer from '@/components/layout/Footer';
 import SectionHeader from '@/components/layout/SectionHeader';
 import RequireRole from '@/components/auth/RequireRole';
 import { getAllClasses, getClassStudents, setStudentPaymentRecords } from '@/lib/classes';
-import type { ClassDoc, ClassStudent, PaymentRecord } from '@/types';
+import { getSettings, DEFAULT_SETTINGS } from '@/lib/settings';
+import type { ClassDoc, ClassStudent, PaymentRecord, AcademySettings } from '@/types';
 
 // ════════════════════════════════════════════════════════════════
 //  Fees & validity — the school-year payment sheet.
@@ -68,6 +69,10 @@ function Fees() {
   const [openUid, setOpenUid] = useState('');
   // The "add payment" form for the open student
   const [form, setForm] = useState({ amount: '', method: 'whish' as 'whish' | 'cash', paidAt: today(), validUntil: addMonths(today(), 1), note: '' });
+  const [settings, setSettings] = useState<AcademySettings>({ ...DEFAULT_SETTINGS });
+  useEffect(() => { getSettings().then(setSettings).catch(() => {}); }, []);
+  // Fees configured in Academy Settings, offered as one-tap amounts.
+  const feeChips = Object.entries(settings.fees || {}).filter(([, v]) => (v || 0) > 0);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -320,6 +325,17 @@ function Fees() {
                                             placeholder="100" className="w-24 px-2 py-2 rounded-lg border border-gray-200 text-sm" />
                                         </div>
                                       </label>
+                                      {feeChips.length > 0 && (
+                                        <div className="flex items-center gap-1 pb-1 flex-wrap">
+                                          {feeChips.map(([k, v]) => (
+                                            <button key={k} type="button" onClick={() => setForm({ ...form, amount: String(v) })}
+                                              title={`Set the amount to the ${k} fee`}
+                                              className="px-2 py-1.5 rounded-lg text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100">
+                                              {settings.currency || CUR}{v} {k}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
                                       <label className="text-xs font-semibold text-gray-600">Method
                                         <select value={form.method} onChange={e => setForm({ ...form, method: e.target.value as 'whish' | 'cash' })}
                                           className="block mt-1 px-2 py-2 rounded-lg border border-gray-200 text-sm bg-white">

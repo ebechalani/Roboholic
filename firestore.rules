@@ -158,6 +158,13 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ── Academy settings (fees, academic year) ────────────────
+    // Public read so the enrolment form can show the fees; admin writes.
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // ── 2026–2027 enrollment requests ─────────────────────────
     // Created ONLY by the public /api/enroll route (Admin SDK bypasses
     // rules); in the app they are the director's business alone.

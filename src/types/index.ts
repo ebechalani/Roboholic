@@ -431,3 +431,21 @@ export interface StudentDashboardData {
   recentActivity: { lessonTitle: string; date: string; score?: number }[];
   missionPoints: number;
 }
+
+// ─── Academy settings (fees & the academic year) ─────────────────
+/** Admin-editable settings. Firestore: settings/academy (public read). */
+export interface AcademySettings {
+  yearLabel: string;          // '2026–2027'
+  yearStart?: string;         // YYYY-MM-DD
+  yearEnd?: string;           // YYYY-MM-DD
+  currency: string;           // '$'
+  registrationFee?: number;   // one-off, per child
+  /** Monthly fee per activity/add-on, keyed: robotics | drawing | muaythai | chess | makex */
+  fees: Record<string, number>;
+  /** Optional sibling discount, in percent. */
+  siblingDiscountPct?: number;
+  whishWallet?: string;       // '70227005 (Eddy Bachaalany)'
+  paymentNote?: string;       // free text shown to parents
+  showFeesOnEnroll?: boolean; // publish the prices on the public form
+  updatedAt?: string;
+}
