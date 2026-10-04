@@ -141,6 +141,9 @@ export interface Registration {
   studentClassId?: string;
   studentUsername?: string;
   convertedAt?: string;
+  // Fee payments for this registration (school-year sheet). Each payment is
+  // valid from the day it was paid until the same day next month, minus 1 day.
+  feePayments?: PaymentRecord[];
 }
 
 /** An academy expense (admin-only bookkeeping). Firestore: expenses/{id}. */

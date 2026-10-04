@@ -8,7 +8,7 @@ import RequireRole from '@/components/auth/RequireRole';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { PROGRAMS, AGE_GROUPS, BADGES } from '@/lib/data';
 import {
-  Layers, BookOpen, Users, Package, Upload, GraduationCap, Award, ArrowRight, Eye, ClipboardCheck, Wallet, FilePlus2, ReceiptText, SlidersHorizontal,
+  Layers, BookOpen, Users, Package, Upload, GraduationCap, Award, ArrowRight, Eye, ClipboardCheck, Wallet, FilePlus2, ReceiptText, SlidersHorizontal, GraduationCap as Cap,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -37,6 +37,7 @@ function Admin() {
     { title: 'Manage Users', text: 'Coaches and students — roles and access.', href: '/admin/users', icon: <Users size={20} />, color: '#0EA5E9', bg: '#F0F9FF' },
     { title: 'Coach Oversight', text: 'See each coach\'s classes, assigned lessons & students.', href: '/admin/oversight', icon: <Eye size={20} />, color: '#0D9488', bg: '#F0FDFA' },
     { title: 'Attendance Overview', text: 'Today\'s roll call across all classes + absences per child.', href: '/admin/attendance', icon: <ClipboardCheck size={20} />, color: '#DC2626', bg: '#FEF2F2' },
+    { title: 'My Students 2026–27', text: 'Every registered child: class, parents, contacts and fees.', href: '/admin/students', icon: <Cap size={20} />, color: '#2563EB', bg: '#EFF6FF' },
     { title: 'Academy Settings', text: 'Fees per class, registration fee and the academic year.', href: '/admin/settings', icon: <SlidersHorizontal size={20} />, color: '#0EA5E9', bg: '#F0F9FF' },
     { title: 'Fees & Validity', text: 'School-year payments: amount, valid until, WhatsApp confirmation.', href: '/admin/fees', icon: <ReceiptText size={20} />, color: '#16A34A', bg: '#ECFDF5' },
     { title: 'Camp Payments', text: 'July & August camp fees + expenses and the bottom line.', href: '/admin/payments', icon: <Wallet size={20} />, color: '#7C3AED', bg: '#F5F3FF' },

@@ -1,0 +1,438 @@
+'use client';
+
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import {
+  Loader2, RefreshCw, Users, MessageCircle, Mail, Printer, Download, Search,
+  Plus, Trash2, CheckCircle, CalendarClock, ChevronDown, ChevronRight, Wallet, Banknote,
+} from 'lucide-react';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import SectionHeader from '@/components/layout/SectionHeader';
+import RequireRole from '@/components/auth/RequireRole';
+import { db } from '@/lib/firebase/client';
+import { activityById, branchById, ACTIVITIES } from '@/lib/enrollment';
+import { getSettings, DEFAULT_SETTINGS } from '@/lib/settings';
+import type { Registration, PaymentRecord, AcademySettings } from '@/types';
+
+// ════════════════════════════════════════════════════════════════
+//  Students 2026–2027 — every registered child in one sheet:
+//  who they are, when they registered, which class, their parents'
+//  WhatsApp + email, and the fees.
+//  A payment is valid from the day it is paid until the SAME DAY
+//  NEXT MONTH, MINUS ONE DAY (paid 4 Oct → valid to 3 Nov).
+// ════════════════════════════════════════════════════════════════
+
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const today = () => iso(new Date());
+const pretty = (d?: string) => (d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
+const waNum = (p?: string) => { let d = (p || '').replace(/\D/g, ''); if (!d) return ''; if (d.startsWith('00')) d = d.slice(2); if (d.startsWith('961')) return d; if (d.startsWith('0')) d = d.slice(1); return '961' + d; };
+
+/** Valid until = the same day next month, minus one day (month-end safe). */
+function validUntilFor(paidAt: string): string {
+  const d = new Date(paidAt + 'T12:00:00');
+  if (isNaN(d.getTime())) return '';
+  const day = d.getDate();
+  const t = new Date(d.getFullYear(), d.getMonth() + 1, 1);          // 1st of next month
+  const lastDay = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+  t.setDate(Math.min(day, lastDay));                                 // same day, clamped
+  t.setDate(t.getDate() - 1);                                        // minus one day
+  return iso(t);
+};
+const daysLeft = (until: string) => Math.round((new Date(until + 'T12:00:00').getTime() - new Date(today() + 'T12:00:00').getTime()) / 86400000);
+
+type Status = 'active' | 'expiring' | 'expired' | 'none';
+const STATUS = {
+  active: { label: 'Paid', color: '#16A34A', bg: '#ECFDF5' },
+  expiring: { label: 'Expiring', color: '#F59E0B', bg: '#FFFBEB' },
+  expired: { label: 'Expired', color: '#DC2626', bg: '#FEF2F2' },
+  none: { label: 'Not paid', color: '#9CA3AF', bg: '#F9FAFB' },
+} as const;
+
+const latest = (r: Registration): PaymentRecord | undefined =>
+  (r.feePayments ?? []).slice().sort((a, b) => (a.validUntil || '').localeCompare(b.validUntil || '')).pop();
+function statusOf(r: Registration): { key: Status; days: number } {
+  const l = latest(r);
+  if (!l) return { key: 'none', days: 0 };
+  const d = daysLeft(l.validUntil);
+  return { key: d < 0 ? 'expired' : d <= 7 ? 'expiring' : 'active', days: d };
+}
+/** "🤖 Robotics · Jdeideh · Friday · 4:00 PM" */
+function classOf(r: Registration): string {
+  const a = activityById(r.activity ?? 'robotics');
+  const b = r.branch ? branchById(r.branch)?.name : '';
+  const when = r.slotLabel || (r.otherDay ? `asked: ${r.otherDay}` : '');
+  return [a?.name, b, when].filter(Boolean).join(' · ');
+}
+
+export default function AdminStudentsPage() {
+  return (
+    <RequireRole allow={['admin']}>
+      <Students />
+    </RequireRole>
+  );
+}
+
+function Students() {
+  const [rows, setRows] = useState<Registration[]>([]);
+  const [settings, setSettings] = useState<AcademySettings>({ ...DEFAULT_SETTINGS });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [q, setQ] = useState('');
+  const [act, setAct] = useState<'all' | 'robotics' | 'drawing' | 'muaythai'>('all');
+  const [pay, setPay] = useState<'all' | Status>('all');
+  const [openId, setOpenId] = useState('');
+  const [form, setForm] = useState({ amount: '', method: 'whish' as 'whish' | 'cash', paidAt: today(), validUntil: validUntilFor(today()), note: '' });
+
+  const load = useCallback(async () => {
+    setLoading(true); setError('');
+    try {
+      const snap = await getDocs(collection(db, 'registrations'));
+      const list = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Registration, 'id'>) }))
+        .filter(r => r.status !== 'archived')
+        .sort((a, b) => (a.childName || '').localeCompare(b.childName || ''));
+      setRows(list);
+    } catch {
+      setError('Could not load the students — check the connection and press Refresh.');
+    } finally { setLoading(false); }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { getSettings().then(setSettings).catch(() => {}); }, []);
+
+  const CUR = settings.currency || '$';
+  const fmt = (n: number) => `${CUR}${(n || 0).toLocaleString()}`;
+  const feeChips = Object.entries(settings.fees || {}).filter(([, v]) => (v || 0) > 0);
+
+  async function savePayments(r: Registration, feePayments: PaymentRecord[]) {
+    setSaving(r.id); setError('');
+    setRows(prev => prev.map(x => x.id === r.id ? { ...x, feePayments } : x));
+    try { await updateDoc(doc(db, 'registrations', r.id), { feePayments }); }
+    catch { setError('Could not save the payment — try again.'); void load(); }
+    finally { setSaving(null); }
+  }
+  function addPayment(r: Registration) {
+    const amount = parseFloat(form.amount);
+    if (isNaN(amount) || amount <= 0) { setError('Enter the amount that was paid.'); return; }
+    const paidAt = form.paidAt || today();
+    const rec: PaymentRecord = {
+      id: `p${Date.now()}${Math.floor(Math.random() * 1000)}`,
+      amount, method: form.method, paidAt,
+      validUntil: form.validUntil || validUntilFor(paidAt),
+      ...(form.note.trim() ? { note: form.note.trim() } : {}),
+    };
+    void savePayments(r, [...(r.feePayments ?? []), rec]);
+    setForm({ amount: '', method: 'whish', paidAt: today(), validUntil: validUntilFor(today()), note: '' });
+  }
+  const removePayment = (r: Registration, id: string) => void savePayments(r, (r.feePayments ?? []).filter(p => p.id !== id));
+  const markConfirmed = (r: Registration, id: string) =>
+    void savePayments(r, (r.feePayments ?? []).map(p => p.id === id ? { ...p, confirmedAt: new Date().toISOString() } : p));
+
+  function receiptMsg(r: Registration, p: PaymentRecord) {
+    const first = (r.childName || '').split(/\s+/)[0] || 'your child';
+    const hi = r.parentName ? `Hello ${r.parentName}!` : 'Hello!';
+    return `${hi} 👋\n\nThis is RoboHolic Academy — we confirm we received *${fmt(p.amount)}* for ${first}'s classes.\n\n✅ Paid: ${pretty(p.paidAt)} (${p.method === 'whish' ? 'Whish' : 'cash'})\n📅 Valid until: *${pretty(p.validUntil)}*\n\nThank you! 🤖`;
+  }
+  function renewMsg(r: Registration) {
+    const first = (r.childName || '').split(/\s+/)[0] || 'your child';
+    const hi = r.parentName ? `Hello ${r.parentName}!` : 'Hello!';
+    const l = latest(r);
+    const when = l ? ` — ${first}'s subscription ${daysLeft(l.validUntil) < 0 ? 'ended' : 'ends'} on ${pretty(l.validUntil)}` : '';
+    const wallet = settings.whishWallet ? ` to wallet ${settings.whishWallet}` : '';
+    return `${hi} 👋\n\nThis is RoboHolic Academy${when}. Would you like to renew ${first}'s subscription?\n\nYou can pay via Whish${wallet}, or cash at the centre. Thank you! 🤖`;
+  }
+
+  const visible = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return rows
+      .filter(r => act === 'all' || (r.activity ?? 'robotics') === act)
+      .filter(r => pay === 'all' || statusOf(r).key === pay)
+      .filter(r => !needle || [r.childName, r.parentName, r.parentPhone, r.parentEmail, classOf(r)]
+        .some(v => (v || '').toLowerCase().includes(needle)));
+  }, [rows, q, act, pay]);
+
+  const stats = useMemo(() => {
+    const c = { active: 0, expiring: 0, expired: 0, none: 0, collected: 0 };
+    for (const r of rows) {
+      c[statusOf(r).key]++;
+      for (const p of r.feePayments ?? []) c.collected += p.amount || 0;
+    }
+    return { ...c, total: rows.length };
+  }, [rows]);
+
+  function exportCsv() {
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const tel = (v?: string) => (v ? `"=""${String(v).replace(/"/g, '')}"""` : '""');
+    const head = ['Student', 'Registered on', 'Class', 'Parent', 'WhatsApp', 'Email', 'Payment status',
+      'Last amount', 'Paid on', 'Valid until', 'Method', 'Total paid', 'Date of birth', 'Notes'];
+    const lines = [head.map(esc).join(',')];
+    for (const r of visible) {
+      const st = statusOf(r); const l = latest(r);
+      const total = (r.feePayments ?? []).reduce((n, p) => n + (p.amount || 0), 0);
+      lines.push([
+        esc(r.childName), esc((r.createdAt || '').slice(0, 10)), esc(classOf(r)),
+        esc(r.parentName), tel(r.parentPhone), esc(r.parentEmail),
+        esc(STATUS[st.key].label), esc(l?.amount ?? ''), esc(l?.paidAt ?? ''), esc(l?.validUntil ?? ''),
+        esc(l?.method ?? ''), esc(total), esc(r.dob ?? ''), esc(r.notes ?? ''),
+      ].join(','));
+    }
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `RoboHolic-students-${settings.yearLabel || '2026-2027'}-${today()}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  return (
+    <>
+      <div className="no-print"><Navbar /></div>
+      <main className="min-h-screen" style={{ background: '#F8FAFF' }}>
+        <div className="no-print">
+          <SectionHeader badge="🎓 Students"
+            title={`My students ${settings.yearLabel || '2026–2027'}`}
+            subtitle="Every registered child: when they signed up, their class, their parents' contacts — and the fees. A payment is valid until the same day next month, minus one day." />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Toolbar */}
+          <div className="flex flex-wrap items-center gap-3 mb-5 no-print">
+            <div className="relative flex-1 min-w-[200px] max-w-xs">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search a child, parent or number…"
+                className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
+            </div>
+            <button onClick={() => void load()} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
+            {saving && <span className="text-xs text-gray-400 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span>}
+            <div className="ml-auto flex items-center gap-2">
+              <button onClick={exportCsv} disabled={visible.length === 0}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-40" style={{ background: '#16A34A' }}>
+                <Download size={14} /> Excel ({visible.length})
+              </button>
+              <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 text-gray-700"><Printer size={14} /> Print</button>
+            </div>
+          </div>
+
+          {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm mb-4 no-print">{error}</div>}
+
+          {loading ? (
+            <div className="flex justify-center py-16"><Loader2 className="animate-spin text-blue-600" size={26} /></div>
+          ) : (
+            <>
+              {/* Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+                {[
+                  { label: 'Students', value: stats.total, color: '#2563EB', icon: <Users size={16} /> },
+                  { label: 'Paid', value: stats.active, color: '#16A34A', icon: <CheckCircle size={16} /> },
+                  { label: 'Expiring ≤7 days', value: stats.expiring, color: '#F59E0B', icon: <CalendarClock size={16} /> },
+                  { label: 'Expired', value: stats.expired, color: '#DC2626', icon: <CalendarClock size={16} /> },
+                  { label: 'Collected', value: fmt(stats.collected), color: '#7C3AED', icon: <Wallet size={16} /> },
+                ].map(x => (
+                  <div key={x.label} className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: x.color + '15', color: x.color }}>{x.icon}</div>
+                    <div className="text-xl font-black text-gray-900">{x.value}</div>
+                    <div className="text-[11px] text-gray-500">{x.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap gap-2 mb-5 no-print">
+                <button onClick={() => setAct('all')} className={`px-3.5 py-2 rounded-xl text-sm font-bold border-2 ${act === 'all' ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600'}`}>All classes</button>
+                {ACTIVITIES.map(a => {
+                  const n = rows.filter(r => (r.activity ?? 'robotics') === a.id).length;
+                  const on = act === a.id;
+                  return (
+                    <button key={a.id} onClick={() => setAct(a.id)}
+                      className={`px-3.5 py-2 rounded-xl text-sm font-bold border-2 ${on ? 'text-white' : 'bg-white text-gray-600 border-gray-200'}`}
+                      style={on ? { background: a.color, borderColor: a.color } : {}}>{a.emoji} {a.short} ({n})</button>
+                  );
+                })}
+                <span className="w-px bg-gray-200 mx-1" />
+                {(['all', 'active', 'expiring', 'expired', 'none'] as const).map(k => (
+                  <button key={k} onClick={() => setPay(k)}
+                    className={`px-3.5 py-2 rounded-xl text-sm font-bold border-2 ${pay === k ? 'text-white' : 'bg-white text-gray-600 border-gray-200'}`}
+                    style={pay === k ? (k === 'all' ? { background: '#111827', borderColor: '#111827' } : { background: STATUS[k].color, borderColor: STATUS[k].color }) : {}}>
+                    {k === 'all' ? 'Any payment' : `${STATUS[k].label} (${stats[k]})`}
+                  </button>
+                ))}
+              </div>
+
+              {/* The sheet */}
+              {visible.length === 0 ? (
+                <div className="text-center py-16 text-gray-400">
+                  <Users size={32} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No students match this filter.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50 text-left text-[11px] uppercase tracking-wide text-gray-500">
+                          <th className="px-3 py-2.5 font-bold">Student</th>
+                          <th className="px-3 py-2.5 font-bold">Registered</th>
+                          <th className="px-3 py-2.5 font-bold">Class</th>
+                          <th className="px-3 py-2.5 font-bold">Parent</th>
+                          <th className="px-3 py-2.5 font-bold">WhatsApp</th>
+                          <th className="px-3 py-2.5 font-bold">Email</th>
+                          <th className="px-3 py-2.5 font-bold">Paid</th>
+                          <th className="px-3 py-2.5 font-bold">Valid until</th>
+                          <th className="px-3 py-2.5 font-bold no-print">Receipt</th>
+                          <th className="px-3 py-2.5 font-bold no-print"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visible.map(r => {
+                          const st = statusOf(r); const l = latest(r); const S = STATUS[st.key];
+                          const open = openId === r.id;
+                          return (
+                            <Fragment key={r.id}>
+                              <tr className="border-t border-gray-50 hover:bg-blue-50/30 align-top">
+                                <td className="px-3 py-2.5">
+                                  <div className="font-bold text-gray-900 whitespace-nowrap">{r.childName}</div>
+                                  {r.dob && <div className="text-[11px] text-gray-400">DOB {r.dob}</div>}
+                                </td>
+                                <td className="px-3 py-2.5 whitespace-nowrap text-gray-600 text-xs">{pretty((r.createdAt || '').slice(0, 10))}</td>
+                                <td className="px-3 py-2.5 text-xs text-gray-700 min-w-[180px]">{classOf(r)}</td>
+                                <td className="px-3 py-2.5 whitespace-nowrap text-gray-700">{r.parentName || <span className="text-gray-300">—</span>}</td>
+                                <td className="px-3 py-2.5 whitespace-nowrap">
+                                  {r.parentPhone
+                                    ? <a href={`https://wa.me/${waNum(r.parentPhone)}`} target="_blank" rel="noreferrer" className="text-green-600 font-semibold hover:underline">{r.parentPhone}</a>
+                                    : <span className="text-gray-300">—</span>}
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  {r.parentEmail
+                                    ? <a href={`mailto:${r.parentEmail}`} className="text-blue-600 hover:underline break-all text-xs">{r.parentEmail}</a>
+                                    : <span className="text-gray-300">—</span>}
+                                </td>
+                                <td className="px-3 py-2.5 whitespace-nowrap">
+                                  {l ? <>
+                                    <span className="font-bold text-gray-900">{fmt(l.amount)}</span>
+                                    <div className="text-[11px] text-gray-400">{pretty(l.paidAt)} · {l.method === 'whish' ? 'Whish' : 'cash'}</div>
+                                  </> : <span className="text-gray-300">—</span>}
+                                </td>
+                                <td className="px-3 py-2.5 whitespace-nowrap">
+                                  <span className="badge-pill text-[10px] font-bold" style={{ background: S.bg, color: S.color }}>{S.label}</span>
+                                  {l && <div className="text-[11px] mt-0.5" style={{ color: S.color }}>
+                                    {pretty(l.validUntil)}{st.days >= 0 ? ` · ${st.days}d left` : ` · ${Math.abs(st.days)}d ago`}
+                                  </div>}
+                                </td>
+                                <td className="px-3 py-2.5 whitespace-nowrap no-print">
+                                  {!r.parentPhone ? <span className="text-[11px] text-gray-300">no phone</span>
+                                    : l && st.key !== 'expired' ? (
+                                      <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(receiptMsg(r, l))}`}
+                                        target="_blank" rel="noreferrer" onClick={() => markConfirmed(r, l.id)} title="Send the parent a payment confirmation"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white" style={{ background: '#25D366' }}>
+                                        <MessageCircle size={11} /> Confirm{l.confirmedAt ? ' ✓' : ''}
+                                      </a>
+                                    ) : (
+                                      <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(renewMsg(r))}`}
+                                        target="_blank" rel="noreferrer" title="Ask the parent to pay / renew"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white" style={{ background: '#F59E0B' }}>
+                                        <CalendarClock size={11} /> Remind
+                                      </a>
+                                    )}
+                                </td>
+                                <td className="px-3 py-2.5 whitespace-nowrap no-print">
+                                  <button onClick={() => { setOpenId(open ? '' : r.id); setError(''); setForm(f => ({ ...f, paidAt: today(), validUntil: validUntilFor(today()) })); }}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100">
+                                    {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Payment
+                                  </button>
+                                </td>
+                              </tr>
+
+                              {open && (
+                                <tr className="bg-blue-50/40 border-t border-blue-100 no-print">
+                                  <td colSpan={10} className="px-4 py-4">
+                                    <div className="font-bold text-gray-800 text-sm mb-2">Add a payment for {r.childName}</div>
+                                    <div className="flex flex-wrap items-end gap-2.5 mb-2">
+                                      <label className="text-xs font-semibold text-gray-600">Amount
+                                        <div className="flex items-center gap-1 mt-1">
+                                          <span className="text-gray-400 text-sm">{CUR}</span>
+                                          <input type="number" inputMode="decimal" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
+                                            placeholder="100" className="w-24 px-2 py-2 rounded-lg border border-gray-200 text-sm" />
+                                        </div>
+                                      </label>
+                                      {feeChips.length > 0 && (
+                                        <div className="flex items-center gap-1 pb-1 flex-wrap">
+                                          {feeChips.map(([k, v]) => (
+                                            <button key={k} type="button" onClick={() => setForm({ ...form, amount: String(v) })}
+                                              className="px-2 py-1.5 rounded-lg text-[11px] font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-50">
+                                              {CUR}{v} {k}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                      <label className="text-xs font-semibold text-gray-600">Method
+                                        <select value={form.method} onChange={e => setForm({ ...form, method: e.target.value as 'whish' | 'cash' })}
+                                          className="block mt-1 px-2 py-2 rounded-lg border border-gray-200 text-sm bg-white">
+                                          <option value="whish">Whish</option>
+                                          <option value="cash">Cash</option>
+                                        </select>
+                                      </label>
+                                      <label className="text-xs font-semibold text-gray-600">Date of payment
+                                        <input type="date" value={form.paidAt}
+                                          onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: validUntilFor(e.target.value) })}
+                                          className="block mt-1 px-2 py-2 rounded-lg border border-gray-200 text-sm" />
+                                      </label>
+                                      <div className="text-xs font-semibold text-gray-600">Valid until <span className="font-normal text-gray-400">(automatic)</span>
+                                        <div className="mt-1 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-sm font-bold text-green-800">
+                                          {pretty(form.validUntil)}
+                                        </div>
+                                      </div>
+                                      <input value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} placeholder="note (optional)"
+                                        className="flex-1 min-w-[120px] px-3 py-2 rounded-lg border border-gray-200 text-sm" />
+                                      <button type="button" onClick={() => addPayment(r)} disabled={saving === r.id}
+                                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white disabled:opacity-50" style={{ background: '#2563EB' }}>
+                                        <Plus size={14} /> Add payment
+                                      </button>
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 mb-3">
+                                      The validity is worked out for you: paid {pretty(form.paidAt)} → valid to the same day next month minus one day.
+                                    </p>
+
+                                    {(r.feePayments ?? []).length === 0 ? (
+                                      <p className="text-xs text-gray-400">No payments recorded yet.</p>
+                                    ) : (
+                                      <div className="space-y-1">
+                                        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Payment history</div>
+                                        {(r.feePayments ?? []).slice().sort((a, b) => (b.paidAt || '').localeCompare(a.paidAt || '')).map(p => (
+                                          <div key={p.id} className="flex items-center gap-2 text-xs bg-white rounded-lg border border-gray-100 px-3 py-2 flex-wrap">
+                                            <span className="font-bold text-gray-900">{fmt(p.amount)}</span>
+                                            <span className={`badge-pill text-[10px] ${p.method === 'whish' ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'}`}>
+                                              {p.method === 'whish' ? <Wallet size={9} className="inline" /> : <Banknote size={9} className="inline" />} {p.method === 'whish' ? 'Whish' : 'cash'}
+                                            </span>
+                                            <span className="text-gray-500">paid {pretty(p.paidAt)}</span>
+                                            <span className="text-gray-400">→</span>
+                                            <span className="font-semibold text-gray-700">valid to {pretty(p.validUntil)}</span>
+                                            {p.note && <span className="text-gray-400 italic truncate max-w-[140px]">{p.note}</span>}
+                                            {p.confirmedAt && <span className="badge-pill bg-green-50 text-green-700 text-[10px]">confirmed ✓</span>}
+                                            <button onClick={() => removePayment(r, p.id)} title="Delete this payment"
+                                              className="ml-auto p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"><Trash2 size={12} /></button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-[11px] text-gray-400 px-3 py-2.5 border-t border-gray-50 no-print">
+                    {visible.length} student{visible.length === 1 ? '' : 's'} · click <b>Payment</b> to record an amount — the validity is filled in automatically · <b>Confirm</b> sends the parent a WhatsApp receipt, <b>Remind</b> chases an expired one.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </main>
+      <div className="no-print"><Footer /></div>
+    </>
+  );
+}
