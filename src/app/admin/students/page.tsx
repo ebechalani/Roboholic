@@ -28,16 +28,34 @@ const today = () => iso(new Date());
 const pretty = (d?: string) => (d ? new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
 const waNum = (p?: string) => { let d = (p || '').replace(/\D/g, ''); if (!d) return ''; if (d.startsWith('00')) d = d.slice(2); if (d.startsWith('961')) return d; if (d.startsWith('0')) d = d.slice(1); return '961' + d; };
 
-/** Valid until = the same day next month, minus one day (month-end safe). */
-function validUntilFor(paidAt: string): string {
-  const d = new Date(paidAt + 'T12:00:00');
+/** Add n months to a date, clamped to the end of the target month. */
+function addMonths(from: string, n: number): string {
+  const d = new Date(from + 'T12:00:00');
   if (isNaN(d.getTime())) return '';
   const day = d.getDate();
-  const t = new Date(d.getFullYear(), d.getMonth() + 1, 1);          // 1st of next month
+  const t = new Date(d.getFullYear(), d.getMonth() + n, 1);
   const lastDay = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
-  t.setDate(Math.min(day, lastDay));                                 // same day, clamped
-  t.setDate(t.getDate() - 1);                                        // minus one day
+  t.setDate(Math.min(day, lastDay));
   return iso(t);
+}
+/** Valid until = the same day next month, minus one day (month-end safe). */
+function validUntilFor(paidAt: string): string {
+  const nextSameDay = addMonths(paidAt, 1);
+  if (!nextSameDay) return '';
+  const t = new Date(nextSameDay + 'T12:00:00');
+  t.setDate(t.getDate() - 1);
+  return iso(t);
+}
+/** The day AFTER the paid period — when the next payment falls due. */
+function dueAfter(validUntil: string): string {
+  const t = new Date(validUntil + 'T12:00:00');
+  if (isNaN(t.getTime())) return '';
+  t.setDate(t.getDate() + 1);
+  return iso(t);
+}
+const ordinal = (n: number) => {
+  const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 };
 const daysLeft = (until: string) => Math.round((new Date(until + 'T12:00:00').getTime() - new Date(today() + 'T12:00:00').getTime()) / 86400000);
 
@@ -49,8 +67,30 @@ const STATUS = {
   none: { label: 'Not paid', color: '#9CA3AF', bg: '#F9FAFB' },
 } as const;
 
+/** The first payment anchors the billing day; it stays fixed all year. */
+function firstPayment(r: Registration): PaymentRecord | undefined {
+  return (r.feePayments ?? []).slice().sort((a, b) => (a.paidAt || '').localeCompare(b.paidAt || ''))[0];
+}
+/** The day of the month this family pays on (from their first payment). */
+function billingDay(r: Registration): number | null {
+  const f = firstPayment(r);
+  if (!f) return null;
+  const d = new Date(dueAfter(f.validUntil) + 'T12:00:00');
+  return isNaN(d.getTime()) ? null : d.getDate();
+}
+
 const latest = (r: Registration): PaymentRecord | undefined =>
   (r.feePayments ?? []).slice().sort((a, b) => (a.validUntil || '').localeCompare(b.validUntil || '')).pop();
+/**
+ * The period a new payment covers. The FIRST payment anchors the cycle on the
+ * day it was paid; every later payment simply extends the previous period by a
+ * month, so the due day never drifts even when a family pays late.
+ */
+function nextValidUntil(r: Registration, paidAt: string): string {
+  const prev = latest(r);
+  return prev ? addMonths(prev.validUntil, 1) : validUntilFor(paidAt);
+}
+
 function statusOf(r: Registration): { key: Status; days: number } {
   const l = latest(r);
   if (!l) return { key: 'none', days: 0 };
@@ -169,7 +209,7 @@ function Students() {
     const rec: PaymentRecord = {
       id: `p${Date.now()}${Math.floor(Math.random() * 1000)}`,
       amount, method: form.method, paidAt,
-      validUntil: form.validUntil || validUntilFor(paidAt),
+      validUntil: form.validUntil || nextValidUntil(r, paidAt),
       ...(form.note.trim() ? { note: form.note.trim() } : {}),
     };
     void savePayments(r, [...(r.feePayments ?? []), rec]);
@@ -184,21 +224,26 @@ function Students() {
     const amount = parseFloat(form.amount);
     if (isNaN(amount) || amount <= 0) return null;
     const paidAt = form.paidAt || today();
-    return { id: 'draft', amount, method: form.method, paidAt, validUntil: form.validUntil || validUntilFor(paidAt) };
+    return { id: 'draft', amount, method: form.method, paidAt, validUntil: form.validUntil || paidAt };
   }
 
   function receiptMsg(r: Registration, p: PaymentRecord) {
     const first = (r.childName || '').split(/\s+/)[0] || 'your child';
-    const hi = r.parentName ? `Hello ${r.parentName}!` : 'Hello!';
-    return `${hi} 👋\n\nThis is RoboHolic Academy — we confirm we received *${fmt(p.amount)}* for ${first}'s classes.\n\n✅ Paid: ${pretty(p.paidAt)} (${p.method === 'whish' ? 'Whish' : 'cash'})\n📅 Valid until: *${pretty(p.validUntil)}*\n\nThank you! 🤖`;
+    const due = dueAfter(p.validUntil);
+    const day = due ? new Date(due + 'T12:00:00').getDate() : null;
+    return `Dear parent 👋\n\nThis is RoboHolic Academy — we confirm we received *${fmt(p.amount)}* for ${first}'s classes.\n\n✅ Paid: ${pretty(p.paidAt)} (${p.method === 'whish' ? 'Whish' : 'cash'})\n📅 Valid until: *${pretty(p.validUntil)}*\n🔔 Next payment: *${pretty(due)}*${day ? ` — and the ${ordinal(day)} of every month after that.` : ''}\n\nThank you! 🤖`;
   }
   function renewMsg(r: Registration) {
     const first = (r.childName || '').split(/\s+/)[0] || 'your child';
-    const hi = r.parentName ? `Hello ${r.parentName}!` : 'Hello!';
     const l = latest(r);
-    const when = l ? ` — ${first}'s subscription ${daysLeft(l.validUntil) < 0 ? 'ended' : 'ends'} on ${pretty(l.validUntil)}` : '';
     const wallet = settings.whishWallet ? ` to wallet ${settings.whishWallet}` : '';
-    return `${hi} 👋\n\nThis is RoboHolic Academy${when}. Would you like to renew ${first}'s subscription?\n\nYou can pay via Whish${wallet}, or cash at the centre. Thank you! 🤖`;
+    const day = billingDay(r);
+    if (!l) {
+      return `Dear parent 👋\n\nThis is RoboHolic Academy — this is a kind reminder about the fee for ${first}'s classes.\n\nYou can pay via Whish${wallet}, or cash at the centre.\n\nThank you! 🤖`;
+    }
+    const due = dueAfter(l.validUntil);
+    const ended = daysLeft(l.validUntil) < 0;
+    return `Dear parent 👋\n\nThis is RoboHolic Academy — a kind reminder that ${first}'s subscription ${ended ? 'ended' : 'ends'} on *${pretty(l.validUntil)}*.\n\n🔔 The next payment ${ended ? 'was due' : 'is due'} on *${pretty(due)}*${day ? ` — the ${ordinal(day)} of each month.` : '.'}\n\nYou can pay via Whish${wallet}, or cash at the centre.\n\nThank you! 🤖`;
   }
 
   const visible = useMemo(() => {
@@ -438,13 +483,14 @@ function Students() {
                             {l && (
                               <div className="text-[11px] mt-1" style={{ color: S.color }}>
                                 until {pretty(l.validUntil)}<br />{st.days >= 0 ? `${st.days} days left` : `${Math.abs(st.days)} days ago`}
+                                {billingDay(r) && <><br /><span className="text-gray-400">pays the {ordinal(billingDay(r) as number)}</span></>}
                               </div>
                             )}
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap mt-3 no-print">
-                          <button onClick={() => { setOpenId(open ? '' : r.id); setError(''); setForm(f => ({ ...f, amount: '', paidAt: today(), validUntil: validUntilFor(today()) })); }}
+                          <button onClick={() => { setOpenId(open ? '' : r.id); setError(''); setForm(f => ({ ...f, amount: '', paidAt: today(), validUntil: nextValidUntil(r, today()) })); }}
                             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#2563EB' }}>
                             <Plus size={15} /> {open ? 'Close' : 'Record payment'}
                           </button>
@@ -498,12 +544,16 @@ function Students() {
                               </label>
                               <label className="text-xs font-bold text-gray-600">Paid on
                                 <input type="date" value={form.paidAt}
-                                  onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: validUntilFor(e.target.value) })}
+                                  onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: nextValidUntil(r, e.target.value) })}
                                   className="block mt-1 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm" />
                               </label>
                               <div className="text-xs font-bold text-gray-600">Valid until
                                 <div className="mt-1 px-3 py-2.5 rounded-xl bg-green-50 border-2 border-green-200 text-sm font-black text-green-800 whitespace-nowrap">
                                   {pretty(form.validUntil)}
+                                </div>
+                                <div className="text-[11px] font-normal text-gray-500 mt-1">
+                                  next payment {pretty(dueAfter(form.validUntil))}
+                                  {(r.feePayments ?? []).length > 0 && <span className="text-blue-600 font-bold"> · cycle kept</span>}
                                 </div>
                               </div>
                             </div>
@@ -654,7 +704,7 @@ function Students() {
                                       </label>
                                       <label className="text-xs font-semibold text-gray-600">Date of payment
                                         <input type="date" value={form.paidAt}
-                                          onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: validUntilFor(e.target.value) })}
+                                          onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: nextValidUntil(r, e.target.value) })}
                                           className="block mt-1 px-2 py-2 rounded-lg border border-gray-200 text-sm" />
                                       </label>
                                       <div className="text-xs font-semibold text-gray-600">Valid until <span className="font-normal text-gray-400">(automatic)</span>
