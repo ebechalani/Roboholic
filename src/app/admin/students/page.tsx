@@ -165,6 +165,9 @@ function Students() {
   const [openId, setOpenId] = useState('');
   const [view, setView] = useState<'monthly' | 'simple' | 'table'>('monthly');
   const [month, setMonth] = useState(thisMonth());
+  // Per-row date/method chosen before pressing Mark paid.
+  const [payDate, setPayDate] = useState<Record<string, string>>({});
+  const [payHow, setPayHow] = useState<Record<string, 'whish' | 'cash'>>({});
   const [adding, setAdding] = useState(false);
   const [addBusy, setAddBusy] = useState(false);
   const [nf, setNf] = useState({ ...EMPTY_NEW });
@@ -242,16 +245,35 @@ function Students() {
     catch { setError('Could not save the fee — try again.'); void load(); }
   }
 
-  /** One-tap: record this month's fee, paid today, extending their cycle. */
-  async function recordMonth(r: Registration) {
+  /** Record this month's fee on the date you choose, extending their cycle. */
+  async function recordMonth(r: Registration, when?: string, how?: 'whish' | 'cash') {
     const amount = feeOf(r);
     if (!amount) { setError(`Set a monthly fee for ${r.childName} first.`); return; }
-    const paidAt = today();
+    const paidAt = when || payDate[r.id] || expectedDate(r, month) || today();
     const rec: PaymentRecord = {
       id: `p${Date.now()}${Math.floor(Math.random() * 1000)}`,
-      amount, method: 'whish', paidAt, validUntil: nextValidUntil(r, paidAt),
+      amount, method: how || (payHow[r.id] ?? 'whish'), paidAt, validUntil: nextValidUntil(r, paidAt),
     };
     await savePayments(r, [...(r.feePayments ?? []), rec]);
+  }
+
+  /**
+   * Correct the date a payment was received. The payment that anchors the
+   * family's cycle also moves its validity, so the fixed payment day follows
+   * the correction; later payments keep the agreed cycle.
+   */
+  async function updatePaidDate(r: Registration, paymentId: string, paidAt: string) {
+    if (!paidAt) return;
+    const first = firstPayment(r);
+    const isAnchor = first?.id === paymentId;
+    const next = (r.feePayments ?? []).map(p =>
+      p.id === paymentId ? { ...p, paidAt, ...(isAnchor ? { validUntil: validUntilFor(paidAt) } : {}) } : p);
+    await savePayments(r, next);
+  }
+
+  /** Correct how a payment was made. */
+  async function updatePaidMethod(r: Registration, paymentId: string, method: 'whish' | 'cash') {
+    await savePayments(r, (r.feePayments ?? []).map(p => p.id === paymentId ? { ...p, method } : p));
   }
 
   // The months of the academic year (falls back to a 9-month year from today).
@@ -597,9 +619,34 @@ function Students() {
                                 {paid.length ? (
                                   <>
                                     <span className="font-bold text-green-700">{fmt(paidTotal)}</span>
-                                    <div className="text-[11px] text-gray-400">{paid.map(p => pretty(p.paidAt)).join(', ')}</div>
+                                    {paid.map(p => (
+                                      <div key={p.id} className="flex items-center gap-1 mt-0.5">
+                                        <input type="date" value={p.paidAt} title="Change the date this was paid"
+                                          onChange={e => void updatePaidDate(r, p.id, e.target.value)}
+                                          className="text-[11px] px-1.5 py-0.5 rounded-md border border-gray-200 bg-white no-print" />
+                                        <select value={p.method} onChange={e => void updatePaidMethod(r, p.id, e.target.value as 'whish' | 'cash')}
+                                          className="text-[11px] px-1 py-0.5 rounded-md border border-gray-200 bg-white no-print">
+                                          <option value="whish">Whish</option>
+                                          <option value="cash">Cash</option>
+                                        </select>
+                                        <span className="hidden print:inline text-[11px] text-gray-500">{pretty(p.paidAt)}</span>
+                                      </div>
+                                    ))}
                                   </>
-                                ) : <span className="badge-pill bg-red-50 text-red-600 text-[10px]">not paid</span>}
+                                ) : (
+                                  <span className="inline-flex items-center gap-1">
+                                    <span className="badge-pill bg-red-50 text-red-600 text-[10px] print:inline">not paid</span>
+                                    <input type="date" value={payDate[r.id] ?? (expectedDate(r, month) || today())}
+                                      onChange={e => setPayDate({ ...payDate, [r.id]: e.target.value })}
+                                      title="The date the money was received"
+                                      className="text-[11px] px-1.5 py-0.5 rounded-md border border-gray-200 bg-white no-print" />
+                                    <select value={payHow[r.id] ?? 'whish'} onChange={e => setPayHow({ ...payHow, [r.id]: e.target.value as 'whish' | 'cash' })}
+                                      className="text-[11px] px-1 py-0.5 rounded-md border border-gray-200 bg-white no-print">
+                                      <option value="whish">Whish</option>
+                                      <option value="cash">Cash</option>
+                                    </select>
+                                  </span>
+                                )}
                               </td>
                               <td className="px-3 py-2.5 whitespace-nowrap text-xs">
                                 {paid.length ? <span className="text-gray-700">{pretty(paid[paid.length - 1].validUntil)}</span> : <span className="text-gray-300">—</span>}
@@ -768,7 +815,11 @@ function Students() {
                                 {(r.feePayments ?? []).slice().sort((a, b) => (b.paidAt || '').localeCompare(a.paidAt || '')).map(p => (
                                   <div key={p.id} className="flex items-center gap-2 text-xs bg-gray-50 rounded-lg px-3 py-1.5 flex-wrap">
                                     <span className="font-bold text-gray-900">{fmt(p.amount)}</span>
-                                    <span className="text-gray-500">{p.method === 'whish' ? 'Whish' : 'cash'} · paid {pretty(p.paidAt)} → valid to {pretty(p.validUntil)}</span>
+                                    <span className="text-gray-500">{p.method === 'whish' ? 'Whish' : 'cash'} · paid</span>
+                                    <input type="date" value={p.paidAt} title="Change the date this was paid"
+                                      onChange={e => void updatePaidDate(r, p.id, e.target.value)}
+                                      className="text-[11px] px-1.5 py-0.5 rounded-md border border-gray-200 bg-white" />
+                                    <span className="text-gray-500">→ valid to {pretty(p.validUntil)}</span>
                                     {p.confirmedAt && <span className="badge-pill bg-green-50 text-green-700 text-[10px]">sent ✓</span>}
                                     <button onClick={() => removePayment(r, p.id)} className="ml-auto p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"><Trash2 size={12} /></button>
                                   </div>
