@@ -53,6 +53,41 @@ function dueAfter(validUntil: string): string {
   t.setDate(t.getDate() + 1);
   return iso(t);
 }
+/** 'YYYY-MM' for a date. */
+const monthOf = (d: string) => (d || '').slice(0, 7);
+const thisMonth = () => monthOf(today());
+/** 'October 2026' */
+const monthLabel = (m: string) => {
+  const d = new Date(m + '-01T12:00:00');
+  return isNaN(d.getTime()) ? m : d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+};
+/** The academic-year months, e.g. Oct 2026 … Jun 2027. */
+function monthsBetween(start: string, end: string): string[] {
+  const out: string[] = [];
+  const a = new Date((start || '') + 'T12:00:00');
+  const b = new Date((end || '') + 'T12:00:00');
+  if (isNaN(a.getTime()) || isNaN(b.getTime()) || b < a) return out;
+  const cur = new Date(a.getFullYear(), a.getMonth(), 1);
+  const last = new Date(b.getFullYear(), b.getMonth(), 1);
+  while (cur <= last && out.length < 24) {
+    out.push(`${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}`);
+    cur.setMonth(cur.getMonth() + 1);
+  }
+  return out;
+}
+/** Day of the month a family is expected to pay, within a given month. */
+function expectedDate(r: Registration, month: string): string {
+  const day = billingDay(r) ?? new Date((r.createdAt || today()) + '').getDate();
+  if (!day || isNaN(day)) return '';
+  const first = new Date(month + '-01T12:00:00');
+  if (isNaN(first.getTime())) return '';
+  const lastDay = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  return `${month}-${String(Math.min(day, lastDay)).padStart(2, '0')}`;
+}
+/** Payments actually received during a month. */
+const paymentsIn = (r: Registration, month: string) =>
+  (r.feePayments ?? []).filter(p => monthOf(p.paidAt) === month).sort((a, b) => (a.paidAt || '').localeCompare(b.paidAt || ''));
+
 const ordinal = (n: number) => {
   const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
@@ -128,7 +163,8 @@ function Students() {
   const [act, setAct] = useState<'all' | 'robotics' | 'drawing' | 'muaythai'>('all');
   const [pay, setPay] = useState<'all' | Status>('all');
   const [openId, setOpenId] = useState('');
-  const [view, setView] = useState<'simple' | 'table'>('simple');
+  const [view, setView] = useState<'monthly' | 'simple' | 'table'>('monthly');
+  const [month, setMonth] = useState(thisMonth());
   const [adding, setAdding] = useState(false);
   const [addBusy, setAddBusy] = useState(false);
   const [nf, setNf] = useState({ ...EMPTY_NEW });
@@ -195,6 +231,43 @@ function Students() {
   const fmt = (n: number) => `${CUR}${(n || 0).toLocaleString()}`;
   const feeChips = Object.entries(settings.fees || {}).filter(([, v]) => (v || 0) > 0);
 
+  /** The default fee for a child, from the per-activity fees in Settings. */
+  const defaultFee = (r: Registration) => (settings.fees || {})[r.activity ?? 'robotics'] || 0;
+  /** The fee actually charged: the child's own, else the activity default. */
+  const feeOf = (r: Registration) => r.monthlyFee ?? defaultFee(r);
+
+  async function saveFee(r: Registration, monthlyFee: number | undefined) {
+    setRows(prev => prev.map(x => x.id === r.id ? { ...x, monthlyFee } : x));
+    try { await updateDoc(doc(db, 'registrations', r.id), { monthlyFee: monthlyFee ?? null }); }
+    catch { setError('Could not save the fee — try again.'); void load(); }
+  }
+
+  /** One-tap: record this month's fee, paid today, extending their cycle. */
+  async function recordMonth(r: Registration) {
+    const amount = feeOf(r);
+    if (!amount) { setError(`Set a monthly fee for ${r.childName} first.`); return; }
+    const paidAt = today();
+    const rec: PaymentRecord = {
+      id: `p${Date.now()}${Math.floor(Math.random() * 1000)}`,
+      amount, method: 'whish', paidAt, validUntil: nextValidUntil(r, paidAt),
+    };
+    await savePayments(r, [...(r.feePayments ?? []), rec]);
+  }
+
+  // The months of the academic year (falls back to a 9-month year from today).
+  const months = useMemo(() => {
+    const fromSettings = monthsBetween(settings.yearStart || '', settings.yearEnd || '');
+    if (fromSettings.length) return fromSettings;
+    const start = new Date();
+    start.setMonth(start.getMonth() - 1);
+    const out: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      out.push(`${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`);
+      start.setMonth(start.getMonth() + 1);
+    }
+    return out;
+  }, [settings.yearStart, settings.yearEnd]);
+
   async function savePayments(r: Registration, feePayments: PaymentRecord[]) {
     setSaving(r.id); setError('');
     setRows(prev => prev.map(x => x.id === r.id ? { ...x, feePayments } : x));
@@ -255,6 +328,16 @@ function Students() {
         .some(v => (v || '').toLowerCase().includes(needle)));
   }, [rows, q, act, pay]);
 
+  // Expected vs collected for the selected month, across the visible students.
+  const monthTotals = useMemo(() => {
+    let expected = 0, collected = 0;
+    for (const r of visible) {
+      expected += r.monthlyFee ?? ((settings.fees || {})[r.activity ?? 'robotics'] || 0);
+      for (const p of paymentsIn(r, month)) collected += p.amount || 0;
+    }
+    return { expected, collected, outstanding: Math.max(0, expected - collected) };
+  }, [visible, month, settings.fees]);
+
   const stats = useMemo(() => {
     const c = { active: 0, expiring: 0, expired: 0, none: 0, collected: 0 };
     for (const r of rows) {
@@ -306,10 +389,17 @@ function Students() {
               <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search a child, parent or number…"
                 className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm" />
             </div>
+            {view === 'monthly' && (
+              <select value={month} onChange={e => setMonth(e.target.value)}
+                className="px-3 py-2.5 rounded-xl border-2 border-blue-200 bg-white text-sm font-bold text-gray-800">
+                {months.map(m => <option key={m} value={m}>{monthLabel(m)}</option>)}
+              </select>
+            )}
             <button onClick={() => void load()} className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold hover:underline"><RefreshCw size={14} /> Refresh</button>
             {saving && <span className="text-xs text-gray-400 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> saving…</span>}
             <div className="ml-auto flex items-center gap-2">
               <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold bg-white">
+                <button onClick={() => setView('monthly')} className={`px-3 py-2 ${view === 'monthly' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Monthly</button>
                 <button onClick={() => setView('simple')} className={`px-3 py-2 ${view === 'simple' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Simple</button>
                 <button onClick={() => setView('table')} className={`px-3 py-2 ${view === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>Table</button>
               </div>
@@ -456,6 +546,102 @@ function Students() {
                   <p className="text-sm">No students match this filter.</p>
                 </div>
               ) : (
+                view === 'monthly' ? (
+                /* ─── Monthly ledger: fees, totals and the expected paying date ─── */
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50 text-left text-[11px] uppercase tracking-wide text-gray-500">
+                          <th className="px-3 py-2.5 font-bold">Student</th>
+                          <th className="px-3 py-2.5 font-bold">Class</th>
+                          <th className="px-3 py-2.5 font-bold">Monthly fee</th>
+                          <th className="px-3 py-2.5 font-bold">Expected on</th>
+                          <th className="px-3 py-2.5 font-bold">Paid</th>
+                          <th className="px-3 py-2.5 font-bold">Valid until</th>
+                          <th className="px-3 py-2.5 font-bold no-print">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visible.map(r => {
+                          const fee = feeOf(r);
+                          const due = expectedDate(r, month);
+                          const paid = paymentsIn(r, month);
+                          const paidTotal = paid.reduce((n, p) => n + (p.amount || 0), 0);
+                          const late = !paid.length && due && due < today();
+                          return (
+                            <tr key={r.id} className="border-t border-gray-50 hover:bg-blue-50/30 align-top">
+                              <td className="px-3 py-2.5">
+                                <div className="font-bold text-gray-900 whitespace-nowrap">{r.childName}</div>
+                                {r.parentName && <div className="text-[11px] text-gray-400">{r.parentName}</div>}
+                              </td>
+                              <td className="px-3 py-2.5 text-xs text-gray-600 min-w-[150px]">{classOf(r)}</td>
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="text-gray-400 text-xs">{CUR}</span>
+                                  <input type="number" inputMode="decimal" key={`fee-${r.id}`} defaultValue={r.monthlyFee ?? ''}
+                                    placeholder={String(defaultFee(r) || '')}
+                                    onBlur={e => { const v = parseFloat(e.target.value); const next = isNaN(v) || v <= 0 ? undefined : v; if (next !== (r.monthlyFee ?? undefined)) void saveFee(r, next); }}
+                                    className="w-20 px-2 py-1.5 rounded-lg border border-gray-200 text-sm no-print" />
+                                  <span className="hidden print:inline text-sm">{fee || '—'}</span>
+                                </span>
+                              </td>
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                {due ? (
+                                  <span className={late ? 'text-red-600 font-bold' : 'text-gray-700'}>
+                                    {pretty(due)}{late && <div className="text-[11px]">overdue</div>}
+                                  </span>
+                                ) : <span className="text-gray-300">—</span>}
+                              </td>
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                {paid.length ? (
+                                  <>
+                                    <span className="font-bold text-green-700">{fmt(paidTotal)}</span>
+                                    <div className="text-[11px] text-gray-400">{paid.map(p => pretty(p.paidAt)).join(', ')}</div>
+                                  </>
+                                ) : <span className="badge-pill bg-red-50 text-red-600 text-[10px]">not paid</span>}
+                              </td>
+                              <td className="px-3 py-2.5 whitespace-nowrap text-xs">
+                                {paid.length ? <span className="text-gray-700">{pretty(paid[paid.length - 1].validUntil)}</span> : <span className="text-gray-300">—</span>}
+                              </td>
+                              <td className="px-3 py-2.5 whitespace-nowrap no-print">
+                                {paid.length ? (
+                                  r.parentPhone && (
+                                    <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(receiptMsg(r, paid[paid.length - 1]))}`}
+                                      target="_blank" rel="noreferrer" onClick={() => markConfirmed(r, paid[paid.length - 1].id)}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white" style={{ background: '#25D366' }}>
+                                      <MessageCircle size={11} /> Receipt
+                                    </a>
+                                  )
+                                ) : (
+                                  <button onClick={() => recordMonth(r)} disabled={saving === r.id || !fee}
+                                    title={fee ? `Record ${fmt(fee)} for ${monthLabel(month)}` : 'Set the monthly fee first'}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white disabled:opacity-40" style={{ background: '#2563EB' }}>
+                                    {saving === r.id ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />} Mark paid
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      <tfoot>
+                        <tr className="bg-gray-50 border-t-2 border-gray-200 font-black text-gray-900">
+                          <td className="px-3 py-3" colSpan={2}>Totals — {monthLabel(month)}</td>
+                          <td className="px-3 py-3 whitespace-nowrap">{fmt(monthTotals.expected)}<div className="text-[10px] font-normal text-gray-400">expected</div></td>
+                          <td className="px-3 py-3"></td>
+                          <td className="px-3 py-3 whitespace-nowrap text-green-700">{fmt(monthTotals.collected)}<div className="text-[10px] font-normal text-gray-400">collected</div></td>
+                          <td className="px-3 py-3 whitespace-nowrap text-red-600">{fmt(monthTotals.outstanding)}<div className="text-[10px] font-normal text-gray-400">outstanding</div></td>
+                          <td className="px-3 py-3 no-print"></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <p className="text-[11px] text-gray-400 px-3 py-2.5 border-t border-gray-50 no-print">
+                    Type each child&apos;s monthly fee once — it is remembered. <b>Mark paid</b> records that fee for {monthLabel(month)} and extends the validity by a month, keeping their payment day fixed.
+                  </p>
+                </div>
+              ) :
                 view === 'simple' ? (
                 /* ─── Simple view: one card per child ─── */
                 <div className="space-y-3">

@@ -144,6 +144,8 @@ export interface Registration {
   // Fee payments for this registration (school-year sheet). Each payment is
   // valid from the day it was paid until the same day next month, minus 1 day.
   feePayments?: PaymentRecord[];
+  /** This child's agreed monthly fee (overrides the per-activity default). */
+  monthlyFee?: number;
 }
 
 /** An academy expense (admin-only bookkeeping). Firestore: expenses/{id}. */
