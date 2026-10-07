@@ -116,16 +116,6 @@ function billingDay(r: Registration): number | null {
 
 const latest = (r: Registration): PaymentRecord | undefined =>
   (r.feePayments ?? []).slice().sort((a, b) => (a.validUntil || '').localeCompare(b.validUntil || '')).pop();
-/**
- * The period a new payment covers. The FIRST payment anchors the cycle on the
- * day it was paid; every later payment simply extends the previous period by a
- * month, so the due day never drifts even when a family pays late.
- */
-function nextValidUntil(r: Registration, paidAt: string): string {
-  const prev = latest(r);
-  return prev ? addMonths(prev.validUntil, 1) : validUntilFor(paidAt);
-}
-
 function statusOf(r: Registration): { key: Status; days: number } {
   const l = latest(r);
   if (!l) return { key: 'none', days: 0 };
@@ -249,10 +239,10 @@ function Students() {
   async function recordMonth(r: Registration, when?: string, how?: 'whish' | 'cash') {
     const amount = feeOf(r);
     if (!amount) { setError(`Set a monthly fee for ${r.childName} first.`); return; }
-    const paidAt = when || payDate[r.id] || expectedDate(r, month) || today();
+    const paidAt = when || payDate[r.id] || today();
     const rec: PaymentRecord = {
       id: `p${Date.now()}${Math.floor(Math.random() * 1000)}`,
-      amount, method: how || (payHow[r.id] ?? 'whish'), paidAt, validUntil: nextValidUntil(r, paidAt),
+      amount, method: how || (payHow[r.id] ?? 'whish'), paidAt, validUntil: validUntilFor(paidAt),
     };
     await savePayments(r, [...(r.feePayments ?? []), rec]);
   }
@@ -264,10 +254,8 @@ function Students() {
    */
   async function updatePaidDate(r: Registration, paymentId: string, paidAt: string) {
     if (!paidAt) return;
-    const first = firstPayment(r);
-    const isAnchor = first?.id === paymentId;
     const next = (r.feePayments ?? []).map(p =>
-      p.id === paymentId ? { ...p, paidAt, ...(isAnchor ? { validUntil: validUntilFor(paidAt) } : {}) } : p);
+      p.id === paymentId ? { ...p, paidAt, validUntil: validUntilFor(paidAt) } : p);
     await savePayments(r, next);
   }
 
@@ -304,7 +292,7 @@ function Students() {
     const rec: PaymentRecord = {
       id: `p${Date.now()}${Math.floor(Math.random() * 1000)}`,
       amount, method: form.method, paidAt,
-      validUntil: form.validUntil || nextValidUntil(r, paidAt),
+      validUntil: form.validUntil || validUntilFor(paidAt),
       ...(form.note.trim() ? { note: form.note.trim() } : {}),
     };
     void savePayments(r, [...(r.feePayments ?? []), rec]);
@@ -591,8 +579,9 @@ function Students() {
                           const paid = paymentsIn(r, month);
                           const paidTotal = paid.reduce((n, p) => n + (p.amount || 0), 0);
                           const late = !paid.length && due && due < today();
+                          const isPaid = paid.length > 0;
                           return (
-                            <tr key={r.id} className="border-t border-gray-50 hover:bg-blue-50/30 align-top">
+                            <tr key={r.id} className={`border-t align-top ${isPaid ? 'bg-green-50 hover:bg-green-100/70 border-green-100' : 'border-gray-50 hover:bg-blue-50/30'}`}>
                               <td className="px-3 py-2.5">
                                 <div className="font-bold text-gray-900 whitespace-nowrap">{r.childName}</div>
                                 {r.parentName && <div className="text-[11px] text-gray-400">{r.parentName}</div>}
@@ -618,7 +607,7 @@ function Students() {
                               <td className="px-3 py-2.5 whitespace-nowrap">
                                 {paid.length ? (
                                   <>
-                                    <span className="font-bold text-green-700">{fmt(paidTotal)}</span>
+                                    <span className="font-bold text-green-700 inline-flex items-center gap-1"><CheckCircle size={12} /> {fmt(paidTotal)}</span>
                                     {paid.map(p => (
                                       <div key={p.id} className="flex items-center gap-1 mt-0.5">
                                         <input type="date" value={p.paidAt} title="Change the date this was paid"
@@ -636,7 +625,7 @@ function Students() {
                                 ) : (
                                   <span className="inline-flex items-center gap-1">
                                     <span className="badge-pill bg-red-50 text-red-600 text-[10px] print:inline">not paid</span>
-                                    <input type="date" value={payDate[r.id] ?? (expectedDate(r, month) || today())}
+                                    <input type="date" value={payDate[r.id] ?? today()}
                                       onChange={e => setPayDate({ ...payDate, [r.id]: e.target.value })}
                                       title="The date the money was received"
                                       className="text-[11px] px-1.5 py-0.5 rounded-md border border-gray-200 bg-white no-print" />
@@ -698,7 +687,8 @@ function Students() {
                     const draft = open ? draftPayment() : null;
                     const paidCount = (r.feePayments ?? []).length;
                     return (
-                      <div key={r.id} className="bg-white rounded-2xl border-2 p-4" style={{ borderColor: open ? '#93C5FD' : '#F3F4F6' }}>
+                      <div key={r.id} className="rounded-2xl border-2 p-4"
+                        style={{ borderColor: open ? '#93C5FD' : st.key === 'active' ? '#BBF7D0' : '#F3F4F6', background: st.key === 'active' ? '#F0FDF4' : '#FFFFFF' }}>
                         <div className="flex items-start gap-3 flex-wrap">
                           <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-black shrink-0"
                             style={{ background: S.color }}>{(r.childName || '?').trim().charAt(0).toUpperCase()}</div>
@@ -723,7 +713,7 @@ function Students() {
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap mt-3 no-print">
-                          <button onClick={() => { setOpenId(open ? '' : r.id); setError(''); setForm(f => ({ ...f, amount: '', paidAt: today(), validUntil: nextValidUntil(r, today()) })); }}
+                          <button onClick={() => { setOpenId(open ? '' : r.id); setError(''); setForm(f => ({ ...f, amount: '', paidAt: today(), validUntil: validUntilFor(today()) })); }}
                             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#2563EB' }}>
                             <Plus size={15} /> {open ? 'Close' : 'Record payment'}
                           </button>
@@ -777,7 +767,7 @@ function Students() {
                               </label>
                               <label className="text-xs font-bold text-gray-600">Paid on
                                 <input type="date" value={form.paidAt}
-                                  onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: nextValidUntil(r, e.target.value) })}
+                                  onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: validUntilFor(e.target.value) })}
                                   className="block mt-1 px-3 py-2.5 rounded-xl border-2 border-gray-200 text-sm" />
                               </label>
                               <div className="text-xs font-bold text-gray-600">Valid until
@@ -786,7 +776,6 @@ function Students() {
                                 </div>
                                 <div className="text-[11px] font-normal text-gray-500 mt-1">
                                   next payment {pretty(dueAfter(form.validUntil))}
-                                  {(r.feePayments ?? []).length > 0 && <span className="text-blue-600 font-bold"> · cycle kept</span>}
                                 </div>
                               </div>
                             </div>
@@ -941,7 +930,7 @@ function Students() {
                                       </label>
                                       <label className="text-xs font-semibold text-gray-600">Date of payment
                                         <input type="date" value={form.paidAt}
-                                          onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: nextValidUntil(r, e.target.value) })}
+                                          onChange={e => setForm({ ...form, paidAt: e.target.value, validUntil: validUntilFor(e.target.value) })}
                                           className="block mt-1 px-2 py-2 rounded-lg border border-gray-200 text-sm" />
                                       </label>
                                       <div className="text-xs font-semibold text-gray-600">Valid until <span className="font-normal text-gray-400">(automatic)</span>
