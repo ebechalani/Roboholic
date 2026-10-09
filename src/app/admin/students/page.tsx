@@ -1,10 +1,10 @@
 'use client';
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import {
   Loader2, RefreshCw, Users, MessageCircle, Mail, Printer, Download, Search,
-  Plus, Trash2, CheckCircle, CalendarClock, ChevronDown, ChevronRight, Wallet, Banknote, UserPlus,
+  Plus, Trash2, CheckCircle, CalendarClock, ChevronDown, ChevronRight, Wallet, Banknote, UserPlus, Pencil,
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -262,6 +262,150 @@ function Students() {
   /** Correct how a payment was made. */
   async function updatePaidMethod(r: Registration, paymentId: string, method: 'whish' | 'cash') {
     await savePayments(r, (r.feePayments ?? []).map(p => p.id === paymentId ? { ...p, method } : p));
+  }
+
+  // ── Edit / delete a student record ──
+  const [editId, setEditId] = useState('');
+  const [editBusy, setEditBusy] = useState(false);
+  const [ef, setEf] = useState({ ...EMPTY_NEW });
+
+  function startEdit(r: Registration) {
+    setEditId(r.id); setError('');
+    setEf({
+      childName: r.childName || '', dob: r.dob || '',
+      activity: r.activity ?? 'robotics', branch: r.branch || 'jdeideh', slotId: r.slotId || '',
+      parentName: r.parentName || '', parentPhone: r.parentPhone || '', parentEmail: r.parentEmail || '',
+      notes: r.notes || '',
+    });
+  }
+
+  async function saveEdit(r: Registration) {
+    const name = ef.childName.trim();
+    if (!name) { setError('The child needs a name.'); return; }
+    setEditBusy(true); setError('');
+    const a = activityById(ef.activity); const b = branchById(ef.branch);
+    const slot = b && a ? a.slots(b).find(x => x.id === ef.slotId) : undefined;
+    const patch = {
+      childName: name, dob: ef.dob || '',
+      activity: ef.activity as 'robotics' | 'drawing' | 'muaythai',
+      activityName: a?.name ?? '', branch: ef.branch, branchName: b?.name ?? '',
+      slotId: ef.slotId, slotLabel: slot ? slotLabel(slot) : '',
+      parentName: ef.parentName.trim(), parentPhone: ef.parentPhone.trim(), parentEmail: ef.parentEmail.trim(),
+      notes: ef.notes.trim(),
+    };
+    try {
+      await updateDoc(doc(db, 'registrations', r.id), patch);
+      setRows(prev => prev.map(x => x.id === r.id ? { ...x, ...patch } : x)
+        .sort((x, y) => (x.childName || '').localeCompare(y.childName || '')));
+      setEditId('');
+    } catch {
+      setError('Could not save the changes — try again.');
+    } finally { setEditBusy(false); }
+  }
+
+  /** Remove a student and everything recorded against them. Asks first. */
+  async function deleteStudent(r: Registration) {
+    const n = (r.feePayments ?? []).length;
+    const msg = `Delete ${r.childName} from the ${settings.yearLabel || '2026–2027'} list?`
+      + (n ? `\n\nTheir ${n} recorded payment${n === 1 ? '' : 's'} will be deleted too.` : '')
+      + '\n\nThis cannot be undone.';
+    if (!window.confirm(msg)) return;
+    setEditBusy(true); setError('');
+    try {
+      await deleteDoc(doc(db, 'registrations', r.id));
+      setRows(prev => prev.filter(x => x.id !== r.id));
+      setEditId('');
+    } catch {
+      setError('Could not delete the student — try again.');
+    } finally { setEditBusy(false); }
+  }
+
+  /** Shared edit form for a student record (used by both views). */
+  function EditPanel({ r }: { r: Registration }) {
+    const slots = (() => {
+      const b = branchById(ef.branch); const a = activityById(ef.activity);
+      return b && a ? a.slots(b) : [];
+    })();
+    return (
+      <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+        <div className="font-black text-gray-900 mb-3 flex items-center gap-2"><Pencil size={15} className="text-amber-600" /> Edit {r.childName}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Child&apos;s name *</label>
+            <input value={ef.childName} onChange={e => setEf({ ...ef, childName: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Date of birth</label>
+            <input type="date" value={ef.dob} onChange={e => setEf({ ...ef, dob: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Class</label>
+            <select value={ef.activity} onChange={e => setEf({ ...ef, activity: e.target.value, slotId: '' })}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+              {ACTIVITIES.map(a => <option key={a.id} value={a.id}>{a.emoji} {a.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Branch</label>
+            <select value={ef.branch} onChange={e => setEf({ ...ef, branch: e.target.value, slotId: '' })}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+              {BRANCHES.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-bold text-gray-600 mb-1">Day &amp; time</label>
+            <div className="flex flex-wrap gap-2">
+              {slots.length === 0 ? <span className="text-xs text-gray-400">No times for that class at this branch.</span>
+                : slots.map(sl => (
+                  <button key={sl.id} type="button" onClick={() => setEf({ ...ef, slotId: sl.id })}
+                    className={`px-3 py-1.5 rounded-xl border-2 text-xs font-bold ${ef.slotId === sl.id ? 'border-amber-500 bg-white text-amber-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}>
+                    {sl.day} · {sl.time}{sl.note ? ` (${sl.note})` : ''}
+                  </button>
+                ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Parent&apos;s name</label>
+            <input value={ef.parentName} onChange={e => setEf({ ...ef, parentName: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">WhatsApp number</label>
+            <input value={ef.parentPhone} onChange={e => setEf({ ...ef, parentPhone: e.target.value })} inputMode="tel"
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-bold text-gray-600 mb-1">Email</label>
+            <input value={ef.parentEmail} onChange={e => setEf({ ...ef, parentEmail: e.target.value })} type="email"
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-bold text-gray-600 mb-1">Note</label>
+            <input value={ef.notes} onChange={e => setEf({ ...ef, notes: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mt-4 flex-wrap">
+          <button onClick={() => void saveEdit(r)} disabled={editBusy || !ef.childName.trim()}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40" style={{ background: '#2563EB' }}>
+            {editBusy ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Save changes
+          </button>
+          <button onClick={() => { setEditId(''); setError(''); }}
+            className="px-4 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50">Cancel</button>
+          <button onClick={() => void deleteStudent(r)} disabled={editBusy}
+            className="ml-auto inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 bg-white border-2 border-red-200 hover:bg-red-50 disabled:opacity-40">
+            <Trash2 size={14} /> Delete this student
+          </button>
+        </div>
+        {(r.feePayments ?? []).length > 0 && (
+          <p className="text-[11px] text-red-600 mt-2">
+            Deleting removes {r.childName} and their {(r.feePayments ?? []).length} recorded payment{(r.feePayments ?? []).length === 1 ? '' : 's'}. This cannot be undone.
+          </p>
+        )}
+      </div>
+    );
   }
 
   // The months of the academic year (falls back to a 9-month year from today).
@@ -650,16 +794,23 @@ function Students() {
                                     </a>
                                   )
                                 ) : (
-                                  <button onClick={() => recordMonth(r)} disabled={saving === r.id || !fee}
+                                  <button onClick={() => void recordMonth(r)} disabled={saving === r.id || !fee}
                                     title={fee ? `Record ${fmt(fee)} for ${monthLabel(month)}` : 'Set the monthly fee first'}
                                     className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white disabled:opacity-40" style={{ background: '#2563EB' }}>
                                     {saving === r.id ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />} Mark paid
                                   </button>
                                 )}
+                                <button onClick={() => (editId === r.id ? setEditId('') : startEdit(r))} title="Edit or delete this student"
+                                  className="ml-1 p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50"><Pencil size={13} /></button>
                               </td>
                             </tr>
                           );
                         })}
+                        {visible.filter(r => r.id === editId).map(r => (
+                          <tr key={`edit-${r.id}`} className="bg-amber-50/40 border-t border-amber-100 no-print">
+                            <td colSpan={7} className="px-4 py-4"><EditPanel r={r} /></td>
+                          </tr>
+                        ))}
                       </tbody>
                       <tfoot>
                         <tr className="bg-gray-50 border-t-2 border-gray-200 font-black text-gray-900">
@@ -717,6 +868,10 @@ function Students() {
                             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#2563EB' }}>
                             <Plus size={15} /> {open ? 'Close' : 'Record payment'}
                           </button>
+                          <button onClick={() => (editId === r.id ? setEditId('') : startEdit(r))}
+                            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200">
+                            <Pencil size={14} /> Edit
+                          </button>
                           {l && r.parentPhone && (
                             <a href={`https://wa.me/${waNum(r.parentPhone)}?text=${encodeURIComponent(receiptMsg(r, l))}`}
                               target="_blank" rel="noreferrer" onClick={() => markConfirmed(r, l.id)}
@@ -737,6 +892,8 @@ function Students() {
                             </span>
                           )}
                         </div>
+
+                        {editId === r.id && <div className="mt-3"><EditPanel r={r} /></div>}
 
                         {open && (
                           <div className="mt-3 pt-3 border-t border-gray-100">
@@ -896,8 +1053,16 @@ function Students() {
                                     className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100">
                                     {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Payment
                                   </button>
+                                  <button onClick={() => (editId === r.id ? setEditId('') : startEdit(r))} title="Edit or delete this student"
+                                    className="ml-1 p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50"><Pencil size={12} /></button>
                                 </td>
                               </tr>
+
+                              {editId === r.id && (
+                                <tr className="bg-amber-50/40 border-t border-amber-100 no-print">
+                                  <td colSpan={10} className="px-4 py-4"><EditPanel r={r} /></td>
+                                </tr>
+                              )}
 
                               {open && (
                                 <tr className="bg-blue-50/40 border-t border-blue-100 no-print">
